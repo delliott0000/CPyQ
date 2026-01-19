@@ -114,12 +114,9 @@ class WSResponseMixin:
             await self.__close_and_break__(code=CustomWSCloseCode.InvalidFrameType)
 
         try:
-            json = message.json()
+            custom_message = custom_ws_message_factory(message.json())
         except JSONDecodeError:
             await self.__close_and_break__(code=CustomWSCloseCode.InvalidJSON)
-
-        try:
-            custom_message = custom_ws_message_factory(json)  # noqa
         except KeyError:
             await self.__close_and_break__(code=CustomWSCloseCode.MissingField)
         except TypeError:
