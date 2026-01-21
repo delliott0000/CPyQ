@@ -10,6 +10,8 @@ from typing import TYPE_CHECKING
 
 from bcrypt import checkpw, gensalt, hashpw
 
+from .errors import RatelimitExceeded
+
 if TYPE_CHECKING:
     from typing import Any
 
@@ -79,7 +81,7 @@ def check_ratelimit(hits: list[float], /, *, limit: int, interval: float) -> lis
     recent_hits = [hit for hit in hits if hit + interval > current_time]
 
     if len(recent_hits) >= limit:
-        raise RuntimeError("Ratelimit exceeded.")
+        raise RatelimitExceeded(recent_hits, limit=limit, interval=interval)
 
     recent_hits.append(current_time)
 

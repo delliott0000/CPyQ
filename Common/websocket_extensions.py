@@ -8,6 +8,7 @@ from aiohttp import ClientWebSocketResponse, WSCloseCode, WSMsgType
 from aiohttp.web import WebSocketResponse
 
 from .bases import ComparesIDABC, ComparesIDMixin
+from .errors import RatelimitExceeded
 from .utils import check_ratelimit, decode_datetime
 
 if TYPE_CHECKING:
@@ -129,7 +130,7 @@ class WSResponseMixin:
                 self.__hits = check_ratelimit(
                     self.__hits, limit=self.__limit, interval=self.__interval
                 )
-            except RuntimeError:
+            except RatelimitExceeded:
                 await self.__close_and_break__(code=WSCloseCode.POLICY_VIOLATION)
 
         if message.type != WSMsgType.TEXT:
