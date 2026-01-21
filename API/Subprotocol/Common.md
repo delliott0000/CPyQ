@@ -59,7 +59,7 @@ The `"reason"` field is an optional, human-readable string for logging, debuggin
 
 The `"payload"` field contains the actual data associated with an `Event`. Its semantics are defined in [Connection Phases](#connection-phases) and [Contents](Contents).
 
-The following rules apply to top-level and payload-level fields.
+The following rules apply to top-level fields, but not payload-level fields.
 
 It *is* a violation of the subprotocol to:
 - Miss a mandatory field.
