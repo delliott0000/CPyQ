@@ -73,7 +73,29 @@ class CustomWSMessage(ComparesIDMixin, ComparesIDABC):
         return self._sent_at
 
 
-class WSEvent(CustomWSMessage): ...
+class WSEvent(CustomWSMessage):
+    def __init__(self, json: Json, /):
+        super().__init__(json)
+        self._status = WSEventStatus(json["status"])
+        self._reason = json.get("reason")
+        self._payload = json["payload"]
+
+        if not (isinstance(self._reason, str) or self._reason is None):
+            raise TypeError("Reason must be a string or None.")
+        elif not isinstance(self._payload, dict):
+            raise TypeError("Payload must be a dict.")
+
+    @property
+    def status(self) -> WSEventStatus:
+        return self._status
+
+    @property
+    def reason(self) -> str | None:
+        return self._reason
+
+    @property
+    def payload(self) -> Json:
+        return self._payload
 
 
 class WSAck(CustomWSMessage):
