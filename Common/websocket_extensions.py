@@ -8,7 +8,7 @@ from aiohttp import ClientWebSocketResponse, WSCloseCode, WSMsgType
 from aiohttp.web import WebSocketResponse
 
 from .bases import ComparesIDABC, ComparesIDMixin
-from .errors import RatelimitExceeded
+from .errors import InvalidFrameType, RatelimitExceeded
 from .utils import check_ratelimit, decode_datetime
 
 if TYPE_CHECKING:
@@ -125,33 +125,36 @@ class WSResponseMixin:
     async def __anext__(self) -> CustomWSMessage:
         message = await super().__anext__()  # noqa
 
-        if self.__ratelimited:
-            try:
+        try:
+            if self.__ratelimited:
                 self.__hits = check_ratelimit(
                     self.__hits, limit=self.__limit, interval=self.__interval
                 )
-            except RatelimitExceeded:
-                await self.__close_and_break__(code=WSCloseCode.POLICY_VIOLATION)
 
-        if message.type != WSMsgType.TEXT:
-            await self.__close_and_break__(code=CustomWSCloseCode.InvalidFrameType)
+            if message.type != WSMsgType.TEXT:
+                raise InvalidFrameType(message)
 
-        try:
             custom_message = custom_ws_message_factory(message.json())
-        except JSONDecodeError:
-            await self.__close_and_break__(code=CustomWSCloseCode.InvalidJSON)
-        except KeyError:
-            await self.__close_and_break__(code=CustomWSCloseCode.MissingField)
-        except TypeError:
-            await self.__close_and_break__(code=CustomWSCloseCode.InvalidType)
-        except ValueError:
-            await self.__close_and_break__(code=CustomWSCloseCode.InvalidValue)
 
-        return custom_message  # noqa
+        except Exception as error:
+            mapping = {
+                RatelimitExceeded: WSCloseCode.POLICY_VIOLATION,
+                InvalidFrameType: CustomWSCloseCode.InvalidFrameType,
+                JSONDecodeError: CustomWSCloseCode.InvalidJSON,
+                KeyError: CustomWSCloseCode.MissingField,
+                TypeError: CustomWSCloseCode.InvalidType,
+                ValueError: CustomWSCloseCode.InvalidValue,
+            }
+            cls = type(error)
 
-    async def __close_and_break__(self, **kwargs: Any) -> None:
-        await self.close(**kwargs)  # noqa
-        raise StopAsyncIteration
+            if cls in mapping:
+                await self.close(code=mapping[cls])  # noqa
+                raise StopAsyncIteration
+
+            else:
+                raise error
+
+        return custom_message
 
 
 class CustomWSResponse(WSResponseMixin, WebSocketResponse):
