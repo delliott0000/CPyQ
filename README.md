@@ -4,17 +4,16 @@
 
 **Still in early development.**
 
-# PyDoorBuilder
-PyDoorBuilder is a CPQ (Configure, Price, Quote) software solution originally designed for steel door configurations. However, it can be easily adapted to support a wide range of products across various industries.
+# CPyQ
+CPyQ is a Python-based "Configure, Price, Quote" (CPQ) platform. The project was originally started with steel door configurations in mind. However, it is highly adaptable and can support a wide range of products across various industries.
 
-This project is split into a few different modules:
-
+The project is split into a few different modules:
 - [Client](Client) - The front-end program that the user interacts with directly.
-- [Server](Server) - This module communicates user sessions and specification states with the client.
-- [Autopilot](Autopilot) - The server will offload certain tasks to the autopilot module, such as generating documents.
-- [Common](Common) - Objects that are used across more than one module are defined here.
+- [Server](Server) - Communicates user sessions and specification states with the client.
+- [Autopilot](Autopilot) - Allows the server to offload certain tasks, such as generating documents.
+- [Common](Common) - Defines objects and utilities used across multiple modules.
 - [SQL](SQL) - Tools used for PostgreSQL setup/development.
-- [API](API) - Documents the API exposed by the Server module.
+- [API](API) - Documentation of the API exposed by the server.
 
 # Features
 - Web API that manages user sessions and enforces rate limits.
