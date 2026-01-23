@@ -45,8 +45,8 @@ class PostgresConfig:
     database: str
     user: str
     password: str
-    min_pool_size: int
-    max_pool_size: int
+    min_connection_pool_size: int
+    max_connection_pool_size: int
 
 
 @dataclass(kw_only=True, frozen=True)

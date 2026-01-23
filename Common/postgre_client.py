@@ -75,8 +75,8 @@ class PostgreSQLClient:
                 database=config.database,
                 user=config.user,
                 password=config.password,
-                min_size=config.min_pool_size,
-                max_size=config.max_pool_size,
+                min_size=config.min_connection_pool_size,
+                max_size=config.max_connection_pool_size,
             )
             log(f"Connected to {config.database} as {config.user}.")
         except Exception as error:

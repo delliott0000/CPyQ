@@ -19,8 +19,8 @@ backoff_cap = 20.0
 host = ""
 port = 0
 database = ""
-min_pool_size = 1
-max_pool_size = 5
+min_connection_pool_size = 1
+max_connection_pool_size = 5
 
 [server.api]
 host = "0.0.0.0"
