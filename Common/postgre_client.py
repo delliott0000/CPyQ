@@ -33,7 +33,7 @@ DUMMY_HASH = encrypt_password("my_dummy_password")
 class PostgreSQLClient:
     def __init__(self, *, config: PostgresConfig):
         self.config = config
-        self.__pool: Pool | None = None
+        self.__connection_pool: Pool | None = None
 
     async def __aenter__(self) -> Self:
         await self.connect()
@@ -44,7 +44,7 @@ class PostgreSQLClient:
 
     @property
     def is_open(self) -> bool:
-        return self.__pool is not None and not self.__pool.is_closing()
+        return self.__connection_pool is not None and not self.__connection_pool.is_closing()
 
     def validate_ids(
         self,
@@ -69,7 +69,7 @@ class PostgreSQLClient:
         config = self.config
 
         try:
-            self.__pool = await create_pool(
+            self.__connection_pool = await create_pool(
                 host=config.host,
                 port=config.port,
                 database=config.database,
@@ -90,18 +90,18 @@ class PostgreSQLClient:
         config = self.config
 
         try:
-            await self.__pool.close()
+            await self.__connection_pool.close()
             log(f"Disconnected from {config.database}.")
         except Exception as error:
             log(f"Failed to disconnect from {config.database} - {type(error).__name__}.", ERROR)
 
-        self.__pool = None
+        self.__connection_pool = None
 
     async def make_call(self, func: Callable[[Connection], Coroutine[Any, Any, T]], /) -> T:
         if not self.is_open:
             raise RuntimeError("Postgres connection pool is closed.")
 
-        async with self.__pool.acquire() as connection:
+        async with self.__connection_pool.acquire() as connection:
             return await func(connection)
 
     async def fetch_one(self, query: str, *args: Any) -> Record | None:
