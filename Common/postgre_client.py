@@ -11,7 +11,7 @@ from .permissions import Permission, PermissionScope, PermissionType
 from .quote import Quote
 from .team import Team
 from .user import User
-from .utils import check_password, encrypt_password, log
+from .utils import check_password, log
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Coroutine, Iterable
@@ -27,7 +27,7 @@ if TYPE_CHECKING:
 __all__ = ("PostgreSQLClient",)
 
 
-DUMMY_HASH = encrypt_password("my_dummy_password")
+DUMMY_HASH = "$2b$12$9sVei45B23z0M.gV2EI4cunVKdBC2xu64pRAKqTHDnVPOWD8HHBQu"
 
 
 class PostgreSQLClient:
