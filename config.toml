@@ -30,6 +30,7 @@ ws_message_limit = 10
 ws_message_interval = 5.0
 resource_grace = 300.0
 task_interval = 5.0
+max_process_pool_workers = 4
 
 [server.postgres]
 host = "localhost"

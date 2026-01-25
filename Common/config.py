@@ -68,6 +68,7 @@ class ServerConfig:
     ws_message_interval: float
     resource_grace: float
     task_interval: float
+    max_process_pool_workers: int
     postgres: PostgresConfig
 
 

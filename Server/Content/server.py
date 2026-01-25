@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from aiohttp import WSCloseCode
 from aiohttp.web import Application, AppRunner, TCPSite
 
-from Common import log
+from Common import create_process_pool, log
 
 from .auth_service import AuthService
 from .manager import AutopilotManager
@@ -27,6 +27,8 @@ __all__ = ("Server",)
 class Server:
     def __init__(self, *, config: ServerConfig):
         self.config = config
+
+        self.process_pool = create_process_pool(max_workers=config.max_process_pool_workers)
 
         self.db = ServerPostgreSQLClient(config=config.postgres)
 
@@ -76,17 +78,19 @@ class Server:
 
     async def start(self) -> None:
 
-        async with self.db:
+        with self.process_pool:
 
-            async with self:
+            async with self.db:
 
-                async with AsyncExitStack() as stack:
+                async with self:
 
-                    for service in self.services:
-                        await stack.enter_async_context(service)
+                    async with AsyncExitStack() as stack:
 
-                    tasks = (service.task for service in self.services)
-                    await gather(*tasks)
+                        for service in self.services:
+                            await stack.enter_async_context(service)
+
+                        tasks = (service.task for service in self.services)
+                        await gather(*tasks)
 
     def run(self) -> None:
         try:
