@@ -7,7 +7,7 @@ from urllib.parse import quote
 if TYPE_CHECKING:
     from typing import ClassVar
 
-    from .config import ClientAPIConfig
+    from .config import APIConfig
 
 __all__ = ("build_base", "setup_routes", "Route", "HTTPRoute", "WebSocketRoute")
 
@@ -16,7 +16,7 @@ def build_base(protocol: str, domain: str, use_secure: bool, /) -> str:
     return f"{protocol}{'s' if use_secure else ''}://{domain}"
 
 
-def setup_routes(config: ClientAPIConfig, /) -> None:
+def setup_routes(config: APIConfig, /) -> None:
     use_secure = config.secure and not config.local
 
     if config.local:

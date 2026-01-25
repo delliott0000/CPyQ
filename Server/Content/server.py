@@ -17,21 +17,16 @@ from .resource_service import ResourceService
 from .websocket_service import AutopilotWebSocketService, UserWebSocketService
 
 if TYPE_CHECKING:
-    from Common import PostgresConfig, Resource, ServerAPIConfig, Session, Token, User
+    from Common import Resource, ServerConfig, Session, Token, User
 
 __all__ = ("Server",)
 
 
 class Server:
-    def __init__(
-        self,
-        *,
-        config: ServerAPIConfig,
-        db_config: PostgresConfig,
-    ):
+    def __init__(self, *, config: ServerConfig):
         self.config = config
 
-        self.db = ServerPostgreSQLClient(config=db_config)
+        self.db = ServerPostgreSQLClient(config=config.postgres)
 
         self.app = Application(middlewares=middlewares)
         self.runner: AppRunner | None = None

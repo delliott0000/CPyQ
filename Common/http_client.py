@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from collections.abc import Coroutine
     from typing import Any
 
-    from .config import HTTPRetryConfig
+    from .config import HTTPConfig
     from .route import Route
 
     URL = str | Route
@@ -24,7 +24,7 @@ __all__ = ("HTTPClient",)
 
 
 class HTTPClient:
-    def __init__(self, *, config: HTTPRetryConfig):
+    def __init__(self, *, config: HTTPConfig):
         self.config = config
         self.__session: ClientSession | None = None
 

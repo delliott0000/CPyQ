@@ -1,33 +1,34 @@
-from __future__ import annotations
-
 from dataclasses import dataclass
 from pathlib import Path
 from tomllib import load
-from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from typing import Any
+from dacite import from_dict
 
 __all__ = (
-    "ClientAPIConfig",
-    "HTTPRetryConfig",
     "PostgresConfig",
-    "ServerAPIConfig",
-    "global_config",
+    "HTTPConfig",
+    "APIConfig",
+    "ClientConfig",
+    "ServerConfig",
+    "AutopilotConfig",
+    "GlobalConfig",
+    "config",
 )
 
 
 @dataclass(kw_only=True, frozen=True)
-class ClientAPIConfig:
-    domain: str
-    secure: bool
-    local: bool
+class PostgresConfig:
     host: str
     port: int
+    database: str
+    username: str
+    password: str
+    min_connection_pool_size: int
+    max_connection_pool_size: int
 
 
 @dataclass(kw_only=True, frozen=True)
-class HTTPRetryConfig:
+class HTTPConfig:
     max_retries: int
     max_sleep_time: float
     handle_ratelimits: bool
@@ -39,33 +40,53 @@ class HTTPRetryConfig:
 
 
 @dataclass(kw_only=True, frozen=True)
-class PostgresConfig:
+class APIConfig:
     host: str
     port: int
-    database: str
-    user: str
-    password: str
-    min_connection_pool_size: int
-    max_connection_pool_size: int
+    domain: str
+    secure: bool
+    local: bool
+    http: HTTPConfig
 
 
 @dataclass(kw_only=True, frozen=True)
-class ServerAPIConfig:
+class ClientConfig:
+    api: APIConfig
+
+
+@dataclass(kw_only=True, frozen=True)
+class ServerConfig:
     host: str
     port: int
     proxy: bool
+    max_tokens_per_user: int
     access_time: float
     refresh_time: float
-    max_tokens_per_user: int
-    task_interval: float
     ws_heartbeat: float
     ws_max_message_size: int
     ws_message_limit: int
     ws_message_interval: float
     resource_grace: float
+    task_interval: float
+    postgres: PostgresConfig
 
 
-config_file = Path(__file__).parent.parent / "config.toml"
+@dataclass(kw_only=True, frozen=True)
+class AutopilotConfig:
+    api: APIConfig
+    postgres: PostgresConfig
 
-with config_file.open("rb") as file:
-    global_config: dict[str, Any] = load(file)
+
+@dataclass(kw_only=True, frozen=True)
+class GlobalConfig:
+    client: ClientConfig
+    server: ServerConfig
+    autopilot: AutopilotConfig
+
+
+config_file_path = Path(__file__).parent.parent / "config.toml"
+
+with config_file_path.open("rb") as config_file:
+    config_data = load(config_file)
+
+config = from_dict(GlobalConfig, config_data)  # noqa

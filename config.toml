@@ -1,11 +1,13 @@
-[api]
+[client]
+
+[client.api]
+host = "localhost"
+port = 8080
 domain = ""
 secure = true
 local = true
-host = "localhost"
-port = 8080
 
-[api.http]
+[client.api.http]
 max_retries = 5
 max_sleep_time = 65.0
 handle_ratelimits = true
@@ -15,35 +17,53 @@ backoff_factor = 1.5
 backoff_start = 1.0
 backoff_cap = 20.0
 
-[postgres]
-host = ""
-port = 0
-database = ""
-min_connection_pool_size = 1
-max_connection_pool_size = 5
-
-[server.api]
+[server]
 host = "0.0.0.0"
 port = 8080
 proxy = false
+max_tokens_per_user = 5
 access_time = 900.0
 refresh_time = 3600.0
-max_tokens_per_user = 5
-task_interval = 5.0
 ws_heartbeat = 5.0
 ws_max_message_size = 16  # In kilobytes
 ws_message_limit = 10
 ws_message_interval = 5.0
 resource_grace = 300.0
+task_interval = 5.0
 
 [server.postgres]
-user = ""
+host = "localhost"
+port = 5432
+database = ""
+username = ""
 password = ""
+min_connection_pool_size = 1
+max_connection_pool_size = 5
+
+[autopilot]
 
 [autopilot.api]
-user = ""
-password = ""
+host = "localhost"
+port = 8080
+domain = ""
+secure = true
+local = true
+
+[autopilot.api.http]
+max_retries = 5
+max_sleep_time = 65.0
+handle_ratelimits = true
+max_retry_after = 60.0
+handle_backoffs = true
+backoff_factor = 1.5
+backoff_start = 1.0
+backoff_cap = 20.0
 
 [autopilot.postgres]
-user = ""
+host = "localhost"
+port = 5432
+database = ""
+username = ""
 password = ""
+min_connection_pool_size = 1
+max_connection_pool_size = 5

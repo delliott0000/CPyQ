@@ -73,12 +73,12 @@ class PostgreSQLClient:
                 host=config.host,
                 port=config.port,
                 database=config.database,
-                user=config.user,
+                user=config.username,
                 password=config.password,
                 min_size=config.min_connection_pool_size,
                 max_size=config.max_connection_pool_size,
             )
-            log(f"Connected to {config.database} as {config.user}.")
+            log(f"Connected to {config.database} as {config.username}.")
         except Exception as error:
             log(f"Failed to connect to {config.database} - {type(error).__name__}.", ERROR)
             raise
