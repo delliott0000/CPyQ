@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from asyncio import Runner, gather
+from asyncio import gather, run
 from contextlib import AsyncExitStack
 from typing import TYPE_CHECKING
 
@@ -17,6 +17,8 @@ from .resource_service import ResourceService
 from .websocket_service import AutopilotWebSocketService, UserWebSocketService
 
 if TYPE_CHECKING:
+    from typing import Self
+
     from Common import Resource, ServerConfig, Session, Token, User
 
 __all__ = ("Server",)
@@ -45,43 +47,49 @@ class Server:
         self.session_id_to_session: dict[str, Session] = {}
         self.rtype_rid_to_resource: dict[tuple[str, int], Resource] = {}
 
+    async def __aenter__(self) -> Self:
+        await self.__start__()
+        return self
+
+    async def __aexit__(self, *_) -> None:
+        await self.__stop__()
+
+    async def __start__(self) -> None:
+        await self.runner.setup()
+
+        site = TCPSite(self.runner, self.config.host, self.config.port)
+        await site.start()
+
+        log("Service running.")
+
+    async def __stop__(self) -> None:
+        coros = (
+            connection.close(code=WSCloseCode.GOING_AWAY)
+            for session in self.session_id_to_session.values()
+            for connection in session.connections.values()
+        )
+        await gather(*coros)
+
+        await self.runner.cleanup()
+
+        log("Service stopped.")
+
+    async def start(self) -> None:
+
+        async with self.db:
+
+            async with self:
+
+                async with AsyncExitStack() as stack:
+
+                    for service in self.services:
+                        await stack.enter_async_context(service)
+
+                    tasks = (service.task for service in self.services)
+                    await gather(*tasks)
+
     def run(self) -> None:
-        async def _service():
-            log("Starting up service...")
-
-            await self.runner.setup()
-
-            site = TCPSite(self.runner, self.config.host, self.config.port)
-            await site.start()
-
-            log("Service running.")
-
-            services = self.services
-            contexts = services + (self.db,)
-            tasks = (service.task for service in services)
-
-            async with AsyncExitStack() as stack:
-
-                for context in contexts:
-                    await stack.enter_async_context(context)
-
-                await gather(*tasks)
-
-        async def _cleanup():
-            coros = (
-                connection.close(code=WSCloseCode.GOING_AWAY)
-                for session in self.session_id_to_session.values()
-                for connection in session.connections.values()
-            )
-            await gather(*coros)
-            await self.runner.cleanup()
-
-        with Runner() as runner:
-            try:
-                runner.run(_service())
-            except (KeyboardInterrupt, SystemExit):
-                log("Received signal to terminate program.")
-            finally:
-                log("Cleaning up...")
-                runner.run(_cleanup())
-                log("Done. Have a nice day!")
+        try:
+            run(self.start())
+        except (KeyboardInterrupt, SystemExit):
+            log("Received signal to terminate program.")
