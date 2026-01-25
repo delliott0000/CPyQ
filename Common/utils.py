@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+from asyncio import get_running_loop
+from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime, timezone
+from functools import partial
 from logging import DEBUG, ERROR, INFO, WARNING, basicConfig, getLogger
-from os import makedirs
+from os import cpu_count, makedirs
 from pathlib import Path
 from sys import exc_info
 from time import time
@@ -13,12 +16,15 @@ from bcrypt import checkpw, gensalt, hashpw
 from .errors import RatelimitExceeded
 
 if TYPE_CHECKING:
-    from typing import Any
+    from collections.abc import Callable
+    from typing import Any, ParamSpec, TypeVar
 
     from aiohttp import ClientResponse
     from aiohttp.web import Request
 
     Json = dict[str, Any]
+    P = ParamSpec("P")
+    T = TypeVar("T")
 
 __all__ = (
     "now",
@@ -104,3 +110,21 @@ async def to_json(r: Request | ClientResponse, /, *, strict: bool = False) -> Js
             raise
         log(f"Failed to parse JSON payload - {type(error).__name__}.", WARNING)
         return {}
+
+
+def create_process_pool(*, max_workers: int) -> ProcessPoolExecutor:
+    cpus = cpu_count() or 1
+    real_max_workers = max(min(cpus - 1, max_workers), 1)
+    return ProcessPoolExecutor(max_workers=real_max_workers)
+
+
+async def run_in_process_pool(
+    pool: ProcessPoolExecutor,
+    func: Callable[P, T],
+    *args: P.args,
+    **kwargs: P.kwargs,
+) -> T:
+    loop = get_running_loop()
+    wrapped = partial(func, *args, **kwargs)
+    result = await loop.run_in_executor(pool, wrapped)
+    return result
