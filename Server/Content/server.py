@@ -29,7 +29,7 @@ class Server:
         self.db = ServerPostgreSQLClient(config=config.postgres)
 
         self.app = Application(middlewares=middlewares)
-        self.runner: AppRunner | None = None
+        self.runner = AppRunner(self.app, access_log=None)
 
         self.services = (
             AuthService(self),
@@ -49,7 +49,6 @@ class Server:
         async def _service():
             log("Starting up service...")
 
-            self.runner = AppRunner(self.app, access_log=None)
             await self.runner.setup()
 
             site = TCPSite(self.runner, self.config.host, self.config.port)
