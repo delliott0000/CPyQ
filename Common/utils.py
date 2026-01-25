@@ -36,6 +36,8 @@ __all__ = (
     "check_ratelimit",
     "log",
     "to_json",
+    "create_process_pool",
+    "run_in_process_pool",
 )
 
 
