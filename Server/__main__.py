@@ -3,10 +3,10 @@ from Server import Server
 
 if __name__ == "__main__":
 
-    with LoggingContext(__file__) as logging_context:
+    with LoggingContext(__file__) as log_ctx:
 
         server = Server(
             config=config.server,
-            logging_context=logging_context,
+            log_ctx=log_ctx,
         )
         server.run()

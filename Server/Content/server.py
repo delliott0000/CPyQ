@@ -29,14 +29,14 @@ class Server:
         self,
         *,
         config: ServerConfig,
-        logging_context: LoggingContext,
+        log_ctx: LoggingContext,
     ):
         self.config = config
 
         self.process_pool = create_process_pool(
             max_workers=config.max_process_pool_workers,
             initializer=initialize_process,
-            initargs=(logging_context.level, logging_context.queue),
+            initargs=(log_ctx.level, log_ctx.queue),
         )
 
         self.db = ServerPostgreSQLClient(config=config.postgres)
