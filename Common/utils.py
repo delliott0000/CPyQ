@@ -4,7 +4,17 @@ from asyncio import get_running_loop
 from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime, timezone
 from functools import partial
-from logging import DEBUG, ERROR, INFO, WARNING, basicConfig, getLogger
+from logging import (
+    DEBUG,
+    ERROR,
+    INFO,
+    WARNING,
+    FileHandler,
+    Formatter,
+    getLogger,
+)
+from logging.handlers import QueueHandler, QueueListener
+from multiprocessing import Queue
 from os import cpu_count, makedirs
 from pathlib import Path
 from sys import exc_info
@@ -17,7 +27,7 @@ from .errors import RatelimitExceeded
 
 if TYPE_CHECKING:
     from collections.abc import Callable
-    from typing import Any, ParamSpec, TypeVar
+    from typing import Any, ParamSpec, Self, TypeVar
 
     from aiohttp import ClientResponse
     from aiohttp.web import Request
@@ -37,7 +47,7 @@ __all__ = (
     "create_process_pool",
     "run_in_process_pool",
     "log",
-    "setup_logging",
+    "LoggingContext",
 )
 
 
@@ -116,17 +126,42 @@ def log(message: str, level: int = INFO, /) -> None:
     _logger.log(level, message, exc_info=with_traceback)
 
 
-def setup_logging(file: str, level: int = DEBUG, /) -> None:
-    current_module = Path(file).parent
-    log_destination = current_module.parent / "Logs" / current_module.name
+class LoggingContext:
+    def __init__(self, file: str, level: int = DEBUG, /):
+        module = Path(file).parent
+        timestamp = now().strftime("%Y-%m-%d_%H-%M-%S")
 
-    timestamp = now().strftime("%Y-%m-%d_%H-%M-%S")
+        self.folder = module.parent / "Logs" / module.name
+        self.file = self.folder / f"{timestamp}.txt"
+        self.level = level
 
-    makedirs(log_destination, exist_ok=True)
+        self.formatter = Formatter("%(asctime)s - %(levelname)s - %(message)s")
 
-    basicConfig(
-        filename=log_destination / f"{timestamp}.txt",
-        filemode="w",
-        level=level,
-        format="%(asctime)s - %(levelname)s - %(message)s",
-    )
+        self.queue: Queue | None = None
+        self.listener: QueueListener | None = None
+
+    def __enter__(self) -> Self:
+        self.__start__()
+        return self
+
+    def __exit__(self, *_) -> None:
+        self.__stop__()
+
+    def __start__(self) -> None:
+        makedirs(self.folder, exist_ok=True)
+
+        handler = FileHandler(self.file)
+        handler.setFormatter(self.formatter)
+
+        self.queue = Queue()
+        self.listener = QueueListener(self.queue, handler)
+        self.listener.start()
+
+        _logger.setLevel(self.level)
+        _logger.handlers.clear()
+        _logger.addHandler(QueueHandler(self.queue))
+
+    def __stop__(self) -> None:
+        self.listener.stop()
+        self.queue.close()
+        self.queue.join_thread()
