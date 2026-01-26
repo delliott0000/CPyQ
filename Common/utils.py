@@ -100,6 +100,13 @@ async def to_json(r: Request | ClientResponse, /, *, strict: bool = False) -> Js
         return {}
 
 
+def _setup_handler(level: int, queue: Queue, /) -> None:
+    root = getLogger()
+    root.setLevel(level)
+    root.handlers.clear()
+    root.addHandler(QueueHandler(queue))
+
+
 def log(message: str, level: int = INFO, /) -> None:
     with_traceback = exc_info()[0] is not None and level >= ERROR
     root = getLogger()
@@ -137,10 +144,7 @@ class LoggingContext:
         self.listener = QueueListener(self.queue, handler)
         self.listener.start()
 
-        root = getLogger()
-        root.setLevel(self.level)
-        root.handlers.clear()
-        root.addHandler(QueueHandler(self.queue))
+        _setup_handler(self.level, self.queue)
 
     def __stop__(self) -> None:
         self.listener.stop()
