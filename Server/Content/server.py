@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from aiohttp import WSCloseCode
 from aiohttp.web import Application, AppRunner, TCPSite
 
-from Common import create_process_pool, log
+from Common import create_process_pool, initialize_process, log
 
 from .auth_service import AuthService
 from .manager import AutopilotManager
@@ -19,16 +19,25 @@ from .websocket_service import AutopilotWebSocketService, UserWebSocketService
 if TYPE_CHECKING:
     from typing import Self
 
-    from Common import Resource, ServerConfig, Session, Token, User
+    from Common import LoggingContext, Resource, ServerConfig, Session, Token, User
 
 __all__ = ("Server",)
 
 
 class Server:
-    def __init__(self, *, config: ServerConfig):
+    def __init__(
+        self,
+        *,
+        config: ServerConfig,
+        logging_context: LoggingContext,
+    ):
         self.config = config
 
-        self.process_pool = create_process_pool(max_workers=config.max_process_pool_workers)
+        self.process_pool = create_process_pool(
+            max_workers=config.max_process_pool_workers,
+            initializer=initialize_process,
+            initargs=(logging_context.level, logging_context.queue),
+        )
 
         self.db = ServerPostgreSQLClient(config=config.postgres)
 
