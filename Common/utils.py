@@ -125,7 +125,7 @@ class LoggingContext:
         self.file = self.folder / f"{timestamp}.txt"
         self.level = level
 
-        self.formatter = Formatter("%(asctime)s - %(levelname)s - %(message)s")
+        self.formatter = Formatter("%(asctime)s - %(levelname)-8s - %(message)s")
 
         self.queue: Queue | None = None
         self.listener: QueueListener | None = None
