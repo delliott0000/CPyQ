@@ -51,9 +51,6 @@ __all__ = (
 )
 
 
-_logger = getLogger()
-
-
 def now() -> datetime:
     return datetime.now().astimezone(timezone.utc)
 
@@ -105,7 +102,8 @@ async def to_json(r: Request | ClientResponse, /, *, strict: bool = False) -> Js
 
 def log(message: str, level: int = INFO, /) -> None:
     with_traceback = exc_info()[0] is not None and level >= ERROR
-    _logger.log(level, message, exc_info=with_traceback)
+    root = getLogger()
+    root.log(level, message, exc_info=with_traceback)
 
 
 class LoggingContext:
@@ -139,9 +137,10 @@ class LoggingContext:
         self.listener = QueueListener(self.queue, handler)
         self.listener.start()
 
-        _logger.setLevel(self.level)
-        _logger.handlers.clear()
-        _logger.addHandler(QueueHandler(self.queue))
+        root = getLogger()
+        root.setLevel(self.level)
+        root.handlers.clear()
+        root.addHandler(QueueHandler(self.queue))
 
     def __stop__(self) -> None:
         self.listener.stop()
