@@ -33,8 +33,8 @@ __all__ = (
     "check_password",
     "encrypt_password",
     "setup_logging",
-    "check_ratelimit",
     "log",
+    "check_ratelimit",
     "to_json",
     "create_process_pool",
     "run_in_process_pool",
@@ -83,6 +83,11 @@ def setup_logging(file: str, level: int = DEBUG, /) -> None:
     )
 
 
+def log(message: str, level: int = INFO, /) -> None:
+    with_traceback = exc_info()[0] is not None and level >= ERROR
+    _logger.log(level, message, exc_info=with_traceback)
+
+
 def check_ratelimit(hits: list[float], /, *, limit: int, interval: float) -> list[float]:
     current_time = time()
 
@@ -94,11 +99,6 @@ def check_ratelimit(hits: list[float], /, *, limit: int, interval: float) -> lis
     recent_hits.append(current_time)
 
     return recent_hits
-
-
-def log(message: str, level: int = INFO, /) -> None:
-    with_traceback = exc_info()[0] is not None and level >= ERROR
-    _logger.log(level, message, exc_info=with_traceback)
 
 
 async def to_json(r: Request | ClientResponse, /, *, strict: bool = False) -> Json:
