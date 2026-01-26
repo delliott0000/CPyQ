@@ -17,6 +17,7 @@ from logging.handlers import QueueHandler, QueueListener
 from multiprocessing import Queue
 from os import cpu_count, makedirs
 from pathlib import Path
+from signal import SIGINT, SIGTERM, signal
 from sys import exc_info
 from time import time
 from typing import TYPE_CHECKING
@@ -49,6 +50,7 @@ __all__ = (
     "LoggingContext",
     "create_process_pool",
     "run_in_process_pool",
+    "initialize_process",
 )
 
 
@@ -162,9 +164,20 @@ def create_process_pool(*, max_workers: int, **kwargs: Any) -> ProcessPoolExecut
 def run_in_process_pool(
     pool: ProcessPoolExecutor,
     func: Callable[P, T],
+    /,
     *args: P.args,
     **kwargs: P.kwargs,
 ) -> Future[T]:
     loop = get_running_loop()
     wrapped = partial(func, *args, **kwargs)
     return loop.run_in_executor(pool, wrapped)
+
+
+def _signal_interrupt(code: int, /, *_) -> None:
+    raise SystemExit(code)
+
+
+def initialize_process(level: int, queue: Queue, /) -> None:
+    _setup_handler(level, queue)
+    signal(SIGINT, partial(_signal_interrupt, 130))
+    signal(SIGTERM, partial(_signal_interrupt, 143))
