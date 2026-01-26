@@ -27,8 +27,7 @@ class Quote(ComparesIDFormattedMixin, ComparesIDFormattedABC):
         return self._id
 
     @property
-    def formatted_id(self) -> str:
-        return f"SQ{self.id:08d}"
+    def formatted_id(self) -> str: ...
 
     @property
     def owner(self) -> User:
