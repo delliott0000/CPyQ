@@ -152,10 +152,10 @@ class LoggingContext:
         self.queue.join_thread()
 
 
-def create_process_pool(*, max_workers: int) -> ProcessPoolExecutor:
+def create_process_pool(*, max_workers: int, **kwargs: Any) -> ProcessPoolExecutor:
     cpus = cpu_count() or 1
     real_max_workers = max(min(cpus - 1, max_workers), 1)
-    return ProcessPoolExecutor(max_workers=real_max_workers)
+    return ProcessPoolExecutor(max_workers=real_max_workers, **kwargs)
 
 
 async def run_in_process_pool(
