@@ -44,10 +44,10 @@ __all__ = (
     "encrypt_password",
     "check_ratelimit",
     "to_json",
-    "create_process_pool",
-    "run_in_process_pool",
     "log",
     "LoggingContext",
+    "create_process_pool",
+    "run_in_process_pool",
 )
 
 
@@ -103,24 +103,6 @@ async def to_json(r: Request | ClientResponse, /, *, strict: bool = False) -> Js
         return {}
 
 
-def create_process_pool(*, max_workers: int) -> ProcessPoolExecutor:
-    cpus = cpu_count() or 1
-    real_max_workers = max(min(cpus - 1, max_workers), 1)
-    return ProcessPoolExecutor(max_workers=real_max_workers)
-
-
-async def run_in_process_pool(
-    pool: ProcessPoolExecutor,
-    func: Callable[P, T],
-    *args: P.args,
-    **kwargs: P.kwargs,
-) -> T:
-    loop = get_running_loop()
-    wrapped = partial(func, *args, **kwargs)
-    result = await loop.run_in_executor(pool, wrapped)
-    return result
-
-
 def log(message: str, level: int = INFO, /) -> None:
     with_traceback = exc_info()[0] is not None and level >= ERROR
     _logger.log(level, message, exc_info=with_traceback)
@@ -165,3 +147,21 @@ class LoggingContext:
         self.listener.stop()
         self.queue.close()
         self.queue.join_thread()
+
+
+def create_process_pool(*, max_workers: int) -> ProcessPoolExecutor:
+    cpus = cpu_count() or 1
+    real_max_workers = max(min(cpus - 1, max_workers), 1)
+    return ProcessPoolExecutor(max_workers=real_max_workers)
+
+
+async def run_in_process_pool(
+    pool: ProcessPoolExecutor,
+    func: Callable[P, T],
+    *args: P.args,
+    **kwargs: P.kwargs,
+) -> T:
+    loop = get_running_loop()
+    wrapped = partial(func, *args, **kwargs)
+    result = await loop.run_in_executor(pool, wrapped)
+    return result
