@@ -32,12 +32,12 @@ __all__ = (
     "encode_datetime",
     "check_password",
     "encrypt_password",
-    "setup_logging",
-    "log",
     "check_ratelimit",
     "to_json",
     "create_process_pool",
     "run_in_process_pool",
+    "log",
+    "setup_logging",
 )
 
 
@@ -65,27 +65,6 @@ def check_password(password: str, hashed_password: str, /) -> bool:
 
 def encrypt_password(password: str, /) -> str:
     return hashpw(password.encode(), gensalt()).decode()
-
-
-def setup_logging(file: str, level: int = DEBUG, /) -> None:
-    current_module = Path(file).parent
-    log_destination = current_module.parent / "Logs" / current_module.name
-
-    timestamp = now().strftime("%Y-%m-%d_%H-%M-%S")
-
-    makedirs(log_destination, exist_ok=True)
-
-    basicConfig(
-        filename=log_destination / f"{timestamp}.txt",
-        filemode="w",
-        level=level,
-        format="%(asctime)s - %(levelname)s - %(message)s",
-    )
-
-
-def log(message: str, level: int = INFO, /) -> None:
-    with_traceback = exc_info()[0] is not None and level >= ERROR
-    _logger.log(level, message, exc_info=with_traceback)
 
 
 def check_ratelimit(hits: list[float], /, *, limit: int, interval: float) -> list[float]:
@@ -130,3 +109,24 @@ async def run_in_process_pool(
     wrapped = partial(func, *args, **kwargs)
     result = await loop.run_in_executor(pool, wrapped)
     return result
+
+
+def log(message: str, level: int = INFO, /) -> None:
+    with_traceback = exc_info()[0] is not None and level >= ERROR
+    _logger.log(level, message, exc_info=with_traceback)
+
+
+def setup_logging(file: str, level: int = DEBUG, /) -> None:
+    current_module = Path(file).parent
+    log_destination = current_module.parent / "Logs" / current_module.name
+
+    timestamp = now().strftime("%Y-%m-%d_%H-%M-%S")
+
+    makedirs(log_destination, exist_ok=True)
+
+    basicConfig(
+        filename=log_destination / f"{timestamp}.txt",
+        filemode="w",
+        level=level,
+        format="%(asctime)s - %(levelname)s - %(message)s",
+    )
