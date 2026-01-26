@@ -26,6 +26,7 @@ from bcrypt import checkpw, gensalt, hashpw
 from .errors import RatelimitExceeded
 
 if TYPE_CHECKING:
+    from asyncio import Future
     from collections.abc import Callable
     from typing import Any, ParamSpec, Self, TypeVar
 
@@ -158,13 +159,12 @@ def create_process_pool(*, max_workers: int, **kwargs: Any) -> ProcessPoolExecut
     return ProcessPoolExecutor(max_workers=real_max_workers, **kwargs)
 
 
-async def run_in_process_pool(
+def run_in_process_pool(
     pool: ProcessPoolExecutor,
     func: Callable[P, T],
     *args: P.args,
     **kwargs: P.kwargs,
-) -> T:
+) -> Future[T]:
     loop = get_running_loop()
     wrapped = partial(func, *args, **kwargs)
-    result = await loop.run_in_executor(pool, wrapped)
-    return result
+    return loop.run_in_executor(pool, wrapped)
