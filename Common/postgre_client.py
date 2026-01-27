@@ -11,7 +11,7 @@ from .permissions import Permission, PermissionScope, PermissionType
 from .quote import Quote
 from .team import Team
 from .user import User
-from .utils import check_password, log
+from .utils import log
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Coroutine, Iterable
@@ -25,9 +25,6 @@ if TYPE_CHECKING:
     QuoteT = TypeVar("QuoteT", bound=Quote)
 
 __all__ = ("PostgreSQLClient",)
-
-
-DUMMY_HASH = "$2b$12$9sVei45B23z0M.gV2EI4cunVKdBC2xu64pRAKqTHDnVPOWD8HHBQu"
 
 
 class PostgreSQLClient:
@@ -118,26 +115,24 @@ class PostgreSQLClient:
         *,
         user_id: int | None = None,
         username: str | None = None,
-        password: str | None = None,
-        with_password: bool = True,
     ) -> User | None:
-        if password is None and with_password is True:
-            raise ValueError("Password is required.")
-        elif user_id is not None:
-            user_record = await self.fetch_one("SELECT * FROM users WHERE id = $1", user_id)
-        elif username is not None:
+        if (user_id is None) == (username is None):
+            raise ValueError("Either an ID or a username is required, but not both.")
+
+        # fmt: off
+        if user_id is not None:
             user_record = await self.fetch_one(
-                "SELECT * FROM users WHERE username = $1", username
+                "SELECT * FROM users WHERE id = $1",
+                user_id
             )
         else:
-            raise ValueError("Username or ID is required.")
+            user_record = await self.fetch_one(
+                "SELECT * FROM users WHERE username = $1",
+                username
+            )
+        # fmt: on
 
         if user_record is None:
-            if with_password:
-                # Dummy check so we don't leak any info through query timing
-                check_password(password, DUMMY_HASH)
-            return None
-        elif with_password and not check_password(password, user_record["password"]):
             return None
 
         team_assignments = await self.get_assignments(user_record["id"])
@@ -227,6 +222,6 @@ class PostgreSQLClient:
             return None
 
         owner_id = quote_record["owner_id"]
-        owner = await self.get_user(user_id=owner_id, with_password=False)
+        owner = await self.get_user(user_id=owner_id)
 
         return cls(quote_record, owner)

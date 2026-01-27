@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from aiohttp.web import HTTPBadRequest, HTTPUnauthorized, json_response
 
-from Common import CustomWSCloseCode, Session, Token, log, to_json
+from Common import CustomWSCloseCode, Session, Token, check_password, log, to_json
 
 from .base_service import BaseService
 from .decorators import BucketType, ratelimit, route, validate_access
@@ -15,6 +15,9 @@ if TYPE_CHECKING:
     from aiohttp.web import Request, Response
 
 __all__ = ("AuthService",)
+
+
+DUMMY_HASH = "$2b$12$9sVei45B23z0M.gV2EI4cunVKdBC2xu64pRAKqTHDnVPOWD8HHBQu"
 
 
 class AuthService(BaseService):
@@ -100,8 +103,16 @@ class AuthService(BaseService):
         if not isinstance(username, str) or not isinstance(password, str):
             raise HTTPBadRequest(reason="Missing or invalid username/password")
 
-        user = await self.server.db.get_user(username=username, password=password)
-        if user is None:
+        user = await self.server.db.get_user(username=username)
+
+        hashed_password = DUMMY_HASH if user is None else user.hashed_password
+        correct = await self.server.process_pool.submit_async(
+            check_password,
+            password,
+            hashed_password,
+        )
+
+        if user is None or not correct:
             raise HTTPUnauthorized(reason="Incorrect username/password")
 
         tokens = self.server.user_to_tokens.setdefault(user, set())
