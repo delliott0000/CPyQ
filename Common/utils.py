@@ -184,3 +184,4 @@ def initialize_process(level: int, queue: Queue, /) -> None:
     _setup_handler(level, queue)
     signal(SIGINT, partial(_signal_interrupt, 130))
     signal(SIGTERM, partial(_signal_interrupt, 143))
+    log("Child process initialized.")
