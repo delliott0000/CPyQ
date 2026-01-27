@@ -93,7 +93,7 @@ class AuthService(BaseService):
 
     @route("post", "/auth/login")
     @ratelimit(limit=10, interval=60, bucket_type=BucketType.IP)
-    @ratelimit(limit=100, interval=60, bucket_type=BucketType.Route)
+    @ratelimit(limit=1000, interval=60, bucket_type=BucketType.Route)
     async def login(self, request: Request, /) -> Response:
         data = await to_json(request)
 
