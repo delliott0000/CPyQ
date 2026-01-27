@@ -104,13 +104,13 @@ class PostgreSQLClient:
         async with self.__connection_pool.acquire() as connection:
             return await func(connection)
 
-    async def fetch_one(self, query: str, *args: Any) -> Record | None:
+    async def fetch_one(self, query: str, /, *args: Any) -> Record | None:
         return await self.make_call(lambda connection: connection.fetchrow(query, *args))
 
-    async def fetch_all(self, query: str, *args: Any) -> list[Record]:
+    async def fetch_all(self, query: str, /, *args: Any) -> list[Record]:
         return await self.make_call(lambda connection: connection.fetch(query, *args))
 
-    async def execute(self, query: str, *args: Any) -> str:
+    async def execute(self, query: str, /, *args: Any) -> str:
         return await self.make_call(lambda connection: connection.execute(query, *args))
 
     async def get_user(

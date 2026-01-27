@@ -38,7 +38,7 @@ class ValidationError(Exception):
 
 
 class ResourceConflict(Exception):
-    def __init__(self, session: Session, resource: Resource, *args: Any):
+    def __init__(self, session: Session, resource: Resource, /, *args: Any):
         super().__init__(*args)
         self.session = session  # The *requesting* session
         self.resource = resource  # The *requested* resource
@@ -66,7 +66,7 @@ class ResourceNotOwned(ResourceConflict):
 
 
 class RatelimitExceeded(Exception):
-    def __init__(self, hits: list[float], *args: Any, limit: int, interval: float):
+    def __init__(self, hits: list[float], /, *args: Any, limit: int, interval: float):
         super().__init__(*args)
         self.hits = hits
         self.limit = limit
@@ -74,6 +74,6 @@ class RatelimitExceeded(Exception):
 
 
 class InvalidFrameType(Exception):
-    def __init__(self, message: WSMessage, *args: Any):
+    def __init__(self, message: WSMessage, /, *args: Any):
         super().__init__(*args)
         self.message = message
