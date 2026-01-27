@@ -46,10 +46,10 @@ __all__ = (
     "encrypt_password",
     "check_ratelimit",
     "to_json",
-    "log",
     "LoggingContext",
+    "log",
+    "CustomProcessPoolExecutor",
     "create_process_pool",
-    "run_in_process_pool",
     "initialize_process",
 )
 
@@ -110,12 +110,6 @@ def _setup_handler(level: int, queue: Queue, /) -> None:
     root.addHandler(QueueHandler(queue))
 
 
-def log(message: str, level: int = INFO, /) -> None:
-    with_traceback = exc_info()[0] is not None and level >= ERROR
-    root = getLogger()
-    root.log(level, message, exc_info=with_traceback)
-
-
 class LoggingContext:
     def __init__(self, file: str, level: int = DEBUG, /):
         module = Path(file).parent
@@ -157,22 +151,29 @@ class LoggingContext:
         self.queue.join_thread()
 
 
-def create_process_pool(*, max_workers: int, **kwargs: Any) -> ProcessPoolExecutor:
+def log(message: str, level: int = INFO, /) -> None:
+    with_traceback = exc_info()[0] is not None and level >= ERROR
+    root = getLogger()
+    root.log(level, message, exc_info=with_traceback)
+
+
+class CustomProcessPoolExecutor(ProcessPoolExecutor):
+    def submit_async(
+        self,
+        func: Callable[P, T],
+        /,
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> Future[T]:
+        loop = get_running_loop()
+        wrapped = partial(func, *args, **kwargs)
+        return loop.run_in_executor(self, wrapped)
+
+
+def create_process_pool(*, max_workers: int, **kwargs: Any) -> CustomProcessPoolExecutor:
     cpus = cpu_count() or 1
     real_max_workers = max(min(cpus - 1, max_workers), 1)
-    return ProcessPoolExecutor(max_workers=real_max_workers, **kwargs)
-
-
-def run_in_process_pool(
-    pool: ProcessPoolExecutor,
-    func: Callable[P, T],
-    /,
-    *args: P.args,
-    **kwargs: P.kwargs,
-) -> Future[T]:
-    loop = get_running_loop()
-    wrapped = partial(func, *args, **kwargs)
-    return loop.run_in_executor(pool, wrapped)
+    return CustomProcessPoolExecutor(max_workers=real_max_workers, **kwargs)
 
 
 def _signal_interrupt(code: int, /, *_) -> None:
