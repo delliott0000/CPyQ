@@ -3,7 +3,7 @@ from Server import Server
 
 if __name__ == "__main__":
 
-    with LoggingContext(__file__) as log_ctx:
+    with LoggingContext("Server") as log_ctx:
 
         server = Server(
             config=config.server,

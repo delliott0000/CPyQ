@@ -1,8 +1,9 @@
 from dataclasses import dataclass
-from pathlib import Path
 from tomllib import load
 
 from dacite import from_dict
+
+from .utils import root_dir
 
 __all__ = (
     "PostgresConfig",
@@ -85,7 +86,7 @@ class GlobalConfig:
     autopilot: AutopilotConfig
 
 
-config_file_path = Path(__file__).parent.parent / "config.toml"
+config_file_path = root_dir() / "config.toml"
 
 with config_file_path.open("rb") as config_file:
     config_data = load(config_file)

@@ -39,6 +39,7 @@ if TYPE_CHECKING:
     T = TypeVar("T")
 
 __all__ = (
+    "root_dir",
     "now",
     "decode_datetime",
     "encode_datetime",
@@ -52,6 +53,15 @@ __all__ = (
     "create_process_pool",
     "initialize_process",
 )
+
+
+def root_dir() -> Path:
+    import sys
+
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable).parent
+    else:
+        return Path(__file__).resolve().parent.parent
 
 
 def now() -> datetime:
@@ -111,12 +121,9 @@ def _setup_handler(level: int, queue: Queue, /) -> None:
 
 
 class LoggingContext:
-    def __init__(self, file: str, level: int = DEBUG, /):
-        module = Path(file).parent
-        timestamp = now().strftime("%Y-%m-%d_%H-%M-%S")
-
-        self.folder = module.parent / "Logs" / module.name
-        self.file = self.folder / f"{timestamp}.txt"
+    def __init__(self, module: str, level: int = DEBUG, /):
+        self.folder = root_dir() / "Logs" / module
+        self.file = self.folder / f"{now().strftime('%Y-%m-%d_%H-%M-%S')}.txt"
         self.level = level
 
         self.formatter = Formatter(
