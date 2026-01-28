@@ -33,7 +33,7 @@ class User(ComparesIDMixin, ComparesIDABC):
     def __init__(self, user_record: Record | dict, teams: frozenset[Team], /):
         self._id = user_record["id"]
         self._username = user_record["username"]
-        self._hashed_password = user_record.get("password")
+        self._hashed_password = user_record.get("hashed_password")
         self._display_name = user_record["display_name"]
         self._email = user_record["email"]
         self._autopilot = user_record["autopilot"]

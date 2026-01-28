@@ -58,7 +58,7 @@ BEGIN
     INSERT INTO users (
         id,
         username,
-        password,
+        hashed_password,
         display_name,
         email,
         autopilot,
