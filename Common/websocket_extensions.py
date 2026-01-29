@@ -106,6 +106,15 @@ def custom_ws_message_factory(json: Json, /) -> WSEvent | WSAck:
 
 
 class WSResponseMixin:
+    __error_map__ = {
+        RatelimitExceeded: WSCloseCode.POLICY_VIOLATION,
+        InvalidFrameType: CustomWSCloseCode.InvalidFrameType,
+        JSONDecodeError: CustomWSCloseCode.InvalidJSON,
+        KeyError: CustomWSCloseCode.MissingField,
+        TypeError: CustomWSCloseCode.InvalidType,
+        ValueError: CustomWSCloseCode.InvalidValue,
+    }
+
     def __init__(
         self,
         *,
@@ -150,18 +159,11 @@ class WSResponseMixin:
                     return custom_message
 
         except Exception as error:
-            mapping = {
-                RatelimitExceeded: WSCloseCode.POLICY_VIOLATION,
-                InvalidFrameType: CustomWSCloseCode.InvalidFrameType,
-                JSONDecodeError: CustomWSCloseCode.InvalidJSON,
-                KeyError: CustomWSCloseCode.MissingField,
-                TypeError: CustomWSCloseCode.InvalidType,
-                ValueError: CustomWSCloseCode.InvalidValue,
-            }
+            error_map = self.__error_map__
             cls = type(error)
 
-            if cls in mapping:
-                await self.close(code=mapping[cls])  # noqa
+            if cls in error_map:
+                await self.close(code=error_map[cls])  # noqa
                 raise StopAsyncIteration
 
             else:
