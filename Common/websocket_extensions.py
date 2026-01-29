@@ -125,10 +125,10 @@ class WSResponseMixin:
         self.__hits = []
 
     async def __anext__(self) -> WSEvent:
-        while True:
-            message = await super().__anext__()  # noqa
+        try:
+            while True:
+                message = await super().__anext__()  # noqa
 
-            try:
                 if self.__ratelimited:
                     self.__hits = check_ratelimit(
                         self.__hits, limit=self.__limit, interval=self.__interval
@@ -139,33 +139,33 @@ class WSResponseMixin:
 
                 custom_message = custom_ws_message_factory(message.json())
 
-            except Exception as error:
-                mapping = {
-                    RatelimitExceeded: WSCloseCode.POLICY_VIOLATION,
-                    InvalidFrameType: CustomWSCloseCode.InvalidFrameType,
-                    JSONDecodeError: CustomWSCloseCode.InvalidJSON,
-                    KeyError: CustomWSCloseCode.MissingField,
-                    TypeError: CustomWSCloseCode.InvalidType,
-                    ValueError: CustomWSCloseCode.InvalidValue,
-                }
-                cls = type(error)
+                if isinstance(custom_message, WSAck):
+                    ...
 
-                if cls in mapping:
-                    await self.close(code=mapping[cls])  # noqa
-                    raise StopAsyncIteration
+                    continue
 
                 else:
-                    raise error
+                    ...
 
-            if isinstance(custom_message, WSAck):
-                ...
+                    return custom_message
 
-                continue
+        except Exception as error:
+            mapping = {
+                RatelimitExceeded: WSCloseCode.POLICY_VIOLATION,
+                InvalidFrameType: CustomWSCloseCode.InvalidFrameType,
+                JSONDecodeError: CustomWSCloseCode.InvalidJSON,
+                KeyError: CustomWSCloseCode.MissingField,
+                TypeError: CustomWSCloseCode.InvalidType,
+                ValueError: CustomWSCloseCode.InvalidValue,
+            }
+            cls = type(error)
+
+            if cls in mapping:
+                await self.close(code=mapping[cls])  # noqa
+                raise StopAsyncIteration
 
             else:
-                ...
-
-                return custom_message
+                raise error
 
 
 class CustomWSResponse(WSResponseMixin, WebSocketResponse):
