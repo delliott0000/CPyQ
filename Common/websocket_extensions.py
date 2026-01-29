@@ -18,24 +18,17 @@ if TYPE_CHECKING:
     Json = dict[str, Any]
 
 __all__ = (
-    "custom_ws_message_factory",
     "CustomWSMessageType",
     "WSEventStatus",
     "CustomWSCloseCode",
     "CustomWSMessage",
     "WSEvent",
     "WSAck",
+    "custom_ws_message_factory",
     "WSResponseMixin",
     "CustomWSResponse",
     "CustomClientWSResponse",
 )
-
-
-def custom_ws_message_factory(json: Json, /) -> CustomWSMessage:
-    message_type = CustomWSMessageType(json["type"])
-    mapping = {CustomWSMessageType.Event: WSEvent, CustomWSMessageType.Ack: WSAck}
-    cls = mapping[message_type]
-    return cls(json)
 
 
 # fmt: off
@@ -103,6 +96,13 @@ class WSAck(CustomWSMessage):
     pass
 
 
+def custom_ws_message_factory(json: Json, /) -> WSEvent | WSAck:
+    message_type = CustomWSMessageType(json["type"])
+    mapping = {CustomWSMessageType.Event: WSEvent, CustomWSMessageType.Ack: WSAck}
+    cls = mapping[message_type]
+    return cls(json)
+
+
 class WSResponseMixin:
     def __init__(
         self,
@@ -122,39 +122,48 @@ class WSResponseMixin:
         self.__interval = interval
         self.__hits = []
 
-    async def __anext__(self) -> CustomWSMessage:
-        message = await super().__anext__()  # noqa
+    async def __anext__(self) -> WSEvent:
+        while True:
+            message = await super().__anext__()  # noqa
 
-        try:
-            if self.__ratelimited:
-                self.__hits = check_ratelimit(
-                    self.__hits, limit=self.__limit, interval=self.__interval
-                )
+            try:
+                if self.__ratelimited:
+                    self.__hits = check_ratelimit(
+                        self.__hits, limit=self.__limit, interval=self.__interval
+                    )
 
-            if message.type != WSMsgType.TEXT:
-                raise InvalidFrameType(message)
+                if message.type != WSMsgType.TEXT:
+                    raise InvalidFrameType(message)
 
-            custom_message = custom_ws_message_factory(message.json())
+                custom_message = custom_ws_message_factory(message.json())
 
-        except Exception as error:
-            mapping = {
-                RatelimitExceeded: WSCloseCode.POLICY_VIOLATION,
-                InvalidFrameType: CustomWSCloseCode.InvalidFrameType,
-                JSONDecodeError: CustomWSCloseCode.InvalidJSON,
-                KeyError: CustomWSCloseCode.MissingField,
-                TypeError: CustomWSCloseCode.InvalidType,
-                ValueError: CustomWSCloseCode.InvalidValue,
-            }
-            cls = type(error)
+            except Exception as error:
+                mapping = {
+                    RatelimitExceeded: WSCloseCode.POLICY_VIOLATION,
+                    InvalidFrameType: CustomWSCloseCode.InvalidFrameType,
+                    JSONDecodeError: CustomWSCloseCode.InvalidJSON,
+                    KeyError: CustomWSCloseCode.MissingField,
+                    TypeError: CustomWSCloseCode.InvalidType,
+                    ValueError: CustomWSCloseCode.InvalidValue,
+                }
+                cls = type(error)
 
-            if cls in mapping:
-                await self.close(code=mapping[cls])  # noqa
-                raise StopAsyncIteration
+                if cls in mapping:
+                    await self.close(code=mapping[cls])  # noqa
+                    raise StopAsyncIteration
+
+                else:
+                    raise error
+
+            if isinstance(custom_message, WSAck):
+                ...
+
+                continue
 
             else:
-                raise error
+                ...
 
-        return custom_message
+                return custom_message
 
 
 class CustomWSResponse(WSResponseMixin, WebSocketResponse):
