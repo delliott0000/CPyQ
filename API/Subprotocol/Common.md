@@ -11,7 +11,7 @@ Before we get into the details, a reminder of the purpose of this subprotocol:
 - Defer resource-intensive tasks, such as file generation, to an `Autopilot`.
 
 # Message Flow
-Each message must be an `Event` or an `Ack`. An `Event` contains information. An `Ack` simply acknowledges an `Event`.
+Each message must be an `Event` or an `Ack`. An `Event` contains information - this could be a request ("perform X") or a notification of an outcome ("X complete"). An `Ack` acknowledges that an `Event` has been received and parsed, but does not guarantee successful processing/execution.
 
 The following rules define the `Event`/`Ack` message flow:
 - Each `Event` must be assigned a Universally Unique Identifier (UUID).
@@ -52,8 +52,8 @@ Each field is mandatory unless `None` is listed as an allowed type, in which cas
 
 The `"status"` field describes the outcome of an `Event`. Unless the value is `"fatal"`, this field does not mandate any specific behaviour from the receiving peer.
 - `"ok"` indicates that an `Event` occurred without error.
-- `"error"` indicates that a recoverable application-level error occurred. The connection may remain open.
-- `"fatal"` indicates that an unrecoverable application-level error occurred. The connection must immediately close.
+- `"error"` indicates that a recoverable application-level error has occurred. The connection may remain open.
+- `"fatal"` indicates that an unrecoverable application-level error has occurred. The receiving peer must immediately close the connection without sending any further messages (including any pending `Acks`).
 
 The `"reason"` field is an optional, human-readable string for logging, debugging and so on. This field does not mandate any specific behaviour from the receiving peer.
 
@@ -83,7 +83,11 @@ Close codes and their corresponding failure scenarios:
 - **4002** - A message cannot be parsed into a valid JSON object.
 - **4003** - A message is missing a mandatory field.
 - **4004** - A message supplies a value of an incorrect type.
-- **4005** - A message supplies a value that is not a member of the field's designated enumeration or is otherwise structurally invalid. (This may take precendence over type errors due to implementation details.)
+- **4005** - A message supplies a value that is not a member of the field's designated enumeration or is otherwise structurally invalid. (This may take precedence over type errors due to implementation details.)
+- **4006** - Two or more unacknowledged `Events` sent by the same peer share the same UUID.
+- **4007** - An `Event` is not acknowledged within the acknowledgement time limit.
+- **4008** - An `Ack` references an `Event` that does not exist or has already been acknowledged.
+- **4009** - An `Event` contains `"status": "fatal"`.
 
 Not part of the subprotocol per se, but still application-specific:
 - **4000** - Sent by the server when the `Token` that was used to open the WebSocket connection is no longer valid.
