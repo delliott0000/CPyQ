@@ -58,8 +58,11 @@ class CustomWSMessage(ComparesIDMixin, ComparesIDABC):
         self._id = json["id"]
         self._sent_at = decode_datetime(json["sent_at"])
 
+        if not isinstance(self._id, str):
+            raise TypeError("UUID must be a string.")
+
     @property
-    def id(self) -> Any:
+    def id(self) -> str:
         return self._id
 
     @property
