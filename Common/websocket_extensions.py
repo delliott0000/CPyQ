@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 from aiohttp import ClientWebSocketResponse, WSCloseCode, WSMsgType
 from aiohttp.web import WebSocketResponse
 
-from .bases import ComparesIDABC, ComparesIDMixin
 from .errors import InvalidFrameType, RatelimitExceeded
 from .utils import check_ratelimit, decode_datetime
 
@@ -53,7 +52,7 @@ class CustomWSCloseCode(IntEnum):
 # fmt: on
 
 
-class CustomWSMessage(ComparesIDMixin, ComparesIDABC):
+class CustomWSMessage:
     def __init__(self, json: Json, /):
         self._id = json["id"]
         self._sent_at = decode_datetime(json["sent_at"])
