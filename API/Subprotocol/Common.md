@@ -35,7 +35,7 @@ Each field is mandatory unless `None` is listed as an allowed type, in which cas
     "type": "event",  # By definition; Enum ["event"]
     "id": str,  # UUID
     "sent_at": str,  # ISO 8601
-    "status": str,  # Enum ["ok", "error", "fatal"]
+    "status": str,  # Enum ["normal", "error", "fatal"]
     "reason": str | None,  # For logging and traceback
     "payload": dict[str, Any]  # Actual data
 }
@@ -51,7 +51,7 @@ Each field is mandatory unless `None` is listed as an allowed type, in which cas
 ```
 
 The `"status"` field describes the outcome of an `Event`. Unless the value is `"fatal"`, this field does not mandate any specific behaviour from the receiving peer.
-- `"ok"` indicates that an `Event` occurred without error.
+- `"normal"` indicates that an `Event` took place without error.
 - `"error"` indicates that a recoverable application-level error has occurred. The connection may remain open.
 - `"fatal"` indicates that an unrecoverable application-level error has occurred. The connection must immediately close.
 

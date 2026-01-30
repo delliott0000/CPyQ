@@ -37,9 +37,9 @@ class CustomWSMessageType(StrEnum):
 
 
 class WSEventStatus(StrEnum):
-    Ok    = "ok"
-    Error = "error"
-    Fatal = "fatal"
+    Normal = "normal"
+    Error  = "error"
+    Fatal  = "fatal"
 
 
 class CustomWSCloseCode(IntEnum):
