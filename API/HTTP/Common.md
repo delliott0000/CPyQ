@@ -109,7 +109,7 @@ Every endpoint is rate limited. Rate limits can be applied per endpoint, per `To
 
 If a request is rate limited, the API will return `429 Too Many Requests`.
 
-Whilst not strictly HTTP-related, it should also be noted that if a `User` sends too many messages over a WebSocket connection in quick succession, the server may close the connection with close code `1008` (Policy Violation).
+Whilst not strictly HTTP-related, it should also be noted that if a client application sends too many messages over a WebSocket connection in quick succession, the server may close the connection with close code `1008` (Policy Violation).
 
 ## Success
 If a request is considered successful, the API will return `200 OK`. This does not include WebSocket upgrades.
