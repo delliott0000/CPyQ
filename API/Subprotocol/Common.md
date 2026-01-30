@@ -11,7 +11,7 @@ Before we get into the details, a reminder of the purpose of this subprotocol:
 - Defer resource-intensive tasks, such as file generation, to an `Autopilot`.
 
 # Message Flow
-Each message must be an `Event` or an `Ack`. An `Event` contains information - this could be a request ("perform X") or a notification of an outcome ("X complete"). An `Ack` acknowledges that an `Event` has been received and parsed, but does not guarantee successful processing/execution.
+Each message must be an `Event` or an `Ack`. An `Event` contains information - this could be a request ("perform X") or a notification of an outcome ("X complete"). An `Ack` acknowledges that an `Event` has been received and parsed, but does not imply successful processing/execution.
 
 The following rules define the `Event`/`Ack` message flow:
 - Each `Event` must be assigned a Universally Unique Identifier (UUID).
@@ -53,7 +53,7 @@ Each field is mandatory unless `None` is listed as an allowed type, in which cas
 The `"status"` field describes the outcome of an `Event`. Unless the value is `"fatal"`, this field does not mandate any specific behaviour from the receiving peer.
 - `"ok"` indicates that an `Event` occurred without error.
 - `"error"` indicates that a recoverable application-level error has occurred. The connection may remain open.
-- `"fatal"` indicates that an unrecoverable application-level error has occurred. The receiving peer must immediately close the connection without sending any further messages (including any pending `Acks`).
+- `"fatal"` indicates that an unrecoverable application-level error has occurred. The connection must immediately close.
 
 The `"reason"` field is an optional, human-readable string for logging, debugging and so on. This field does not mandate any specific behaviour from the receiving peer.
 
@@ -76,7 +76,7 @@ Each connection is divided into two application-level phases; the handshake phas
 ...
 
 # Close Codes
-If and only if a peer violates the subprotocol, then the other peer must immediately close the WebSocket connection with the appropriate custom WebSocket close code.
+If and only if a peer violates the subprotocol, then the other peer must immediately close the WebSocket connection with the appropriate custom WebSocket close code without sending any further messages (including any pending `Acks`).
 
 Close codes and their corresponding failure scenarios:
 - **4001** - A message is not a text frame.
