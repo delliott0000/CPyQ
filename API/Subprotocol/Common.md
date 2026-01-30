@@ -76,7 +76,7 @@ Each connection is divided into two application-level phases; the handshake phas
 ...
 
 # Close Codes
-If and only if a peer violates the subprotocol, then the other peer must immediately close the WebSocket connection with the appropriate custom WebSocket close code without sending any further messages (including any pending `Acks`).
+If and only if a peer violates the subprotocol, then the other peer must immediately close the WebSocket connection with the appropriate close code without sending any further messages (including any pending `Acks`).
 
 Close codes and their corresponding failure scenarios:
 - **4001** - A message is not a text frame.
