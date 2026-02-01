@@ -49,6 +49,10 @@ class CustomWSCloseCode(IntEnum):
     MissingField       = 4003
     InvalidType        = 4004
     InvalidValue       = 4005
+    DuplicateEventID   = 4006
+    AckTimeout         = 4007
+    UnknownEvent       = 4008
+    FatalEvent         = 4009
 # fmt: on
 
 
