@@ -22,6 +22,8 @@ The following rules define the `Event`/`Ack` message flow:
 
 Please note that while UUIDs should ideally be unique within the scope of the WebSocket connection, this is not strictly required in practice. An implementation may discard an outgoing `Event` and its UUID as soon as it has been acknowledged - this is actually recommended to reduce the memory usage of a long-lasting or high-throughput connection. Therefore, a sending peer is only required to ensure UUID uniqueness within its current set of unacknowledged outgoing `Events`.  Peers may generate UUIDs using any method they choose.
 
+Message flow must immediately terminate when a violation of the subprotocol occurs or when the WebSocket closing handshake begins. Implementations should abort any in-progress processing of messages received prior to prevent further messages from being emitted.
+
 # Message Structure
 Each message must be a text frame that can be parsed into a valid JSON object.
 
@@ -53,7 +55,7 @@ Each field is mandatory unless `None` is listed as an allowed type, in which cas
 The `"status"` field describes the outcome of an `Event`. Unless the value is `"fatal"`, this field does not mandate any specific behaviour from the receiving peer.
 - `"normal"` indicates that an `Event` took place without error.
 - `"error"` indicates that a recoverable application-level error has occurred. The connection may remain open.
-- `"fatal"` indicates that an unrecoverable application-level error has occurred. The connection must immediately close. Implementations should abort any in-progress processing of messages received prior to this `Event` to prevent further messages from being emitted.
+- `"fatal"` indicates that an unrecoverable application-level error has occurred. The connection must immediately close.
 
 The `"reason"` field is an optional, human-readable string for logging, debugging and so on. This field does not mandate any specific behaviour from the receiving peer.
 
