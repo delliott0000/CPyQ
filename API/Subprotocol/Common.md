@@ -53,7 +53,7 @@ Each field is mandatory unless `None` is listed as an allowed type, in which cas
 The `"status"` field describes the outcome of an `Event`. Unless the value is `"fatal"`, this field does not mandate any specific behaviour from the receiving peer.
 - `"normal"` indicates that an `Event` took place without error.
 - `"error"` indicates that a recoverable application-level error has occurred. The connection may remain open.
-- `"fatal"` indicates that an unrecoverable application-level error has occurred. The connection must immediately close.
+- `"fatal"` indicates that an unrecoverable application-level error has occurred. The connection must immediately close. Implementations should abort any in-progress processing of messages received prior to this `Event` to prevent further messages from being emitted.
 
 The `"reason"` field is an optional, human-readable string for logging, debugging and so on. This field does not mandate any specific behaviour from the receiving peer.
 
@@ -65,7 +65,6 @@ It *is* a violation of the subprotocol to:
 - Miss a mandatory field.
 - Supply a value of an incorrect type.
 - Supply a value that is not a member of the field's designated enumeration or is otherwise structurally invalid. (For instance, ISO 8601 strings.)
-- Send an `Event` with `"status": "fatal"`.
 
 It *is not* a violation of the subprotocol to:
 - Supply an undocumented field. The receiving peer can safely ignore this.
@@ -87,7 +86,7 @@ Close codes and their corresponding failure scenarios:
 - **4006** - Two or more unacknowledged `Events` sent by the same peer share the same UUID.
 - **4007** - An `Event` is not acknowledged within the acknowledgement time limit.
 - **4008** - An `Ack` references an `Event` that does not exist or has already been acknowledged.
-- **4009** - An `Event` contains `"status": "fatal"`.
+- **4009** - An `Event` contains `"status": "fatal"`. Upon sending or receiving such `Event`, the peer must immediately close the connection using this close code.
 
 Not part of the subprotocol per se, but still application-specific:
 - **4000** - Sent by the server when the `Token` that was used to open the WebSocket connection is no longer valid.
