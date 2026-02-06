@@ -173,6 +173,14 @@ class WSResponseMixin:
             else:
                 raise error
 
+    async def close(self, **kwargs: Any) -> bool:
+        result = await super().close(**kwargs)  # noqa
+
+        if result is True:
+            ...
+
+        return result
+
 
 class CustomWSResponse(WSResponseMixin, WebSocketResponse):
     pass
