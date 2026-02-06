@@ -34,7 +34,6 @@ class BaseWebSocketService(BaseService, ABC):
         config = self.server.config
 
         response = CustomWSResponse(
-            token=token,
             ratelimited=True,
             limit=config.ws_message_limit,
             interval=config.ws_message_interval,

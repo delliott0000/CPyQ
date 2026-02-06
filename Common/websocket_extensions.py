@@ -14,8 +14,6 @@ if TYPE_CHECKING:
     from datetime import datetime
     from typing import Any
 
-    from .token import Token
-
     Json = dict[str, Any]
 
 __all__ = (
@@ -124,7 +122,6 @@ class WSResponseMixin:
     def __init__(
         self,
         *,
-        token: Token,
         ratelimited: bool = False,
         limit: int | None = None,
         interval: float | None = None,
@@ -135,7 +132,6 @@ class WSResponseMixin:
         if ratelimited and (limit is None or interval is None):
             raise TypeError("Limit and interval must both be specified.")
 
-        self.__token = token
         self.__ratelimited = ratelimited
         self.__limit = limit
         self.__interval = interval
