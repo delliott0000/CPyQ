@@ -7,7 +7,8 @@ from typing import TYPE_CHECKING
 from aiohttp import ClientSession
 
 from .errors import HTTPException
-from .utils import format_http, log, to_json
+from .format import format_http
+from .utils import log, to_json
 
 if TYPE_CHECKING:
     from collections.abc import Coroutine

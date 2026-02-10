@@ -25,6 +25,7 @@ from typing import TYPE_CHECKING
 from bcrypt import checkpw, gensalt, hashpw
 
 from .errors import RatelimitExceeded
+from .format import ENCODE_DATETIME_FORMAT, FILE_DATE_FORMAT, LOGGING_FORMAT
 
 if TYPE_CHECKING:
     from asyncio import Future
@@ -46,7 +47,6 @@ __all__ = (
     "check_password",
     "encrypt_password",
     "check_ratelimit",
-    "format_http",
     "to_json",
     "LoggingContext",
     "log",
@@ -70,14 +70,14 @@ def now() -> datetime:
 
 
 def decode_datetime(t: str, /) -> datetime:
-    return datetime.strptime(t, "%Y-%m-%dT%H:%M:%S.%f%z")
+    return datetime.strptime(t, ENCODE_DATETIME_FORMAT)
 
 
 def encode_datetime(t: datetime, /) -> str:
     if t.tzinfo is None:
         raise ValueError("Datetime must be timezone-aware.")
     else:
-        return t.strftime("%Y-%m-%dT%H:%M:%S.%f%z")
+        return t.strftime(ENCODE_DATETIME_FORMAT)
 
 
 def check_password(password: str, hashed_password: str, /) -> bool:
@@ -99,11 +99,6 @@ def check_ratelimit(hits: list[float], /, *, limit: int, interval: float) -> lis
     recent_hits.append(current_time)
 
     return recent_hits
-
-
-def format_http(status: int, reason: str | None, /) -> str:
-    f_reason = f" {reason}" if reason is not None else ""
-    return f"{status}{f_reason}"
 
 
 async def to_json(r: Request | ClientResponse, /, *, strict: bool = False) -> Json:
@@ -129,12 +124,10 @@ def _setup_handler(level: int, queue: Queue, /) -> None:
 class LoggingContext:
     def __init__(self, module: str, level: int = DEBUG, /):
         self.folder = root_dir() / "Logs" / module
-        self.file = self.folder / f"{now().strftime('%Y-%m-%d_%H-%M-%S')}.txt"
+        self.file = self.folder / f"{now().strftime(FILE_DATE_FORMAT)}.txt"
         self.level = level
 
-        self.formatter = Formatter(
-            "[PID: %(process)06d] %(asctime)s - %(levelname)-8s - %(message)s"
-        )
+        self.formatter = Formatter(LOGGING_FORMAT)
 
         self.queue: Queue | None = None
         self.listener: QueueListener | None = None
