@@ -51,9 +51,10 @@ class HTTPClient:
 
         pre_time = time()
         async with self.__session.request(method, raw_url, **kwargs) as response:
+            reason = f" {response.reason}" if response.reason is not None else ""
             log(
                 f"{method.upper()} {raw_url} returned "
-                f"{response.reason} {response.status} in {time() - pre_time:.3f}"
+                f"{response.status}{reason} in {time() - pre_time:.3f}"
             )
 
             data = await to_json(response)
