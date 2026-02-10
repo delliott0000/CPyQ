@@ -14,7 +14,6 @@ if TYPE_CHECKING:
 
 __all__ = (
     "HTTPException",
-    "ValidationError",
     "ResourceConflict",
     "ResourceLocked",
     "SessionBound",
@@ -29,12 +28,6 @@ class HTTPException(Exception):
         super().__init__(f"{response.status} {response.reason}")
         self.response = response
         self.data = data
-
-
-class ValidationError(Exception):
-    def __init__(self, results: set[str], /):
-        super().__init__("\n".join(results))
-        self.results = results
 
 
 class ResourceConflict(Exception):
