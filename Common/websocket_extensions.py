@@ -168,15 +168,16 @@ class WSResponseMixin:
                     return custom_message
 
         except Exception as error:
-            error_map = self.__error_map__
-            cls = type(error)
+            await self.__on_error__(error)
+            raise StopAsyncIteration
 
-            if cls in error_map:
-                await self.close(code=error_map[cls])  # noqa
-                raise StopAsyncIteration
+    async def __on_error__(self, error: Exception, /) -> None:
+        try:
+            code = self.__error_map__[type(error)]  # noqa
+        except KeyError:
+            raise error
 
-            else:
-                raise error
+        await self.close(code=code)
 
     async def close(self, **kwargs: Any) -> bool:
         result = await super().close(**kwargs)  # noqa
