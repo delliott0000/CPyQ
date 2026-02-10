@@ -46,6 +46,7 @@ __all__ = (
     "check_password",
     "encrypt_password",
     "check_ratelimit",
+    "format_http",
     "to_json",
     "LoggingContext",
     "log",
@@ -98,6 +99,11 @@ def check_ratelimit(hits: list[float], /, *, limit: int, interval: float) -> lis
     recent_hits.append(current_time)
 
     return recent_hits
+
+
+def format_http(status: int, reason: str | None, /) -> str:
+    f_reason = f" {reason}" if reason is not None else ""
+    return f"{status}{f_reason}"
 
 
 async def to_json(r: Request | ClientResponse, /, *, strict: bool = False) -> Json:

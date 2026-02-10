@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from aiohttp import ClientSession
 
 from .errors import HTTPException
-from .utils import log, to_json
+from .utils import format_http, log, to_json
 
 if TYPE_CHECKING:
     from collections.abc import Coroutine
@@ -51,10 +51,9 @@ class HTTPClient:
 
         pre_time = time()
         async with self.__session.request(method, raw_url, **kwargs) as response:
-            reason = f" {response.reason}" if response.reason is not None else ""
             log(
                 f"{method.upper()} {raw_url} returned "
-                f"{response.status}{reason} in {time() - pre_time:.3f}"
+                f"{format_http(response.status, response.reason)} in {time() - pre_time:.3f}"
             )
 
             data = await to_json(response)
