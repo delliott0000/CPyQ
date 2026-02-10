@@ -24,10 +24,10 @@ __all__ = (
 
 
 class HTTPException(Exception):
-    def __init__(self, response: ClientResponse, data: Json, /):
+    def __init__(self, response: ClientResponse, json: Json, /):
         super().__init__(f"{response.status} {response.reason}")
         self.response = response
-        self.data = data
+        self.json = json
 
 
 class ResourceConflict(Exception):

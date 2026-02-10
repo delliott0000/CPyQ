@@ -56,12 +56,12 @@ class HTTPClient:
                 f"{format_http(response.status, response.reason)} in {time() - pre_time:.3f}"
             )
 
-            data = await to_json(response)
+            json = await to_json(response)
 
             if 200 <= response.status < 300:
-                return data
+                return json
 
-            raise HTTPException(response, data)
+            raise HTTPException(response, json)
 
     async def request(self, method: str, url: URL, /, **kwargs: Any) -> Json:
         url = str(url)
