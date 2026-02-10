@@ -11,6 +11,7 @@ from .errors import InvalidFrameType, RatelimitExceeded
 from .utils import check_ratelimit, decode_datetime
 
 if TYPE_CHECKING:
+    from asyncio import Task
     from datetime import datetime
     from typing import Any
 
@@ -136,6 +137,10 @@ class WSResponseMixin:
         self.__limit = limit
         self.__interval = interval
         self.__hits = []
+
+        self.__sent_unacked: dict[str, Task] = {}
+        self.__recv_unacked: set[str] = set()
+        self.__tasks: set[Task] = set()
 
     async def __anext__(self) -> WSEvent:
         try:
