@@ -2,10 +2,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from .format import format_http
+
 if TYPE_CHECKING:
     from typing import Any
 
-    from aiohttp import ClientResponse, WSMessage
+    from aiohttp import WSMessage
 
     from .resource import Resource
     from .session import Session
@@ -57,17 +59,32 @@ class NetworkException(Exception):
 
 
 class RatelimitException(NetworkException):
-    def __init__(self, hits: list[float], /, *args: Any, limit: int, interval: float):
-        super().__init__(*args)
+    def __init__(
+        self,
+        hits: list[float],
+        /,
+        *,
+        limit: int,
+        interval: float,
+    ):
+        super().__init__(f"Rate limit {limit}/{interval}s exceeded.")
         self.hits = hits
         self.limit = limit
         self.interval = interval
 
 
 class HTTPException(NetworkException):
-    def __init__(self, response: ClientResponse, json: Json, /):
-        super().__init__(f"{response.status} {response.reason}")
-        self.response = response
+    def __init__(
+        self,
+        headers: Json,
+        status: int,
+        reason: str | None,
+        json: Json,
+    ):
+        super().__init__(format_http(status, reason))
+        self.headers = headers
+        self.status = status
+        self.reason = reason
         self.json = json
 
 

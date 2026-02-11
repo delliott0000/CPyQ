@@ -35,7 +35,7 @@ class HTTPClient:
 
     def get_retry_after(self, error: HTTPException, /) -> float | None:
         try:
-            return float(error.response.headers.get("Retry-After"))
+            return float(error.headers.get("Retry-After"))
         except (AttributeError, TypeError, ValueError):
             return None
 
@@ -62,7 +62,12 @@ class HTTPClient:
             if 200 <= response.status < 300:
                 return json
 
-            raise HTTPException(response, json)
+            raise HTTPException(
+                headers=response.headers,
+                status=response.status,
+                reason=response.reason,
+                json=json,
+            )
 
     async def request(self, method: str, url: URL, /, **kwargs: Any) -> Json:
         url = str(url)
@@ -83,7 +88,7 @@ class HTTPClient:
                 if tries >= config.max_retries:
                     raise error
 
-                elif error.response.status == 429:
+                elif error.status == 429:
                     retry_after = self.get_retry_after(error)
 
                     if retry_after is not None:
@@ -98,7 +103,7 @@ class HTTPClient:
                         if config.handle_backoffs is True and backoff <= config.backoff_cap:
                             sleep_time = backoff
 
-                elif error.response.status >= 500:
+                elif error.status >= 500:
                     sleep_time = 2 * (tries - 1) + 0.5
 
                 if sleep_time > 0:
