@@ -13,21 +13,15 @@ if TYPE_CHECKING:
     Json = dict[str, Any]
 
 __all__ = (
-    "HTTPException",
     "ResourceConflict",
     "ResourceLocked",
     "SessionBound",
     "ResourceNotOwned",
+    "NetworkException",
+    "HTTPException",
     "RatelimitException",
     "InvalidFrameType",
 )
-
-
-class HTTPException(Exception):
-    def __init__(self, response: ClientResponse, json: Json, /):
-        super().__init__(f"{response.status} {response.reason}")
-        self.response = response
-        self.json = json
 
 
 class ResourceConflict(Exception):
@@ -58,7 +52,11 @@ class ResourceNotOwned(ResourceConflict):
         )
 
 
-class RatelimitException(Exception):
+class NetworkException(Exception):
+    pass
+
+
+class RatelimitException(NetworkException):
     def __init__(self, hits: list[float], /, *args: Any, limit: int, interval: float):
         super().__init__(*args)
         self.hits = hits
@@ -66,7 +64,14 @@ class RatelimitException(Exception):
         self.interval = interval
 
 
-class InvalidFrameType(Exception):
+class HTTPException(NetworkException):
+    def __init__(self, response: ClientResponse, json: Json, /):
+        super().__init__(f"{response.status} {response.reason}")
+        self.response = response
+        self.json = json
+
+
+class InvalidFrameType(NetworkException):
     def __init__(self, message: WSMessage, /, *args: Any):
         super().__init__(*args)
         self.message = message
