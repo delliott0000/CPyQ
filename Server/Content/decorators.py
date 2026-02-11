@@ -71,15 +71,15 @@ def ratelimit(*, limit: int, interval: float, bucket_type: BucketType) -> RespDe
             hits = meta[k1][k2].get(source, ())
 
             try:
-                recent_hits = check_ratelimit(hits, limit=limit, interval=interval)
+                new_hits = check_ratelimit(hits, limit=limit, interval=interval)
             except RatelimitException:
                 raise HTTPTooManyRequests(
                     reason="Too many requests", headers={"Retry-After": str(interval)}
                 )
 
-            meta[k1][k2][source] = recent_hits
+            meta[k1][k2][source] = new_hits
 
-            if len(recent_hits) == limit:
+            if len(new_hits) == limit:
                 method, endpoint = service.decode_route_name(request.match_info.route.name)
                 log(
                     f"{method.upper()} {endpoint} "
