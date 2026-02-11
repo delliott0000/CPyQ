@@ -88,17 +88,16 @@ def encrypt_password(password: str, /) -> str:
     return hashpw(password.encode(), gensalt()).decode()
 
 
-def check_ratelimit(hits: list[float], /, *, limit: int, interval: float) -> list[float]:
-    current_time = time()
+def check_ratelimit(hits: list[float], /, *, limit: int, interval: float) -> None:
+    t = time()
+    cutoff = t - interval
 
-    new_hits = [hit for hit in hits if hit + interval > current_time]
+    hits[:] = [hit for hit in hits if hit > cutoff]
 
-    if len(new_hits) >= limit:
-        raise RatelimitException(new_hits, limit=limit, interval=interval)
+    if len(hits) >= limit:
+        raise RatelimitException(hits, limit=limit, interval=interval)
 
-    new_hits.append(current_time)
-
-    return new_hits
+    hits.append(t)
 
 
 async def to_json(r: Request | ClientResponse, /, *, strict: bool = False) -> Json:

@@ -133,9 +133,9 @@ class WSResponseMixin:
         if ratelimited and (limit is None or interval is None):
             raise TypeError("Limit and interval must both be specified.")
 
-        self.__ratelimited = ratelimited
-        self.__limit = limit
-        self.__interval = interval
+        self.ratelimited = ratelimited
+        self.limit = limit
+        self.interval = interval
         self.__hits = []
 
         self.__sent_unacked: dict[str, Task] = {}
@@ -147,10 +147,8 @@ class WSResponseMixin:
             while True:
                 message = await super().__anext__()  # noqa
 
-                if self.__ratelimited:
-                    self.__hits = check_ratelimit(
-                        self.__hits, limit=self.__limit, interval=self.__interval
-                    )
+                if self.ratelimited:
+                    check_ratelimit(self.__hits, limit=self.limit, interval=self.interval)
 
                 if message.type != WSMsgType.TEXT:
                     raise InvalidFrameType(message)
