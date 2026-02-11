@@ -91,14 +91,14 @@ def encrypt_password(password: str, /) -> str:
 def check_ratelimit(hits: list[float], /, *, limit: int, interval: float) -> list[float]:
     current_time = time()
 
-    recent_hits = [hit for hit in hits if hit + interval > current_time]
+    new_hits = [hit for hit in hits if hit + interval > current_time]
 
-    if len(recent_hits) >= limit:
-        raise RatelimitException(recent_hits, limit=limit, interval=interval)
+    if len(new_hits) >= limit:
+        raise RatelimitException(new_hits, limit=limit, interval=interval)
 
-    recent_hits.append(current_time)
+    new_hits.append(current_time)
 
-    return recent_hits
+    return new_hits
 
 
 async def to_json(r: Request | ClientResponse, /, *, strict: bool = False) -> Json:
