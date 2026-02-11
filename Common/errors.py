@@ -7,10 +7,11 @@ from .format import format_http
 if TYPE_CHECKING:
     from typing import Any
 
-    from aiohttp import WSMessage
+    from aiohttp import WSCloseCode
 
     from .resource import Resource
     from .session import Session
+    from .websocket_extensions import CustomWSCloseCode
 
     Json = dict[str, Any]
 
@@ -22,7 +23,7 @@ __all__ = (
     "NetworkException",
     "HTTPException",
     "RatelimitException",
-    "InvalidFrameType",
+    "WSException",
 )
 
 
@@ -88,7 +89,10 @@ class HTTPException(NetworkException):
         self.json = json
 
 
-class InvalidFrameType(NetworkException):
-    def __init__(self, message: WSMessage, /, *args: Any):
-        super().__init__(*args)
-        self.message = message
+class WSException(NetworkException):
+    def __init__(
+        self,
+        code: WSCloseCode | CustomWSCloseCode,
+    ):
+        super().__init__(f"{code.value} {code.name}")
+        self.code = code
