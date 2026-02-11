@@ -24,7 +24,7 @@ from typing import TYPE_CHECKING
 
 from bcrypt import checkpw, gensalt, hashpw
 
-from .errors import RatelimitExceeded
+from .errors import RatelimitException
 from .format import ENCODE_DATETIME_FORMAT, FILE_DATE_FORMAT, LOGGING_FORMAT
 
 if TYPE_CHECKING:
@@ -94,7 +94,7 @@ def check_ratelimit(hits: list[float], /, *, limit: int, interval: float) -> lis
     recent_hits = [hit for hit in hits if hit + interval > current_time]
 
     if len(recent_hits) >= limit:
-        raise RatelimitExceeded(recent_hits, limit=limit, interval=interval)
+        raise RatelimitException(recent_hits, limit=limit, interval=interval)
 
     recent_hits.append(current_time)
 

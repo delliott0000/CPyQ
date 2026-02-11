@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from aiohttp.web import HTTPForbidden, HTTPTooManyRequests
 
-from Common import RatelimitExceeded, check_ratelimit, log
+from Common import RatelimitException, check_ratelimit, log
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Coroutine
@@ -72,7 +72,7 @@ def ratelimit(*, limit: int, interval: float, bucket_type: BucketType) -> RespDe
 
             try:
                 recent_hits = check_ratelimit(hits, limit=limit, interval=interval)
-            except RatelimitExceeded:
+            except RatelimitException:
                 raise HTTPTooManyRequests(
                     reason="Too many requests", headers={"Retry-After": str(interval)}
                 )

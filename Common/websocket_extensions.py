@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from aiohttp import ClientWebSocketResponse, WSCloseCode, WSMsgType
 from aiohttp.web import WebSocketResponse
 
-from .errors import InvalidFrameType, RatelimitExceeded
+from .errors import InvalidFrameType, RatelimitException
 from .utils import check_ratelimit, decode_datetime
 
 if TYPE_CHECKING:
@@ -112,7 +112,7 @@ def custom_ws_message_factory(json: Json, /) -> WSEvent | WSAck:
 
 class WSResponseMixin:
     __error_map__ = {
-        RatelimitExceeded: WSCloseCode.POLICY_VIOLATION,
+        RatelimitException: WSCloseCode.POLICY_VIOLATION,
         InvalidFrameType: CustomWSCloseCode.InvalidFrameType,
         JSONDecodeError: CustomWSCloseCode.InvalidJSON,
         KeyError: CustomWSCloseCode.MissingField,

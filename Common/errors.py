@@ -18,7 +18,7 @@ __all__ = (
     "ResourceLocked",
     "SessionBound",
     "ResourceNotOwned",
-    "RatelimitExceeded",
+    "RatelimitException",
     "InvalidFrameType",
 )
 
@@ -58,7 +58,7 @@ class ResourceNotOwned(ResourceConflict):
         )
 
 
-class RatelimitExceeded(Exception):
+class RatelimitException(Exception):
     def __init__(self, hits: list[float], /, *args: Any, limit: int, interval: float):
         super().__init__(*args)
         self.hits = hits
