@@ -5,13 +5,11 @@ from typing import TYPE_CHECKING
 from .format import format_http
 
 if TYPE_CHECKING:
+    from enum import IntEnum
     from typing import Any
-
-    from aiohttp import WSCloseCode
 
     from .resource import Resource
     from .session import Session
-    from .websocket_extensions import CustomWSCloseCode
 
     Json = dict[str, Any]
 
@@ -92,7 +90,7 @@ class HTTPException(NetworkException):
 class WSException(NetworkException):
     def __init__(
         self,
-        code: WSCloseCode | CustomWSCloseCode,
+        code: IntEnum,
     ):
         super().__init__(f"{code.value} {code.name}")
         self.code = code
