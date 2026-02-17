@@ -15,6 +15,8 @@ if TYPE_CHECKING:
     from datetime import datetime
     from typing import Any
 
+    from aiohttp import WSMessage
+
     Json = dict[str, Any]
 
 __all__ = (
@@ -24,7 +26,8 @@ __all__ = (
     "CustomWSMessage",
     "WSEvent",
     "WSAck",
-    "custom_ws_message_factory",
+    "protocol_error",
+    "custom_message_factory",
     "WSResponseMixin",
     "CustomWSResponse",
     "CustomClientWSResponse",
@@ -103,23 +106,32 @@ class WSAck(CustomWSMessage):
     pass
 
 
-def custom_ws_message_factory(json: Json, /) -> WSEvent | WSAck:
-    message_type = CustomWSMessageType(json["type"])
-    mapping = {CustomWSMessageType.Event: WSEvent, CustomWSMessageType.Ack: WSAck}
-    cls = mapping[message_type]
-    return cls(json)
+def protocol_error(code: IntEnum, /) -> None:
+    raise WSException(code=code)
+
+
+def custom_message_factory(message: WSMessage, /) -> WSEvent | WSAck:
+    if message.type != WSMsgType.TEXT:
+        protocol_error(CustomWSCloseCode.InvalidFrameType)
+
+    try:
+        json = message.json()
+        type_ = CustomWSMessageType(json["type"])
+        mapping = {CustomWSMessageType.Event: WSEvent, CustomWSMessageType.Ack: WSAck}
+        cls = mapping[type_]
+        return cls(json)
+
+    except JSONDecodeError:
+        protocol_error(CustomWSCloseCode.InvalidJSON)
+    except KeyError:
+        protocol_error(CustomWSCloseCode.MissingField)
+    except TypeError:
+        protocol_error(CustomWSCloseCode.InvalidType)
+    except ValueError:
+        protocol_error(CustomWSCloseCode.InvalidValue)
 
 
 class WSResponseMixin:
-    __error_map__ = {
-        RatelimitException: WSCloseCode.POLICY_VIOLATION,
-        WSException: CustomWSCloseCode.InvalidFrameType,
-        JSONDecodeError: CustomWSCloseCode.InvalidJSON,
-        KeyError: CustomWSCloseCode.MissingField,
-        TypeError: CustomWSCloseCode.InvalidType,
-        ValueError: CustomWSCloseCode.InvalidValue,
-    }
-
     def __init__(
         self,
         *,
@@ -150,32 +162,24 @@ class WSResponseMixin:
                 if self.ratelimited:
                     check_ratelimit(self.__hits, limit=self.limit, interval=self.interval)
 
-                if message.type != WSMsgType.TEXT:
-                    raise WSException(CustomWSCloseCode.InvalidFrameType)
+                custom_message = custom_message_factory(message)
 
-                custom_message = custom_ws_message_factory(message.json())
-
-                if isinstance(custom_message, WSAck):
-                    ...
-
-                    continue
-
-                else:
+                if isinstance(custom_message, WSEvent):
                     ...
 
                     return custom_message
 
-        except Exception as error:
-            await self.__on_error__(error)
-            raise StopAsyncIteration
+                else:
+                    ...
 
-    async def __on_error__(self, error: Exception, /) -> None:
-        try:
-            code = self.__error_map__[type(error)]  # noqa
-        except KeyError:
-            raise error
+                    continue
 
-        await self.close(code=code)
+        except RatelimitException:
+            await self.close(code=WSCloseCode.POLICY_VIOLATION)
+        except WSException as error:
+            await self.close(code=error.code)
+
+        raise StopAsyncIteration
 
     async def close(self, **kwargs: Any) -> bool:
         result = await super().close(**kwargs)  # noqa
