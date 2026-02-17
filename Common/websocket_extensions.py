@@ -165,14 +165,12 @@ class WSResponseMixin:
                 custom_message = custom_message_factory(message)
 
                 if isinstance(custom_message, WSEvent):
-                    ...
-
+                    self.__event__(custom_message)
                     return custom_message
 
                 else:
-                    ...
-
-                    continue
+                    self.__ack__(custom_message)
+                    # continue
 
         except RatelimitException:
             await self.close(code=WSCloseCode.POLICY_VIOLATION)
@@ -180,6 +178,10 @@ class WSResponseMixin:
             await self.close(code=error.code)
 
         raise StopAsyncIteration
+
+    def __event__(self, event: WSEvent, /) -> None: ...
+
+    def __ack__(self, ack: WSAck, /) -> None: ...
 
     async def close(self, **kwargs: Any) -> bool:
         result = await super().close(**kwargs)  # noqa
