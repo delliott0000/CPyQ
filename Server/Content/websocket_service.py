@@ -21,7 +21,7 @@ from .decorators import (
 if TYPE_CHECKING:
     from aiohttp.web import Request
 
-    from Common import Token, WSEvent
+    from Common import Token
 
 __all__ = ("BaseWebSocketService", "UserWebSocketService", "AutopilotWebSocketService")
 
@@ -64,21 +64,13 @@ class BaseWebSocketService(BaseService, ABC):
         response = await self.prepare_ws(request, token)
 
         try:
-            async for event in response:
-                await self.process_event(response, event)  # noqa
+            async for _ in response:
+                ...
 
         finally:
             await self.cleanup_ws(token)
 
         return response
-
-    async def process_event(
-        self,
-        response: CustomWSResponse,
-        event: WSEvent,
-        /,
-    ) -> None:
-        pass
 
 
 class UserWebSocketService(BaseWebSocketService):
