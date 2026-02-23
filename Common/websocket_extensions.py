@@ -20,6 +20,7 @@ if TYPE_CHECKING:
 
     Json = dict[str, Any]
     Coro = Coroutine[Any, Any, None]
+    TN = Task[None]
 
 __all__ = (
     "CustomWSMessageType",
@@ -152,9 +153,10 @@ class WSResponseMixin:
         self.interval = interval
         self.__hits = []
 
-        self.__sent_unacked: dict[str, Task[None]] = {}
+        self.__sent_unacked: dict[str, TN] = dict()
         self.__recv_unacked: set[str] = set()
-        self.__tasks: set[Task[None]] = set()
+
+        self.__submitted_tasks: set[TN] = set()
 
     async def __anext__(self) -> WSEvent:
         try:
