@@ -150,9 +150,9 @@ class WSResponseMixin:
         self.interval = interval
         self.__hits = []
 
-        self.__sent_unacked: dict[str, Task] = {}
+        self.__sent_unacked: dict[str, Task[None]] = {}
         self.__recv_unacked: set[str] = set()
-        self.__tasks: set[Task] = set()
+        self.__tasks: set[Task[None]] = set()
 
     async def __anext__(self) -> WSEvent:
         try:
