@@ -1,27 +1,23 @@
 from __future__ import annotations
 
-from asyncio import CancelledError, gather
 from enum import IntEnum, StrEnum
 from json import JSONDecodeError
-from logging import ERROR
 from typing import TYPE_CHECKING
 
 from aiohttp import ClientWebSocketResponse, WSCloseCode, WSMsgType
 from aiohttp.web import WebSocketResponse
 
 from .errors import RatelimitException, WSException
-from .utils import check_ratelimit, decode_datetime, log
+from .utils import check_ratelimit, decode_datetime
 
 if TYPE_CHECKING:
     from asyncio import Task
-    from collections.abc import Coroutine
     from datetime import datetime
     from typing import Any
 
     from aiohttp import WSMessage
 
     Json = dict[str, Any]
-    Coro = Coroutine[Any, Any, None]
 
 __all__ = (
     "CustomWSMessageType",
@@ -187,32 +183,13 @@ class WSResponseMixin:
 
     def __recv_ack__(self, ack: WSAck, /) -> None: ...
 
-    def submit(self, coro: Coro, /) -> None: ...
-
     async def close(self, **kwargs: Any) -> bool:
-        close_result = await super().close(**kwargs)  # noqa
+        result = await super().close(**kwargs)  # noqa
 
-        if close_result is True:
+        if result is True:
+            ...
 
-            tasks = self.__tasks | set(self.__sent_unacked.values())
-
-            for task in tasks:
-                task.cancel()
-
-            task_results = await gather(*tasks, return_exceptions=True)
-
-            for result in task_results:
-
-                if isinstance(result, CancelledError) or result is None:
-                    continue
-
-                elif isinstance(result, Exception):
-                    log("An error occurred during a WebSocket process.", ERROR, error=result)
-
-                elif isinstance(result, BaseException):
-                    raise result
-
-        return close_result
+        return result
 
 
 class CustomWSResponse(WSResponseMixin, WebSocketResponse):
