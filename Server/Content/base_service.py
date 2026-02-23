@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from asyncio import CancelledError, create_task, sleep
 from base64 import urlsafe_b64decode, urlsafe_b64encode
 from inspect import getmembers, isfunction
-from logging import ERROR, WARN
+from logging import ERROR, WARNING
 from typing import TYPE_CHECKING
 
 from aiohttp.web import HTTPBadRequest, HTTPUnauthorized
@@ -50,7 +50,7 @@ class BaseService(ABC):
         except CancelledError:
             log(f"{self.task_name} cancelled.")
         except Exception as error:
-            log(f"{self.task_name} raised {type(error).__name__}.", ERROR)
+            log(f"{self.task_name} raised an exception.", ERROR, error=error)
 
         self.__task = None
 
@@ -132,13 +132,13 @@ class BaseService(ABC):
 
             log(
                 f"Proxy mode enabled but missing expected proxy headers ({'/'.join(keys)}).",
-                WARN,
+                WARNING,
             )
 
         remote = request.remote
 
         if remote is None:
-            log("Unable to determine client IP.", WARN)
+            log("Unable to determine client IP.", WARNING)
 
         return remote
 

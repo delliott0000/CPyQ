@@ -77,7 +77,7 @@ class PostgreSQLClient:
             )
             log(f"Connected to {config.database} as {config.username}.")
         except Exception as error:
-            log(f"Failed to connect to {config.database} - {type(error).__name__}.", ERROR)
+            log(f"Failed to connect to {config.database}.", ERROR, error=error)
             raise
 
     async def disconnect(self) -> None:
@@ -90,7 +90,7 @@ class PostgreSQLClient:
             await self.__connection_pool.close()
             log(f"Disconnected from {config.database}.")
         except Exception as error:
-            log(f"Failed to disconnect from {config.database} - {type(error).__name__}.", ERROR)
+            log(f"Failed to disconnect from {config.database}.", ERROR, error=error)
 
         self.__connection_pool = None
 

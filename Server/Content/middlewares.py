@@ -34,7 +34,7 @@ async def json_wrapper(request: Request, handler: Handler) -> Response:
         return json_response(payload, status=error.status, headers=headers)
 
     except Exception as error:
-        log(f"An error occurred whilst processing a request - {error}", ERROR)
+        log(f"An error occurred whilst processing a request.", ERROR, error=error)
         return json_response({"message": "Internal server error"}, status=500)
 
 

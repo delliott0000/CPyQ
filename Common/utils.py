@@ -6,7 +6,6 @@ from datetime import datetime, timezone
 from functools import partial
 from logging import (
     DEBUG,
-    ERROR,
     INFO,
     WARNING,
     FileHandler,
@@ -18,7 +17,6 @@ from multiprocessing import Queue
 from os import cpu_count, makedirs
 from pathlib import Path
 from signal import SIGINT, SIGTERM, signal
-from sys import exc_info
 from time import time
 from typing import TYPE_CHECKING
 
@@ -156,10 +154,9 @@ class LoggingContext:
         self.queue.join_thread()
 
 
-def log(message: str, level: int = INFO, /) -> None:
-    with_traceback = exc_info()[0] is not None and level >= ERROR
+def log(message: str, level: int = INFO, /, *, error: BaseException | None = None) -> None:
     root = getLogger()
-    root.log(level, message, exc_info=with_traceback)
+    root.log(level, message, exc_info=error)
 
 
 class CustomProcessPoolExecutor(ProcessPoolExecutor):
