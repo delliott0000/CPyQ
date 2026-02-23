@@ -11,7 +11,7 @@ from .errors import RatelimitException, WSException
 from .utils import check_ratelimit, decode_datetime
 
 if TYPE_CHECKING:
-    from asyncio import Task
+    from asyncio import Future, Task
     from collections.abc import Coroutine
     from datetime import datetime
     from typing import Any
@@ -158,6 +158,9 @@ class WSResponseMixin:
 
         self.__submitted_tasks: set[TN] = set()
 
+        self.__error_futr: Future[IntEnum] = ...
+        self.__error_task: TN = ...
+
     async def __anext__(self) -> WSEvent:
         try:
             while True:
@@ -183,13 +186,19 @@ class WSResponseMixin:
 
         raise StopAsyncIteration
 
+    def __signal_close__(self, code: IntEnum, /) -> None: ...
+
     def __recv_event__(self, event: WSEvent, /) -> None: ...
 
     def __recv_ack__(self, ack: WSAck, /) -> None: ...
 
+    async def __wait_for_close__(self) -> None: ...
+
+    async def __coro_wrapper__(self, coro: Coro, /) -> None: ...
+
     def submit(self, coro: Coro, /) -> None: ...
 
-    async def close(self, **kwargs: Any) -> bool:
+    async def close(self, _cancel_all: bool = True, **kwargs: Any) -> bool:
         result = await super().close(**kwargs)  # noqa
 
         if result is True:
