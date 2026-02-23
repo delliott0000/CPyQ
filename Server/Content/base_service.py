@@ -43,10 +43,7 @@ class BaseService(ABC):
         return self
 
     async def __aexit__(self, *_) -> None:
-        if self.__task is None:
-            return
-        elif not self.__task.done():
-            self.__task.cancel()
+        self.__task.cancel()
 
         try:
             await self.__task
