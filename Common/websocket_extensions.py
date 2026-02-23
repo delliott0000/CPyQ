@@ -14,12 +14,14 @@ from .utils import check_ratelimit, decode_datetime, log
 
 if TYPE_CHECKING:
     from asyncio import Task
+    from collections.abc import Coroutine
     from datetime import datetime
     from typing import Any
 
     from aiohttp import WSMessage
 
     Json = dict[str, Any]
+    Coro = Coroutine[Any, Any, None]
 
 __all__ = (
     "CustomWSMessageType",
@@ -185,6 +187,8 @@ class WSResponseMixin:
 
     def __recv_ack__(self, ack: WSAck, /) -> None: ...
 
+    def submit(self, coro: Coro, /) -> None: ...
+
     async def close(self, **kwargs: Any) -> bool:
         close_result = await super().close(**kwargs)  # noqa
 
@@ -199,10 +203,7 @@ class WSResponseMixin:
 
             for result in task_results:
 
-                if result is None:
-                    continue
-
-                elif isinstance(result, CancelledError):
+                if isinstance(result, CancelledError) or result is None:
                     continue
 
                 elif isinstance(result, Exception):
