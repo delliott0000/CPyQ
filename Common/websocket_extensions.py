@@ -1,15 +1,16 @@
 from __future__ import annotations
 
-from asyncio import create_task, get_running_loop
+from asyncio import CancelledError, create_task, get_running_loop
 from enum import IntEnum, StrEnum
 from json import JSONDecodeError
+from logging import ERROR
 from typing import TYPE_CHECKING
 
 from aiohttp import ClientWebSocketResponse, WSCloseCode, WSMsgType
 from aiohttp.web import WebSocketResponse
 
 from .errors import RatelimitException, WSException
-from .utils import check_ratelimit, decode_datetime
+from .utils import check_ratelimit, decode_datetime, log
 
 if TYPE_CHECKING:
     from asyncio import Future, Task
@@ -196,7 +197,16 @@ class WSResponseMixin:
 
     async def __wait_for_close__(self) -> None: ...
 
-    async def __coro_wrapper__(self, coro: Coro, /) -> None: ...
+    async def __coro_wrapper__(self, coro: Coro, /) -> None:
+        try:
+            await coro
+        except CancelledError:
+            pass
+        except WSException as error:
+            self.__signal_close__(error.code)
+        except Exception as error:
+            self.__signal_close__(CustomWSCloseCode.InternalError)
+            log("A WebSocket task raised an exception.", ERROR, error=error)
 
     def submit(self, coro: Coro, /) -> None: ...
 
