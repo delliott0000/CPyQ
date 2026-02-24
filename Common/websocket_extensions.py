@@ -222,7 +222,7 @@ class WSResponseMixin:
         result = await super().close(**kwargs)  # noqa
 
         if result is True:
-            # localhost safety net
+            # Catch any tasks that were just submitted
             await sleep(0)
 
             tasks = self.__submitted_tasks | set(self.__sent_unacked.values())
