@@ -203,12 +203,12 @@ class WSResponseMixin:
         try:
             await coro
         except CancelledError:
-            pass
+            log(f"WebSocket task {coro} was cancelled.")
         except WSException as error:
             self.__signal_close__(error.code)
         except Exception as error:
+            log(f"WebSocket task {coro} raised an exception.", ERROR, error=error)
             self.__signal_close__(CustomWSCloseCode.InternalError)
-            log("A WebSocket task raised an exception.", ERROR, error=error)
 
     def submit(self, coro: Coro, /) -> None: ...
 
