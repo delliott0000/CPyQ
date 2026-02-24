@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from asyncio import CancelledError, create_task, get_running_loop
+from asyncio import CancelledError, create_task, gather, get_running_loop, sleep
 from enum import IntEnum, StrEnum
 from json import JSONDecodeError
 from logging import ERROR
@@ -222,7 +222,18 @@ class WSResponseMixin:
         result = await super().close(**kwargs)  # noqa
 
         if result is True:
-            ...
+            # localhost safety net
+            await sleep(0)
+
+            tasks = self.__submitted_tasks | set(self.__sent_unacked.values())
+
+            if _cancel_all is True:
+                tasks.add(self.__error_task)
+
+            for task in tasks:
+                task.cancel()
+
+            await gather(*tasks, return_exceptions=True)
 
         return result
 
