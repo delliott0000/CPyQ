@@ -193,7 +193,9 @@ class WSResponseMixin:
 
     def __recv_ack__(self, ack: WSAck, /) -> None: ...
 
-    def __signal_close__(self, code: IntEnum, /) -> None: ...
+    def __signal_close__(self, code: IntEnum, /) -> None:
+        if not self.__error_futr.done():
+            self.__error_futr.set_result(code)
 
     async def __wait_for_close__(self) -> None:
         code = await self.__error_futr
@@ -210,7 +212,11 @@ class WSResponseMixin:
             log(f"WebSocket task {coro} raised an exception.", ERROR, error=error)
             self.__signal_close__(CustomWSCloseCode.InternalError)
 
-    def submit(self, coro: Coro, /) -> None: ...
+    def submit(self, coro: Coro, /) -> None:
+        wrapped = self.__coro_wrapper__(coro)
+        task = create_task(wrapped)
+        self.__submitted_tasks.add(task)
+        task.add_done_callback(self.__submitted_tasks.discard)
 
     async def close(self, _cancel_all: bool = True, **kwargs: Any) -> bool:
         result = await super().close(**kwargs)  # noqa
