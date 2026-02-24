@@ -92,6 +92,7 @@ Close codes and their corresponding failure scenarios:
 
 Not part of the subprotocol per se, but still application-specific:
 - **4000** - Sent by the server when the `Token` that was used to open the WebSocket connection is no longer valid.
+- **4999** - Sent by either peer when an internal error is encountered.
 
 # Final Notes
 ...

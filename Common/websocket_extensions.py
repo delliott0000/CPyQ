@@ -61,6 +61,7 @@ class CustomWSCloseCode(IntEnum):
     AckTimeout         = 4007
     UnknownEvent       = 4008
     FatalEvent         = 4009
+    InternalError      = 4999
 # fmt: on
 
 
