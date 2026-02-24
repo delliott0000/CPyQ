@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from asyncio import create_task, get_running_loop
 from enum import IntEnum, StrEnum
 from json import JSONDecodeError
 from typing import TYPE_CHECKING
@@ -158,8 +159,8 @@ class WSResponseMixin:
 
         self.__submitted_tasks: set[TN] = set()
 
-        self.__error_futr: Future[IntEnum] = ...
-        self.__error_task: TN = ...
+        self.__error_futr: Future[IntEnum] = get_running_loop().create_future()
+        self.__error_task: TN = create_task(self.__wait_for_close__())
 
     async def __anext__(self) -> WSEvent:
         try:
