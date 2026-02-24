@@ -195,7 +195,9 @@ class WSResponseMixin:
 
     def __signal_close__(self, code: IntEnum, /) -> None: ...
 
-    async def __wait_for_close__(self) -> None: ...
+    async def __wait_for_close__(self) -> None:
+        code = await self.__error_futr
+        await self.close(_cancel_all=False, code=code)
 
     async def __coro_wrapper__(self, coro: Coro, /) -> None:
         try:
@@ -210,7 +212,7 @@ class WSResponseMixin:
 
     def submit(self, coro: Coro, /) -> None: ...
 
-    async def close(self, **kwargs: Any) -> bool:
+    async def close(self, _cancel_all: bool = True, **kwargs: Any) -> bool:
         result = await super().close(**kwargs)  # noqa
 
         if result is True:
