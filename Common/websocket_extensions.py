@@ -188,11 +188,11 @@ class WSResponseMixin:
 
         raise StopAsyncIteration
 
-    def __signal_close__(self, code: IntEnum, /) -> None: ...
-
     def __recv_event__(self, event: WSEvent, /) -> None: ...
 
     def __recv_ack__(self, ack: WSAck, /) -> None: ...
+
+    def __signal_close__(self, code: IntEnum, /) -> None: ...
 
     async def __wait_for_close__(self) -> None: ...
 
@@ -200,7 +200,7 @@ class WSResponseMixin:
 
     def submit(self, coro: Coro, /) -> None: ...
 
-    async def close(self, _cancel_all: bool = True, **kwargs: Any) -> bool:
+    async def close(self, **kwargs: Any) -> bool:
         result = await super().close(**kwargs)  # noqa
 
         if result is True:
