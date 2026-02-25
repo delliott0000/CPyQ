@@ -76,6 +76,8 @@ It *is not* a violation of the subprotocol to:
 # Connection Phases
 Each connection is divided into two application-level phases; the handshake phase and the messaging phase.
 
+The handshake phase begins as soon as the WebSocket connection is established. During this phase, the server declares a set of policies to which the client must consent. These policies are sent in the form of an `Event` payload. The client must acknowledge this `Event`, at which point the handshake phase ends and the messaging phase begins. The client is not given any means to negotiate these policies. All other communication must take place entirely within the messaging phase, which lasts until the WebSocket connection closes.
+
 ...
 
 # Close Codes
