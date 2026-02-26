@@ -13,7 +13,7 @@ Before we get into the details, a reminder of the purpose of this subprotocol:
 The subprotocol assumes that one peer will act as the server and the other as a client. Communication between two peers is mechanically symmetric. That is to say that the same rules surrounding [Message Flow](#message-flow) and [Message Structure](#message-structure) apply in either direction of travel. However, the [Handshake Phase](#connection-phases) as well as the [Contents](Contents) of messages are asymmetric, meaning that each peer has distinct responsibilities during setup and communication.
 
 # Message Flow
-Each message must be an `Event` or an `Ack`. An `Event` contains information - this could be a request ("perform X") or a notification of an outcome ("X complete"). An `Ack` acknowledges that an `Event` has been received and parsed, but does not imply successful processing/execution.
+Each message must be an `Event` or an `Ack`. An `Event` contains information in the form of a "payload" - this could be a request ("perform X") or a notification of an outcome ("X complete"). An `Ack` acknowledges that an `Event` has been received and parsed, but does not imply successful processing/execution.
 
 The following rules define the `Event`/`Ack` message flow:
 - Each `Event` must be assigned a Universally Unique Identifier (UUID).
