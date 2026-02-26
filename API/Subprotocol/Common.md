@@ -13,7 +13,7 @@ Before we get into the details, a reminder of the purpose of this subprotocol:
 The subprotocol assumes that one peer will act as the server and the other as a client. Communication between two peers is mechanically symmetric. That is to say that the same rules surrounding [Message Flow](#message-flow) and [Message Structure](#message-structure) apply in either direction of travel. However, the [Handshake Phase](#connection-phases) as well as the [Contents](Contents) of messages are asymmetric, meaning that each peer has distinct responsibilities during setup and communication.
 
 # Message Flow
-Each message must be an `Event` or an `Ack`. An `Event` contains information in the form of a "payload" - this could be a request ("perform X") or a notification of an outcome ("X complete"). An `Ack` acknowledges that an `Event` has been received and parsed, but does not imply successful processing/execution.
+Each message must be an `Event` or an `Ack`. Each `Event` contains information in the form of a `Payload` - this could be a request ("perform X") or a notification of an outcome ("X complete"). An `Ack` acknowledges that an `Event` has been received and parsed, but does not imply successful processing/execution.
 
 The following rules define the `Event`/`Ack` message flow:
 - Each `Event` must be assigned a Universally Unique Identifier (UUID).
@@ -61,9 +61,9 @@ The `"status"` field describes the outcome of an `Event`. Unless the value is `"
 
 The `"reason"` field is an optional, human-readable string for logging, debugging and so on. This field does not mandate any specific behaviour from the receiving peer.
 
-The `"payload"` field contains the actual data associated with an `Event`. Its semantics are defined in [Connection Phases](#connection-phases) and [Contents](Contents).
+The `"payload"` field is a `Payload`. Its semantics are defined in [Payloads](#payloads).
 
-The following rules apply to top-level fields, but not payload-level fields.
+The following rules apply to top-level fields and payload-level fields.
 
 It *is* a violation of the subprotocol to:
 - Miss a mandatory field.
@@ -72,6 +72,9 @@ It *is* a violation of the subprotocol to:
 
 It *is not* a violation of the subprotocol to:
 - Supply an undocumented field. The receiving peer can safely ignore this.
+
+# Payloads
+...
 
 # Connection Phases
 Each connection is divided into two application-level phases; the handshake phase and the messaging phase.
