@@ -82,12 +82,12 @@ Sending a `Payload` of an unknown type or with an otherwise invalid body is also
 
 Below is a list of valid `Payload` types for generic use. Further `Payload` types, as well as extensions of some of the below types, can be found in [Contents](Contents).
 
-- **Empty Payload** - Normally used in unsuccessful `Events`. Successful `Events` with empty payloads should simply be treated as inert non-ops. It should be noted that the `"kind"` field is mandatory for all non-empty `Payloads`.
+- **Empty Payload** - Normally used in unsuccessful `Events` when there is nothing to report beyond the error itself. Successful `Events` with empty payloads sent during the [Messaging Phase](#connection-phases) should simply be treated as inert non-ops. It should be noted that the `"kind"` field is mandatory for all non-empty `Payloads`.
 ```py
 {}
 ```
 
-- **Handshake Payload** - Sent by the server during the [Handshake Phase](#connection-phases). The `"ack_timeout"` applies to all `Events` sent by either peer throughout the entire connection, including the handshake itself.
+- **Handshake Payload** - Sent once by the server (not the client) during the [Handshake Phase](#connection-phases). It must not be sent outside this phase, and other `Payload` types must not be sent during this phase. The `"ack_timeout"` applies to all `Events` sent by either peer throughout the entire connection, including the handshake itself.
 ```py
 {
     "kind": "handshake",  # By definition; Enum ["handshake"]
@@ -100,7 +100,20 @@ Each connection is divided into two application-level phases; the handshake phas
 
 The handshake phase begins as soon as the WebSocket connection is established. During this phase, the server declares a set of policies to which the client must consent. The client must acknowledge this `Event`, at which point the handshake phase ends and the messaging phase begins. The client is not given any means to negotiate these policies. All other communication must take place entirely within the messaging phase, which lasts until the WebSocket connection closes.
 
-...
+Below is a flow diagram showing phase progression:
+```text
+-> WebSocket Connection Opens; Handshake Phase Begins
+
+-> Server Sends Handshake Event
+
+-> Client Acknowledges Handshake Event
+
+-> Handshake Phase Ends; Messaging Phase Begins
+
+-> Peers Exchange Events & Acknowledgements
+
+-> WebSocket Connection Closes; Messaging Phase Ends
+```
 
 # Close Codes
 If and only if a peer violates the subprotocol, then the other peer must immediately close the WebSocket connection with the appropriate close code without sending any further messages (including any pending `Acks`). The first subprotocol violation detected determines the close code. Detection order is implementation-dependent.
