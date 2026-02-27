@@ -116,7 +116,7 @@ Below is a flow diagram showing phase progression:
 ```
 
 # Close Codes
-If and only if a peer violates the subprotocol, then the other peer must immediately close the WebSocket connection with the appropriate close code without sending any further messages (including any pending `Acks`). The first subprotocol violation detected determines the close code. Detection order is implementation-dependent.
+If and only if a peer violates the subprotocol, then the other peer must immediately close the WebSocket connection with the appropriate close code without sending any further messages (including any pending `Acks`). The first violation detected determines the close code. Detection order is implementation-dependent.
 
 Close codes and their corresponding failure scenarios:
 - **4001** - A message is not a text frame.
