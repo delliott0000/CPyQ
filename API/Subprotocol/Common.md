@@ -63,7 +63,7 @@ The `"reason"` field is an optional, human-readable string for logging, debuggin
 
 The `"payload"` field is a `Payload`. Its semantics are defined in [Payloads](#payloads).
 
-The following rules apply to top-level fields and payload-level fields.
+The following rules apply to `Event` level fields and `Payload` level fields.
 
 It *is* a violation of the subprotocol to:
 - Miss a mandatory field.
@@ -74,7 +74,24 @@ It *is not* a violation of the subprotocol to:
 - Supply an undocumented field. The receiving peer can safely ignore this.
 
 # Payloads
-...
+Each `Payload` must be of a certain type. This is denoted by the `"kind"` field. The value of this field drives all other fields in the `Payload`.
+
+Sending a `Payload` of an unknown type or with an otherwise invalid body is a violation of the subprotocol, as per the rules listed in [Message Structure](#message-structure).
+
+Below is a list of valid `Payload` types for generic use. Further `Payload` types, as well as extensions of some of the below types, can be found in [Contents](Contents).
+
+## The Empty Payload
+This is denoted by an empty JSON body (`{}`). This is normally used in unsuccessful `Events`.
+
+It should be noted that the `"kind"` field is mandatory for all non-empty `Payloads`.
+
+## Handshake Payload
+```py
+{
+    "kind": "handshake",  # By definition; Enum ["handshake"]
+    "ack_timeout": float  # In seconds; this should be greater than 0
+}
+```
 
 # Connection Phases
 Each connection is divided into two application-level phases; the handshake phase and the messaging phase.
