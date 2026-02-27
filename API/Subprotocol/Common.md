@@ -10,7 +10,7 @@ Before we get into the details, a reminder of the purpose of this subprotocol:
 - Send & receive `States` for syncing and store them for later recovery.
 - Defer resource-intensive tasks, such as file generation, to an `Autopilot`.
 
-The subprotocol assumes that one peer will act as the server and the other as a client. Communication between two peers is mechanically symmetric. That is to say that the same rules surrounding [Message Flow](#message-flow) and [Message Structure](#message-structure) apply in either direction of travel. However, the [Handshake Phase](#connection-phases) as well as the [Contents](Contents) of messages are asymmetric, meaning that each peer has distinct responsibilities during setup and communication.
+The subprotocol assumes that one peer will act as the server and the other as a client. Communication between two peers is mechanically symmetric. That is to say that the same rules surrounding [Message Flow](#message-flow) and [Message Structure](#message-structure) apply in either direction of travel. However, the [Payloads](#payloads) that messages carry are asymmetric, meaning that each peer has distinct responsibilities during setup and communication.
 
 # Message Flow
 Each message must be an `Event` or an `Ack`. Each `Event` contains information in the form of a `Payload` - this could be a request ("perform X") or a notification of an outcome ("X complete"). An `Ack` acknowledges that an `Event` has been received and parsed, but does not imply successful processing/execution.
@@ -76,16 +76,18 @@ It *is not* a violation of the subprotocol to:
 # Payloads
 Each `Payload` must be of a certain type. This is denoted by the `"kind"` field. The value of this field drives all other fields in the `Payload`.
 
-Sending a `Payload` of an unknown type or with an otherwise invalid body is a violation of the subprotocol, as per the rules listed in [Message Structure](#message-structure).
+Some `Payload` types only make sense in a certain context. This is documented on a per-type basis. Payloads sent outside the correct context are violations of the subprotocol.
+
+Sending a `Payload` of an unknown type or with an otherwise invalid body is also a violation, as per the rules listed in [Message Structure](#message-structure).
 
 Below is a list of valid `Payload` types for generic use. Further `Payload` types, as well as extensions of some of the below types, can be found in [Contents](Contents).
 
-## The Empty Payload
-This is denoted by an empty JSON body (`{}`). This is normally used in unsuccessful `Events`.
+- **Empty Payload** - Normally used in unsuccessful `Events`. Successful `Events` with empty payloads should simply be treated as inert non-ops. It should be noted that the `"kind"` field is mandatory for all non-empty `Payloads`.
+```py
+{}
+```
 
-It should be noted that the `"kind"` field is mandatory for all non-empty `Payloads`.
-
-## Handshake Payload
+- **Handshake Payload** - Sent by the server during the [Handshake Phase](#connection-phases). The `"ack_timeout"` applies to all `Events` sent by either peer throughout the entire connection, including the handshake itself.
 ```py
 {
     "kind": "handshake",  # By definition; Enum ["handshake"]
