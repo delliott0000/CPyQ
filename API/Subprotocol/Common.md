@@ -10,7 +10,7 @@ Before we get into the details, a reminder of the purpose of this subprotocol:
 - Send & receive `States` for syncing and store them for later recovery.
 - Defer resource-intensive tasks, such as file generation, to an `Autopilot`.
 
-The subprotocol assumes that one peer will act as the server and the other as a client. Communication between two peers is mechanically symmetric. That is to say that the same rules surrounding [Message Flow](#message-flow) and [Message Structure](#message-structure) apply in either direction of travel. However, the [Payloads](#payloads) that messages carry are asymmetric, meaning that each peer has distinct responsibilities during setup and communication.
+The subprotocol assumes that one peer will act as the server and the other as a client. Communication between two peers is mechanically symmetric. That is to say that the same rules surrounding [Message Flow](#message-flow) and [Message Structure](#message-structure) apply in either direction of travel. However, the [Contents](Contents) that messages carry are asymmetric, meaning that each peer has distinct responsibilities during setup and communication.
 
 # Message Flow
 Each message must be an `Event` or an `Ack`. Each `Event` contains information in the form of a `Payload` - this could be a request ("perform X") or a notification of an outcome ("X complete"). An `Ack` acknowledges that an `Event` has been received and parsed, but does not imply successful processing/execution.
@@ -61,7 +61,7 @@ The `"status"` field describes the outcome of an `Event`. Unless the value is `"
 
 The `"reason"` field is an optional, human-readable string for logging, debugging and so on. This field does not mandate any specific behaviour from the receiving peer.
 
-The `"payload"` field is a `Payload`. Its semantics are defined in [Payloads](#payloads).
+The `"payload"` field is a `Payload`. Its semantics are defined further down.
 
 The following rules apply to `Event` level fields and `Payload` level fields.
 
@@ -98,23 +98,24 @@ Below is a list of valid `Payload` types for generic use. Further `Payload` type
 # Connection Phases
 Each connection is divided into two application-level phases; the handshake phase and the messaging phase.
 
-The handshake phase begins as soon as the WebSocket connection is established. During this phase, the server declares a set of policies to which the client must consent. These policies are sent in the form of an `Event` payload. The client must acknowledge this `Event`, at which point the handshake phase ends and the messaging phase begins. The client is not given any means to negotiate these policies. All other communication must take place entirely within the messaging phase, which lasts until the WebSocket connection closes.
+The handshake phase begins as soon as the WebSocket connection is established. During this phase, the server declares a set of policies to which the client must consent. The client must acknowledge this `Event`, at which point the handshake phase ends and the messaging phase begins. The client is not given any means to negotiate these policies. All other communication must take place entirely within the messaging phase, which lasts until the WebSocket connection closes.
 
 ...
 
 # Close Codes
-If and only if a peer violates the subprotocol, then the other peer must immediately close the WebSocket connection with the appropriate close code without sending any further messages (including any pending `Acks`).
+If and only if a peer violates the subprotocol, then the other peer must immediately close the WebSocket connection with the appropriate close code without sending any further messages (including any pending `Acks`). The first subprotocol violation detected determines the close code. Detection order is implementation-dependent.
 
 Close codes and their corresponding failure scenarios:
 - **4001** - A message is not a text frame.
 - **4002** - A message cannot be parsed into a valid JSON object.
 - **4003** - A message is missing a mandatory field.
 - **4004** - A message supplies a value of an incorrect type.
-- **4005** - A message supplies a value that is not a member of the field's designated enumeration or is otherwise structurally invalid. (This may take precedence over type errors due to implementation details.)
+- **4005** - A message supplies a value that is not a member of the field's designated enumeration or is otherwise structurally invalid.
 - **4006** - Two or more unacknowledged `Events` sent by the same peer share the same UUID.
 - **4007** - An `Event` is not acknowledged within the acknowledgement time limit.
 - **4008** - An `Ack` references an `Event` that does not exist or has already been acknowledged.
-- **4009** - An `Event` contains `"status": "fatal"`. Upon sending or receiving such `Event`, the peer must immediately close the connection using this close code.
+- **4009** - An `Event` contains `"status": "fatal"`. Immediately after sending or receiving such `Event`, the peer must close the connection using this close code.
+- **4010** - A `Payload` is sent outside the correct context.
 
 Not part of the subprotocol per se, but still application-specific:
 - **4000** - Sent by the server when the `Token` that was used to open the WebSocket connection is no longer valid.
