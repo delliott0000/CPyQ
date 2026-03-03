@@ -5,20 +5,18 @@ from typing import TYPE_CHECKING
 
 from aiohttp import WSMsgType
 
-from ..errors import WSException
-from ..utils import decode_datetime
+from ..utils import decode_datetime, protocol_error
 from .enums import CustomWSCloseCode, CustomWSMessageType, WSEventStatus
 
 if TYPE_CHECKING:
     from datetime import datetime
-    from enum import IntEnum
     from typing import Any
 
     from aiohttp import WSMessage
 
     Json = dict[str, Any]
 
-__all__ = ("CustomWSMessage", "WSEvent", "WSAck", "protocol_error", "custom_message_factory")
+__all__ = ("CustomWSMessage", "WSEvent", "WSAck", "custom_message_factory")
 
 
 class CustomWSMessage:
@@ -65,10 +63,6 @@ class WSEvent(CustomWSMessage):
 
 class WSAck(CustomWSMessage):
     pass
-
-
-def protocol_error(code: IntEnum, /) -> None:
-    raise WSException(code=code)
 
 
 def custom_message_factory(message: WSMessage, /) -> WSEvent | WSAck:

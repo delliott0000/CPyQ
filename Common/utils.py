@@ -22,12 +22,13 @@ from typing import TYPE_CHECKING
 
 from bcrypt import checkpw, gensalt, hashpw
 
-from .errors import RatelimitException
+from .errors import RatelimitException, WSException
 from .format import ENCODE_DATETIME_FORMAT, FILE_DATE_FORMAT, LOGGING_FORMAT
 
 if TYPE_CHECKING:
     from asyncio import Future
     from collections.abc import Callable
+    from enum import IntEnum
     from typing import Any, ParamSpec, Self, TypeVar
 
     from aiohttp import ClientResponse
@@ -46,6 +47,7 @@ __all__ = (
     "encrypt_password",
     "check_ratelimit",
     "to_json",
+    "protocol_error",
     "LoggingContext",
     "log",
     "CustomProcessPoolExecutor",
@@ -109,6 +111,10 @@ async def to_json(r: Request | ClientResponse, /, *, strict: bool = False) -> Js
             raise
         log(f"Failed to parse JSON payload - {type(error).__name__}.", WARNING)
         return {}
+
+
+def protocol_error(code: IntEnum, /) -> None:
+    raise WSException(code=code)
 
 
 def _setup_handler(level: int, queue: Queue, /) -> None:
