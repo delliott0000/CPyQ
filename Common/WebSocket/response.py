@@ -1,140 +1,29 @@
 from __future__ import annotations
 
 from asyncio import CancelledError, create_task, gather, get_running_loop, sleep
-from enum import IntEnum, StrEnum
-from json import JSONDecodeError
 from logging import ERROR
 from typing import TYPE_CHECKING
 
-from aiohttp import ClientWebSocketResponse, WSCloseCode, WSMsgType
+from aiohttp import ClientWebSocketResponse, WSCloseCode
 from aiohttp.web import WebSocketResponse
 
-from .errors import RatelimitException, WSException
-from .utils import check_ratelimit, decode_datetime, log
+from ..errors import RatelimitException, WSException
+from ..utils import check_ratelimit, log
+from .enums import CustomWSCloseCode
+from .messages import WSEvent, custom_message_factory
 
 if TYPE_CHECKING:
     from asyncio import Future, Task
     from collections.abc import Coroutine
-    from datetime import datetime
+    from enum import IntEnum
     from typing import Any
 
-    from aiohttp import WSMessage
+    from .messages import WSAck
 
-    Json = dict[str, Any]
     Coro = Coroutine[Any, Any, None]
     TN = Task[None]
 
-__all__ = (
-    "CustomWSMessageType",
-    "WSEventStatus",
-    "CustomWSCloseCode",
-    "CustomWSMessage",
-    "WSEvent",
-    "WSAck",
-    "protocol_error",
-    "custom_message_factory",
-    "WSResponseMixin",
-    "CustomWSResponse",
-    "CustomClientWSResponse",
-)
-
-
-# fmt: off
-class CustomWSMessageType(StrEnum):
-    Event = "event"
-    Ack   = "ack"
-
-
-class WSEventStatus(StrEnum):
-    Normal = "normal"
-    Error  = "error"
-    Fatal  = "fatal"
-
-
-class CustomWSCloseCode(IntEnum):
-    TokenExpired       = 4000
-    InvalidFrameType   = 4001
-    InvalidJSON        = 4002
-    MissingField       = 4003
-    InvalidType        = 4004
-    InvalidValue       = 4005
-    DuplicateEventID   = 4006
-    AckTimeout         = 4007
-    UnknownEvent       = 4008
-    FatalEvent         = 4009
-    InternalError      = 4999
-# fmt: on
-
-
-class CustomWSMessage:
-    def __init__(self, json: Json, /):
-        self._id = json["id"]
-        self._sent_at = decode_datetime(json["sent_at"])
-
-        if not isinstance(self._id, str):
-            raise TypeError("UUID must be a string.")
-
-    @property
-    def id(self) -> str:
-        return self._id
-
-    @property
-    def sent_at(self) -> datetime:
-        return self._sent_at
-
-
-class WSEvent(CustomWSMessage):
-    def __init__(self, json: Json, /):
-        super().__init__(json)
-        self._status = WSEventStatus(json["status"])
-        self._reason = json.get("reason")
-        self._payload = json["payload"]
-
-        if not (isinstance(self._reason, str) or self._reason is None):
-            raise TypeError("Reason must be a string or None.")
-        elif not isinstance(self._payload, dict):
-            raise TypeError("Payload must be a dict.")
-
-    @property
-    def status(self) -> WSEventStatus:
-        return self._status
-
-    @property
-    def reason(self) -> str | None:
-        return self._reason
-
-    @property
-    def payload(self) -> Json:
-        return self._payload
-
-
-class WSAck(CustomWSMessage):
-    pass
-
-
-def protocol_error(code: IntEnum, /) -> None:
-    raise WSException(code=code)
-
-
-def custom_message_factory(message: WSMessage, /) -> WSEvent | WSAck:
-    if message.type != WSMsgType.TEXT:
-        protocol_error(CustomWSCloseCode.InvalidFrameType)
-
-    try:
-        json = message.json()
-        type_ = CustomWSMessageType(json["type"])
-        mapping = {CustomWSMessageType.Event: WSEvent, CustomWSMessageType.Ack: WSAck}
-        cls = mapping[type_]
-        return cls(json)
-
-    except JSONDecodeError:
-        protocol_error(CustomWSCloseCode.InvalidJSON)
-    except KeyError:
-        protocol_error(CustomWSCloseCode.MissingField)
-    except TypeError:
-        protocol_error(CustomWSCloseCode.InvalidType)
-    except ValueError:
-        protocol_error(CustomWSCloseCode.InvalidValue)
+__all__ = ("WSResponseMixin", "CustomWSResponse", "CustomClientWSResponse")
 
 
 class WSResponseMixin:

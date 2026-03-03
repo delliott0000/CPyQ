@@ -14,4 +14,4 @@ from .team import *
 from .token import *
 from .user import *
 from .utils import *
-from .websocket_extensions import *
+from .WebSocket import *
