@@ -70,9 +70,7 @@ class WSResponseMixin:
                     continue
 
                 # This should never be reached
-                raise RuntimeError(
-                    f"Unexpected message {custom_message} of type {type(custom_message).__name__}."
-                )
+                raise RuntimeError(f"Encountered an unexpected message: {custom_message}.")
 
         except RatelimitException:
             await self.close(code=WSCloseCode.POLICY_VIOLATION)
