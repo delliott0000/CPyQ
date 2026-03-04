@@ -65,15 +65,20 @@ class WSAck(CustomWSMessage):
     pass
 
 
-def custom_message_factory(message: WSMessage, /) -> WSEvent | WSAck:
+_MAPPING = {
+    CustomWSMessageType.Event: WSEvent,
+    CustomWSMessageType.Ack: WSAck,
+}
+
+
+def custom_message_factory(message: WSMessage, /) -> CustomWSMessage:
     if message.type != WSMsgType.TEXT:
         protocol_error(CustomWSCloseCode.InvalidFrameType)
 
     try:
         json = message.json()
         type_ = CustomWSMessageType(json["type"])
-        mapping = {CustomWSMessageType.Event: WSEvent, CustomWSMessageType.Ack: WSAck}
-        cls = mapping[type_]
+        cls = _MAPPING[type_]
         return cls(json)
 
     except JSONDecodeError:

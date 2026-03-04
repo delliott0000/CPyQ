@@ -10,15 +10,13 @@ from aiohttp.web import WebSocketResponse
 from ..errors import RatelimitException, WSException
 from ..utils import check_ratelimit, log
 from .enums import CustomWSCloseCode
-from .messages import WSEvent, custom_message_factory
+from .messages import WSAck, WSEvent, custom_message_factory
 
 if TYPE_CHECKING:
     from asyncio import Future, Task
     from collections.abc import Coroutine
     from enum import IntEnum
     from typing import Any
-
-    from .messages import WSAck
 
     Coro = Coroutine[Any, Any, None]
     TN = Task[None]
@@ -67,9 +65,14 @@ class WSResponseMixin:
                     self.__recv_event__(custom_message)
                     return custom_message
 
-                else:
+                elif isinstance(custom_message, WSAck):
                     self.__recv_ack__(custom_message)
-                    # continue
+                    continue
+
+                # This should never be reached
+                raise RuntimeError(
+                    f"Unexpected message {custom_message} of type {type(custom_message).__name__}."
+                )
 
         except RatelimitException:
             await self.close(code=WSCloseCode.POLICY_VIOLATION)
