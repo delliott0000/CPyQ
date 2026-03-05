@@ -13,6 +13,8 @@ __all__ = ("Company",)
 
 
 class Company(ComparesIDMixin, ComparesIDABC):
+    __slots__ = ("_id", "_name")
+
     def __init__(self, company_record: Record | dict, /):
         self._id = company_record["id"]
         self._name = company_record["name"]
