@@ -35,6 +35,7 @@ if TYPE_CHECKING:
 
     from Common import Resource, User
 
+    Json = dict[str, Any]
     RLoader = Callable[[int], Coroutine[Any, Any, Resource]]
 
 __all__ = ("ResourceService",)
@@ -68,9 +69,7 @@ class ResourceService(BaseService):
             status=200,
         )
 
-    def convert_conflict(
-        self, error: ResourceConflict, extra_data: dict[str, Any], /
-    ) -> HTTPConflict:
+    def convert_conflict(self, error: ResourceConflict, extra_data: Json, /) -> HTTPConflict:
         return self.attach_extra_data(HTTPConflict(reason=str(error).strip(".")), extra_data)
 
     def permission_check(

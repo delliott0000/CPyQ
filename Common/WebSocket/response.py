@@ -76,13 +76,6 @@ class WSResponseMixin:
             await self.close(code=WSCloseCode.POLICY_VIOLATION)
         except WSException as error:
             await self.close(code=error.code)
-        except Exception as error:
-            log(
-                "An internal error occurred whilst processing an incoming WebSocket message.",
-                ERROR,
-                error=error,
-            )
-            await self.close(code=CustomWSCloseCode.InternalError)
 
         raise StopAsyncIteration
 

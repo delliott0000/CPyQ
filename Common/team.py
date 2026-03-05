@@ -12,6 +12,8 @@ if TYPE_CHECKING:
     from .company import Company
     from .permissions import Permission
 
+    Json = dict[str, Any]
+
 __all__ = ("Team",)
 
 
@@ -20,7 +22,7 @@ class Team(ComparesIDMixin, ComparesIDABC):
 
     def __init__(
         self,
-        team_record: Record | dict,
+        team_record: Record | Json,
         company: Company,
         permissions: frozenset[Permission],
         /,
@@ -87,7 +89,7 @@ class Team(ComparesIDMixin, ComparesIDABC):
         )
         # fmt: on
 
-    def to_json(self) -> dict[str, Any]:
+    def to_json(self) -> Json:
         return {
             "id": self._id,
             "name": self._name,

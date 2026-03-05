@@ -17,6 +17,8 @@ if TYPE_CHECKING:
     from .token import Token
     from .user import User
 
+    Json = dict[str, Any]
+
 __all__ = ("Session",)
 
 
@@ -79,7 +81,7 @@ class Session(ComparesIDMixin, ComparesIDABC):
             log(f"{self._user} released {self._resource}. (Session ID: {self._id})")
             self._resource = None
 
-    def to_json(self) -> dict[str, Any]:
+    def to_json(self) -> Json:
         try:
             resource = self._resource.to_json(version=ResourceJSONVersion.metadata)
         except AttributeError:

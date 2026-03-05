@@ -15,6 +15,8 @@ if TYPE_CHECKING:
     from .resource import Resource
     from .team import Team
 
+    Json = dict[str, Any]
+
 __all__ = ("User",)
 
 
@@ -30,7 +32,7 @@ class User(ComparesIDMixin, ComparesIDABC):
         "_teams",
     )
 
-    def __init__(self, user_record: Record | dict, teams: frozenset[Team], /):
+    def __init__(self, user_record: Record | Json, teams: frozenset[Team], /):
         self._id = user_record["id"]
         self._username = user_record["username"]
         self._hashed_password = user_record.get("hashed_password")
@@ -124,7 +126,7 @@ class User(ComparesIDMixin, ComparesIDABC):
         else:
             return False
 
-    def to_json(self) -> dict[str, Any]:
+    def to_json(self) -> Json:
         return {
             "id": self._id,
             "username": self._username,

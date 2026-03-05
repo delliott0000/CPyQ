@@ -7,6 +7,8 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from typing import Any
 
+    Json = dict[str, Any]
+
 __all__ = ("PermissionType", "PermissionScope", "Permission")
 
 
@@ -47,7 +49,7 @@ class Permission:
     type:  PermissionType
     scope: PermissionScope
 
-    def to_json(self) -> dict[str, Any]:
+    def to_json(self) -> Json:
         return {
             "type": self.type.value,
             "scope": self.scope.value,

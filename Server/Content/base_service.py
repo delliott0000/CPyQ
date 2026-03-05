@@ -23,6 +23,7 @@ if TYPE_CHECKING:
 
     from .server import Server
 
+    Json = dict[str, Any]
     ExceptionT = TypeVar("ExceptionT", bound=Exception)
 
 __all__ = ("BaseService",)
@@ -173,7 +174,7 @@ class BaseService(ABC):
                     f"Registered listener: {method.upper()} {endpoint} -> {type(self).__name__}.{func_name}()"
                 )
 
-    def attach_extra_data(self, exception: ExceptionT, data: dict[str, Any], /) -> ExceptionT:
+    def attach_extra_data(self, exception: ExceptionT, data: Json, /) -> ExceptionT:
         attr = "_extra_data"
         existing_data = getattr(exception, attr, None)
 

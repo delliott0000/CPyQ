@@ -17,6 +17,7 @@ if TYPE_CHECKING:
 
     from .base_service import BaseService
 
+    Json = dict[str, Any]
     RespType = Response | CustomWSResponse
     RespCoro = Coroutine[Any, Any, RespType]
     RespFunc = Callable[[BaseService, Request], RespCoro]
@@ -34,7 +35,7 @@ __all__ = (
 )
 
 
-def ensure_meta(obj: Any, /) -> dict[str, Any]:
+def ensure_meta(obj: Any, /) -> Json:
     if not hasattr(obj, "__meta__"):
         obj.__meta__ = {}
     return obj.__meta__

@@ -9,13 +9,15 @@ if TYPE_CHECKING:
 
     from asyncpg import Record
 
+    Json = dict[str, Any]
+
 __all__ = ("Company",)
 
 
 class Company(ComparesIDMixin, ComparesIDABC):
     __slots__ = ("_id", "_name")
 
-    def __init__(self, company_record: Record | dict, /):
+    def __init__(self, company_record: Record | Json, /):
         self._id = company_record["id"]
         self._name = company_record["name"]
 
@@ -30,7 +32,7 @@ class Company(ComparesIDMixin, ComparesIDABC):
     def name(self) -> str:
         return self._name
 
-    def to_json(self) -> dict[str, Any]:
+    def to_json(self) -> Json:
         return {
             "id": self._id,
             "name": self._name,

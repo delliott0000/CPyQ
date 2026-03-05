@@ -12,6 +12,7 @@ if TYPE_CHECKING:
 
     from .session import Session
 
+    Json = dict[str, Any]
     ExpirationType = datetime | timedelta | float | str
 
 
@@ -134,7 +135,7 @@ class Token(ComparesIDMixin, ComparesIDABC):
         else:
             return False
 
-    def to_json(self) -> dict[str, Any]:
+    def to_json(self) -> Json:
         try:
             killed_at = encode_datetime(self._killed_at)
         except AttributeError:

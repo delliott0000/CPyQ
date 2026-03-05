@@ -12,13 +12,15 @@ if TYPE_CHECKING:
     from .resource import ResourceJSONVersion
     from .user import User
 
+    Json = dict[str, Any]
+
 __all__ = ("Quote",)
 
 
 class Quote(ComparesIDFormattedMixin, ComparesIDFormattedABC):
     __slots__ = ("_id", "_owner")
 
-    def __init__(self, quote_record: Record | dict, owner: User, /):
+    def __init__(self, quote_record: Record | Json, owner: User, /):
         self._id = quote_record["id"]
         self._owner = owner
 
@@ -33,4 +35,4 @@ class Quote(ComparesIDFormattedMixin, ComparesIDFormattedABC):
     def owner(self) -> User:
         return self._owner
 
-    def to_json(self, *, version: ResourceJSONVersion) -> dict[str, Any]: ...
+    def to_json(self, *, version: ResourceJSONVersion) -> Json: ...
