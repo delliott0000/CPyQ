@@ -69,13 +69,20 @@ class WSResponseMixin:
                     self.__recv_ack__(custom_message)
                     continue
 
-                # This should never be reached
+                # The message factory should never allow this to be reached
                 raise RuntimeError(f"Encountered an unexpected message: {custom_message}.")
 
         except RatelimitException:
             await self.close(code=WSCloseCode.POLICY_VIOLATION)
         except WSException as error:
             await self.close(code=error.code)
+        except Exception as error:
+            log(
+                "An internal error occurred whilst processing an incoming WebSocket message.",
+                ERROR,
+                error=error,
+            )
+            await self.close(code=CustomWSCloseCode.InternalError)
 
         raise StopAsyncIteration
 
