@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from secrets import token_urlsafe
 from typing import TYPE_CHECKING
 
-from .bases import ComparesIDABC, ComparesIDMixin
+from .bases import ComparesIDABC, ComparesIDMixin, JSONSerialisableABC
 from .utils import decode_datetime, encode_datetime, now
 
 if TYPE_CHECKING:
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     ExpirationType = datetime | timedelta | float | str
 
 
-class Token(ComparesIDMixin, ComparesIDABC):
+class Token(ComparesIDMixin, ComparesIDABC, JSONSerialisableABC):
     __slots__ = (
         "_id",
         "_session",
@@ -135,7 +135,7 @@ class Token(ComparesIDMixin, ComparesIDABC):
         else:
             return False
 
-    def to_json(self) -> Json:
+    def json(self) -> Json:
         try:
             killed_at = encode_datetime(self._killed_at)
         except AttributeError:
@@ -147,5 +147,5 @@ class Token(ComparesIDMixin, ComparesIDABC):
             "access_expires": encode_datetime(self._access_expires),
             "refresh_expires": encode_datetime(self._refresh_expires),
             "killed_at": killed_at,
-            "session": self._session.to_json(),
+            "session": self._session.json(),
         }

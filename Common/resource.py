@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
-from .bases import ComparesIDFormattedABC, ComparesIDFormattedMixin
+from .bases import ComparesIDFormattedABC, ComparesIDFormattedMixin, JSONSerialisableABC
 from .errors import ResourceLocked, ResourceNotOwned
 from .utils import now
 
@@ -25,10 +25,11 @@ class ResourceJSONVersion(Enum):
     metadata = 0
     preview  = 1
     view     = 2
+    default  = metadata
 # fmt: on
 
 
-class ResourceABC(ComparesIDFormattedABC, ABC):
+class ResourceABC(ComparesIDFormattedABC, JSONSerialisableABC, ABC):
     __slots__ = ()
 
     @property
@@ -42,7 +43,7 @@ class ResourceABC(ComparesIDFormattedABC, ABC):
         pass
 
     @abstractmethod
-    def to_json(self, *, version: ResourceJSONVersion) -> Json:
+    def json(self, *, version: ResourceJSONVersion = ResourceJSONVersion.default) -> Json:
         pass
 
 
@@ -125,4 +126,4 @@ class Resource(Protocol):
         self, session: Session | None = None, /, *, unconditional: bool = False
     ) -> None: ...
     def ensure_acquired(self, session: Session, /) -> None: ...
-    def to_json(self, *, version: ResourceJSONVersion) -> Json: ...
+    def json(self, *, version: ResourceJSONVersion = ResourceJSONVersion.default) -> Json: ...

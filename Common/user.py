@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from .bases import ComparesIDABC, ComparesIDMixin
+from .bases import ComparesIDABC, ComparesIDMixin, JSONSerialisableABC
 from .permissions import Permission, PermissionScope
 
 if TYPE_CHECKING:
@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 __all__ = ("User",)
 
 
-class User(ComparesIDMixin, ComparesIDABC):
+class User(ComparesIDMixin, ComparesIDABC, JSONSerialisableABC):
     __slots__ = (
         "_id",
         "_username",
@@ -126,7 +126,7 @@ class User(ComparesIDMixin, ComparesIDABC):
         else:
             return False
 
-    def to_json(self) -> Json:
+    def json(self) -> Json:
         return {
             "id": self._id,
             "username": self._username,
@@ -134,5 +134,5 @@ class User(ComparesIDMixin, ComparesIDABC):
             "email": self._email,
             "autopilot": self._autopilot,
             "admin": self._admin,
-            "teams": list(team.to_json() for team in self._teams),
+            "teams": list(team.json() for team in self._teams),
         }

@@ -33,7 +33,7 @@ class AuthService(BaseService):
         return json_response(
             {
                 "message": "OK",
-                "token": token.to_json(),
+                "token": token.json(),
             },
             status=200,
         )

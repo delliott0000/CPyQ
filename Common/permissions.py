@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import TYPE_CHECKING
 
+from .bases import JSONSerialisableABC
+
 if TYPE_CHECKING:
     from typing import Any
 
@@ -45,12 +47,13 @@ class PermissionScope(Enum):
 
 
 @dataclass(kw_only=True, slots=True, frozen=True)
-class Permission:
+class Permission(JSONSerialisableABC):
     type:  PermissionType
     scope: PermissionScope
 
-    def to_json(self) -> Json:
+    def json(self) -> Json:
         return {
             "type": self.type.value,
             "scope": self.scope.value,
         }
+# fmt: on

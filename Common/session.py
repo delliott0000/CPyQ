@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from .bases import ComparesIDABC, ComparesIDMixin
+from .bases import ComparesIDABC, ComparesIDMixin, JSONSerialisableABC
 from .errors import SessionBound
 from .resource import ResourceJSONVersion
 from .state import State
@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 __all__ = ("Session",)
 
 
-class Session(ComparesIDMixin, ComparesIDABC):
+class Session(ComparesIDMixin, ComparesIDABC, JSONSerialisableABC):
     __slots__ = ("_id", "_user", "_state", "_resource", "_connections")
 
     def __init__(
@@ -81,15 +81,15 @@ class Session(ComparesIDMixin, ComparesIDABC):
             log(f"{self._user} released {self._resource}. (Session ID: {self._id})")
             self._resource = None
 
-    def to_json(self) -> Json:
+    def json(self) -> Json:
         try:
-            resource = self._resource.to_json(version=ResourceJSONVersion.metadata)
+            resource = self._resource.json(version=ResourceJSONVersion.metadata)
         except AttributeError:
             resource = None
 
         return {
             "id": self._id,
-            "user": self._user.to_json(),
-            "state": self._state.to_json(),
+            "user": self._user.json(),
+            "state": self._state.json(),
             "resource": resource,
         }

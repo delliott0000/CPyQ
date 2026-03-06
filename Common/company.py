@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from .bases import ComparesIDABC, ComparesIDMixin
+from .bases import ComparesIDABC, ComparesIDMixin, JSONSerialisableABC
 
 if TYPE_CHECKING:
     from typing import Any
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 __all__ = ("Company",)
 
 
-class Company(ComparesIDMixin, ComparesIDABC):
+class Company(ComparesIDMixin, ComparesIDABC, JSONSerialisableABC):
     __slots__ = ("_id", "_name")
 
     def __init__(self, company_record: Record | Json, /):
@@ -32,7 +32,7 @@ class Company(ComparesIDMixin, ComparesIDABC):
     def name(self) -> str:
         return self._name
 
-    def to_json(self) -> Json:
+    def json(self) -> Json:
         return {
             "id": self._id,
             "name": self._name,

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from .bases import ComparesIDABC, ComparesIDMixin
+from .bases import ComparesIDABC, ComparesIDMixin, JSONSerialisableABC
 
 if TYPE_CHECKING:
     from typing import Any
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 __all__ = ("Team",)
 
 
-class Team(ComparesIDMixin, ComparesIDABC):
+class Team(ComparesIDMixin, ComparesIDABC, JSONSerialisableABC):
     __slots__ = ("_id", "_name", "_hierarchy_index", "_company", "_permissions")
 
     def __init__(
@@ -89,11 +89,11 @@ class Team(ComparesIDMixin, ComparesIDABC):
         )
         # fmt: on
 
-    def to_json(self) -> Json:
+    def json(self) -> Json:
         return {
             "id": self._id,
             "name": self._name,
             "hierarchy_index": self._hierarchy_index,
-            "company": self._company.to_json(),
-            "permissions": list(permission.to_json() for permission in self._permissions),
+            "company": self._company.json(),
+            "permissions": list(permission.json() for permission in self._permissions),
         }

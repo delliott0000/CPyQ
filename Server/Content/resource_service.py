@@ -59,12 +59,12 @@ class ResourceService(BaseService):
         resource: Resource,
         /,
         *,
-        version: ResourceJSONVersion = ResourceJSONVersion.metadata,
+        version: ResourceJSONVersion = ResourceJSONVersion.default,
     ) -> Response:
         return json_response(
             {
                 "message": "OK",
-                "resource": resource.to_json(version=version),
+                "resource": resource.json(version=version),
             },
             status=200,
         )
@@ -85,7 +85,7 @@ class ResourceService(BaseService):
         try:
             resource.ensure_acquired(session)
         except ResourceNotOwned as error:
-            raise self.convert_conflict(error, {"session": session.to_json()})
+            raise self.convert_conflict(error, {"session": session.json()})
 
     async def load_resource(self, request: Request, /) -> Resource:
         rtype = request.match_info["rtype"]
@@ -158,7 +158,7 @@ class ResourceService(BaseService):
         except ResourceLocked as error:
             raise self.convert_conflict(error, {"locked_by": str(resource.current_user)})
         except SessionBound as error:
-            raise self.convert_conflict(error, {"session": session.to_json()})
+            raise self.convert_conflict(error, {"session": session.json()})
 
         return self.ok_response(resource)
 
@@ -176,7 +176,7 @@ class ResourceService(BaseService):
         try:
             resource.release(session)
         except ResourceNotOwned as error:
-            raise self.convert_conflict(error, {"session": session.to_json()})
+            raise self.convert_conflict(error, {"session": session.json()})
 
         return self.ok_response(resource)
 
