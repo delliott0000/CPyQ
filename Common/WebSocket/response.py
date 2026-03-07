@@ -72,10 +72,15 @@ class WSResponseMixin:
                 # The message factory should never allow this to be reached
                 raise RuntimeError(f"Encountered an unexpected message: {custom_message}.")
 
+        except StopAsyncIteration:
+            raise
         except RatelimitException:
             await self.close(code=WSCloseCode.POLICY_VIOLATION)
         except WSException as error:
             await self.close(code=error.code)
+        except Exception:
+            await self.close(code=CustomWSCloseCode.InternalError)
+            raise
 
         raise StopAsyncIteration
 
