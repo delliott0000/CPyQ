@@ -38,7 +38,7 @@ class Route(ABC):
             )
         elif self.BASE == "":
             raise RuntimeError(
-                "Route instances must have a base. Did you forget to call setup_routes(...)?"
+                "Route subclasses must have a base. Did you forget to call setup_routes(...)?"
             )
 
         self.__path: str = path
