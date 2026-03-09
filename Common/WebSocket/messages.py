@@ -7,12 +7,15 @@ from aiohttp import WSMsgType
 
 from ..utils import decode_datetime, protocol_error
 from .enums import CustomWSCloseCode, CustomWSMessageType, WSEventStatus
+from .payloads import payload_factory
 
 if TYPE_CHECKING:
     from datetime import datetime
     from typing import Any
 
     from aiohttp import WSMessage
+
+    from .payloads import Payload
 
     Json = dict[str, Any]
 
@@ -41,12 +44,10 @@ class WSEvent(CustomWSMessage):
         super().__init__(json)
         self._status = WSEventStatus(json["status"])
         self._reason = json.get("reason")
-        self._payload = json["payload"]
+        self._payload = payload_factory(json["payload"])
 
         if not (isinstance(self._reason, str) or self._reason is None):
             raise TypeError("Reason must be a string or None.")
-        elif not isinstance(self._payload, dict):
-            raise TypeError("Payload must be a dict.")
 
     @property
     def status(self) -> WSEventStatus:
@@ -57,7 +58,7 @@ class WSEvent(CustomWSMessage):
         return self._reason
 
     @property
-    def payload(self) -> Json:
+    def payload(self) -> Payload:
         return self._payload
 
 
