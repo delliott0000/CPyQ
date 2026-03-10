@@ -17,7 +17,7 @@ class Payload(JSONSerialisableABC, ABC): ...
 
 
 class EmptyPayload(Payload):
-    __instance__ = None
+    __instance__: EmptyPayload | None = None
 
     def __new__(cls, *args: Any, **kwargs: Any):
         if cls.__instance__ is None:
@@ -30,6 +30,8 @@ class EmptyPayload(Payload):
 
 def payload_factory(json: Json, /) -> Payload:
     if not json:
-        return EmptyPayload()
+        cls = EmptyPayload
+    else:
+        cls = ...
 
-    ...
+    return cls(json)
