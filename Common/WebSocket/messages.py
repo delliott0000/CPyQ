@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from aiohttp import WSMsgType
 
-from ..utils import decode_datetime, protocol_error
+from ..utils import decode_datetime, protocol_error, validate
 from .enums import CustomWSCloseCode, CustomWSMessageType, WSEventStatus
 from .payloads import payload_factory
 
@@ -27,8 +27,7 @@ class CustomWSMessage:
         self._id = json["id"]
         self._sent_at = decode_datetime(json["sent_at"])
 
-        if not isinstance(self._id, str):
-            raise TypeError("UUID must be a string.")
+        validate(str, self._id)
 
     @property
     def id(self) -> str:
@@ -46,8 +45,7 @@ class WSEvent(CustomWSMessage):
         self._reason = json.get("reason")
         self._payload = payload_factory(json["payload"])
 
-        if not (isinstance(self._reason, str) or self._reason is None):
-            raise TypeError("Reason must be a string or None.")
+        validate(str, self._reason, optional=True)
 
     @property
     def status(self) -> WSEventStatus:
