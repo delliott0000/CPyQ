@@ -43,6 +43,7 @@ __all__ = (
     "now",
     "decode_datetime",
     "encode_datetime",
+    "validate",
     "check_password",
     "encrypt_password",
     "check_ratelimit",
@@ -78,6 +79,22 @@ def encode_datetime(t: datetime, /) -> str:
         raise ValueError("Datetime must be timezone-aware.")
     else:
         return t.strftime(ENCODE_DATETIME_FORMAT)
+
+
+def validate(
+    class_or_tuple: type | tuple[type, ...], obj: T, /, *, optional: bool = False
+) -> T:
+    if isinstance(obj, class_or_tuple):
+        return obj
+    elif optional is True and obj is None:
+        return obj
+
+    elif isinstance(class_or_tuple, tuple):
+        expected = ", ".join(cls.__name__ for cls in class_or_tuple)
+    else:
+        expected = class_or_tuple.__name__
+
+    raise TypeError(f"Expected {expected}; got {type(obj).__name__}")
 
 
 def check_password(password: str, hashed_password: str, /) -> bool:
