@@ -19,10 +19,13 @@ class Payload(JSONSerialisableABC, ABC): ...
 class EmptyPayload(Payload):
     __instance__: EmptyPayload | None = None
 
-    def __new__(cls, *args: Any, **kwargs: Any):
+    def __new__(cls, _: Json, /):
         if cls.__instance__ is None:
-            cls.__instance__ = super().__new__(cls, *args, **kwargs)
+            cls.__instance__ = super().__new__(cls)
         return cls.__instance__
+
+    def __init__(self, _: Json, /):  # noqa
+        pass
 
     def json(self) -> Json:
         return {}
