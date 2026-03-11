@@ -6,14 +6,30 @@ from typing import TYPE_CHECKING
 from ..bases import JSONSerialisableABC
 
 if TYPE_CHECKING:
-    from typing import Any
+    from collections.abc import Callable
+    from typing import Any, ClassVar
 
     Json = dict[str, Any]
+    Validator = Callable[[Any], Any]
 
 __all__ = ("Payload", "EmptyPayload", "payload_factory")
 
 
-class Payload(JSONSerialisableABC, ABC): ...
+class Payload(JSONSerialisableABC, ABC):
+    VALIDATORS: ClassVar[dict[str, Validator] | None] = None
+
+    def __init__(self, json: Json, /):
+        if type(self) is Payload:
+            # Leave this here for safety; ABC will raise TypeError, but don't rely on that
+            raise NotImplementedError(
+                "Payload is an abstract base class and cannot be instantiated directly."
+            )
+        elif self.VALIDATORS is None:
+            raise RuntimeError("Payload subclasses must each define their own validators.")
+
+        # This may be made recursive in the future to handle nested structures
+        for key, validator in self.VALIDATORS.items():
+            setattr(self, key, validator(json[key]))
 
 
 class EmptyPayload(Payload):
