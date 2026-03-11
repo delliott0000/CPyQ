@@ -74,23 +74,22 @@ It *is not* a violation of the subprotocol to:
 - Supply an undocumented field. The receiving peer can safely ignore this.
 
 # Payloads
-Each `Payload` must be of a certain type. This is denoted by the `"kind"` field. The value of this field drives all other fields in the `Payload`.
+Each concrete non-empty `Payload` must be of a certain kind. This is denoted by the `"kind"` field. The value of this field drives all other fields in the `Payload`.
 
-Some `Payload` types only make sense in a certain context. This is documented on a per-type basis. Payloads sent outside the correct context are violations of the subprotocol.
+Some `Payload` kinds only make sense in a certain context. This is documented on a per-kind basis. Payloads sent outside the correct context are violations of the subprotocol.
 
-Sending a `Payload` of an unknown type or with an otherwise invalid body is also a violation, as per the rules listed in [Message Structure](#message-structure).
+Sending a `Payload` of an unknown kind or with an otherwise invalid body is also a violation, as per the rules listed in [Message Structure](#message-structure).
 
-Below is a list of valid `Payload` types for generic use. Further `Payload` types, as well as extensions of some of the below types, can be found in [Contents](Contents).
+Below is a list of generic `Payload` kinds. Further `Payload` kinds, as well as extensions of some of the below kinds, can be found in [Contents](Contents).
 
-- **Empty Payload** - Normally used in unsuccessful `Events` when there is nothing to report beyond the error itself. Successful `Events` with empty payloads sent during the [Messaging Phase](#connection-phases) should simply be treated as inert non-ops. It should be noted that the `"kind"` field is mandatory for all non-empty `Payloads`.
+- **Empty Payload** - Normally used in unsuccessful `Events` when there is nothing to report beyond the error itself, or for troubleshooting/debugging. Successful `Events` with empty payloads sent during the [Messaging Phase](#connection-phases) should simply be treated as inert non-ops.
 ```py
 {}
 ```
 
-- **Handshake Payload** - Sent once by the server (not the client) during the [Handshake Phase](#connection-phases). It must not be sent outside this phase, and other `Payload` types must not be sent during this phase. The `"ack_timeout"` applies to all `Events` sent by either peer throughout the entire connection, including the handshake itself.
+- **Handshake Payload** - Sent once by the server (not the client) during the [Handshake Phase](#connection-phases). It must not be sent outside this phase, and other `Payload` kinds must not be sent during this phase. The `"ack_timeout"` applies to all `Events` sent by either peer throughout the entire connection, including the handshake itself. This `Payload` acts as an **abstract base definition**; in practice, extensions of this `Payload` must be used. Therefore, this definition does not specify a `"kind"` value. This is conceptually similar to [Python ABCs](https://docs.python.org/3/library/abc.html).
 ```py
 {
-    "kind": "handshake",  # By definition; Enum ["handshake"]
     "ack_timeout": float  # In seconds; this should be greater than 0
 }
 ```
