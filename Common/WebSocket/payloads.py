@@ -4,6 +4,7 @@ from abc import ABC
 from typing import TYPE_CHECKING
 
 from ..bases import JSONSerialisableABC
+from ..utils import validate
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -48,6 +49,8 @@ class EmptyPayload(Payload):
 
 
 def payload_factory(json: Json, /) -> Payload:
+    validate(dict, json)
+
     if not json:
         cls = EmptyPayload
     else:
