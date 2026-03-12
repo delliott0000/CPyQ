@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
     Json = dict[str, Any]
 
-__all__ = ("Payload", "payload_factory")
+__all__ = ("Payload", "EmptyPayload", "EMPTY_PAYLOAD", "payload_factory")
 
 
 class Payload(JSONSerialisableABC, ABC):
@@ -20,10 +20,16 @@ class Payload(JSONSerialisableABC, ABC):
     def json(self) -> Json: ...
 
 
+class EmptyPayload(Payload): ...
+
+
+EMPTY_PAYLOAD = ...
+
+
 def payload_factory(json: Json, /) -> Payload:
     validate(dict, json)
 
     if not json:
-        return ...
+        return EMPTY_PAYLOAD
     else:
         return ...
