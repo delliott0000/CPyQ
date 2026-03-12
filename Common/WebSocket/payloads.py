@@ -4,6 +4,7 @@ from abc import ABC
 from typing import TYPE_CHECKING
 
 from ..bases import JSONSerialisableABC
+from ..codecs import float_codec
 from ..utils import validate
 from .enums import PayloadKind
 
@@ -48,6 +49,12 @@ class EmptyPayload(Payload):
         return {}
 
 
+class Handshake(Payload, ABC):
+    CODECS = {
+        "ack_timeout": float_codec,
+    }
+
+
 EMPTY_PAYLOAD = EmptyPayload()
 
 
@@ -59,6 +66,7 @@ def payload_factory(json: Json, /) -> Payload:
 
     if not json:
         return EMPTY_PAYLOAD
+
     else:
         kind = PayloadKind(json["kind"])
         cls = _MAPPING[kind]

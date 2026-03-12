@@ -11,7 +11,15 @@ if TYPE_CHECKING:
 
     T = TypeVar("T")
 
-__all__ = ("Codec", "TypedCodec", "DatetimeCodec", "str_codec", "int_codec", "dt_codec")
+__all__ = (
+    "Codec",
+    "TypedCodec",
+    "DatetimeCodec",
+    "float_codec",
+    "int_codec",
+    "str_codec",
+    "dt_codec",
+)
 
 
 class Codec(ABC):
@@ -44,6 +52,7 @@ class DatetimeCodec(Codec):
         return decode_datetime(value)
 
 
-str_codec = TypedCodec(str)
+float_codec = TypedCodec(float)
 int_codec = TypedCodec(int)
+str_codec = TypedCodec(str)
 dt_codec = DatetimeCodec()
