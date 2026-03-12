@@ -20,10 +20,15 @@ class Payload(JSONSerialisableABC, ABC):
     def json(self) -> Json: ...
 
 
-class EmptyPayload(Payload): ...
+class EmptyPayload(Payload):
+    def __init__(self):  # noqa
+        pass
+
+    def json(self) -> Json:
+        return {}
 
 
-EMPTY_PAYLOAD = ...
+EMPTY_PAYLOAD = EmptyPayload()
 
 
 _MAPPING = ...
