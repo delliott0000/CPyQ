@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 from ..bases import JSONSerialisableABC
 from ..utils import validate
+from .enums import PayloadKind
 
 if TYPE_CHECKING:
     from typing import Any, ClassVar
@@ -50,7 +51,7 @@ class EmptyPayload(Payload):
 EMPTY_PAYLOAD = EmptyPayload()
 
 
-_MAPPING = ...
+_MAPPING = {}
 
 
 def payload_factory(json: Json, /) -> Payload:
@@ -59,4 +60,6 @@ def payload_factory(json: Json, /) -> Payload:
     if not json:
         return EMPTY_PAYLOAD
     else:
-        return ...
+        kind = PayloadKind(json["kind"])
+        cls = _MAPPING[kind]
+        return cls(json)

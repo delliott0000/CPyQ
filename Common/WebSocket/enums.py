@@ -1,6 +1,6 @@
 from enum import IntEnum, StrEnum
 
-__all__ = ("CustomWSCloseCode", "CustomWSMessageType", "WSEventStatus")
+__all__ = ("CustomWSCloseCode", "CustomWSMessageType", "WSEventStatus", "PayloadKind")
 
 
 # fmt: off
@@ -28,4 +28,7 @@ class WSEventStatus(StrEnum):
     Normal = "normal"
     Error  = "error"
     Fatal  = "fatal"
+
+
+class PayloadKind(StrEnum): ...
 # fmt: on
