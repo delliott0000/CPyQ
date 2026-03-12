@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
     Json = dict[str, Any]
 
-__all__ = ("Payload", "EmptyPayload", "EMPTY_PAYLOAD", "payload_factory")
+__all__ = ("Payload", "EmptyPayload", "EMPTY_PAYLOAD", "payload_kind", "payload_factory")
 
 
 class Payload(JSONSerialisableABC, ABC):
@@ -61,6 +61,10 @@ EMPTY_PAYLOAD = EmptyPayload()
 _MAPPING = {}
 
 
+def payload_kind(kind: PayloadKind, /) -> type[Payload]:
+    return _MAPPING[kind]
+
+
 def payload_factory(json: Json, /) -> Payload:
     validate(dict, json)
 
@@ -69,5 +73,5 @@ def payload_factory(json: Json, /) -> Payload:
 
     else:
         kind = PayloadKind(json["kind"])
-        cls = _MAPPING[kind]
+        cls = payload_kind(kind)
         return cls(json)
