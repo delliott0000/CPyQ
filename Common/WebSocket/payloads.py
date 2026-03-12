@@ -26,6 +26,9 @@ class EmptyPayload(Payload): ...
 EMPTY_PAYLOAD = ...
 
 
+_MAPPING = ...
+
+
 def payload_factory(json: Json, /) -> Payload:
     validate(dict, json)
 
