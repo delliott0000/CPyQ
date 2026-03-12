@@ -7,7 +7,9 @@ from ..bases import JSONSerialisableABC
 from ..utils import validate
 
 if TYPE_CHECKING:
-    from typing import Any
+    from typing import Any, ClassVar
+
+    from ..codecs import Codec
 
     Json = dict[str, Any]
 
@@ -15,7 +17,17 @@ __all__ = ("Payload", "EmptyPayload", "EMPTY_PAYLOAD", "payload_factory")
 
 
 class Payload(JSONSerialisableABC, ABC):
-    def __init__(self, json: Json, /): ...
+    CODECS: ClassVar[dict[str, Codec] | None] = None
+
+    def __init__(self, json: Json, /):
+        if type(self) is Payload:
+            raise NotImplementedError(
+                "Payload is an abstract base class and must not be instantiated directly."
+            )
+        elif self.CODECS is None:
+            raise RuntimeError("Payload subclasses must each define their own codecs.")
+
+        ...
 
     def json(self) -> Json: ...
 
