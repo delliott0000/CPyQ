@@ -27,9 +27,16 @@ class Payload(JSONSerialisableABC, ABC):
         elif self.CODECS is None:
             raise RuntimeError("Payload subclasses must each define their own codecs.")
 
-        ...
+        # Already validated by the factory
+        self._kind = json["kind"]
 
-    def json(self) -> Json: ...
+        for key, codec in self.CODECS.items():
+            setattr(self, key, codec.decode(json[key]))
+
+    def json(self) -> Json:
+        return {"kind": self._kind} | {
+            key: codec.encode(getattr(self, key)) for key, codec in self.CODECS.items()
+        }
 
 
 class EmptyPayload(Payload):
