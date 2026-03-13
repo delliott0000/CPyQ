@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 
 __all__ = (
     "Codec",
+    "JSONCodec",
     "TypedCodec",
     "DatetimeCodec",
     "float_codec",
@@ -30,6 +31,12 @@ class Codec(ABC):
     @abstractmethod
     def decode(self, value: Any, /) -> Any:
         pass
+
+
+class JSONCodec(Codec):
+    def encode(self, value: ..., /) -> ...: ...
+
+    def decode(self, value: ..., /) -> ...: ...
 
 
 class TypedCodec(Codec):
