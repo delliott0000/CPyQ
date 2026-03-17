@@ -52,6 +52,10 @@ class WSEvent(CustomWSMessage):
         return self._status
 
     @property
+    def is_fatal(self) -> bool:
+        return self._status == WSEventStatus.Fatal
+
+    @property
     def reason(self) -> str | None:
         return self._reason
 

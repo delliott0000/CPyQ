@@ -8,7 +8,7 @@ from aiohttp import ClientWebSocketResponse, WSCloseCode
 from aiohttp.web import WebSocketResponse
 
 from ..errors import RatelimitException, WSException
-from ..utils import check_ratelimit, log
+from ..utils import check_ratelimit, log, protocol_error
 from .enums import CustomWSCloseCode
 from .messages import WSAck, WSEvent, custom_message_factory
 
@@ -85,19 +85,23 @@ class WSResponseMixin:
         raise StopAsyncIteration
 
     def __recv_event__(self, event: WSEvent, /) -> None:
-        if event.id not in self.__recv_unacked:
-            self.__recv_unacked.add(event.id)
-        else:
-            raise WSException(code=CustomWSCloseCode.DuplicateEventID)
+        if event.id in self.__recv_unacked:
+            protocol_error(CustomWSCloseCode.DuplicateEventID)
 
-        ...
+        elif event.is_fatal:
+            protocol_error(CustomWSCloseCode.FatalEvent)
+
+        elif ...:
+            ...
+
+        self.__recv_unacked.add(event.id)
 
     def __recv_ack__(self, ack: WSAck, /) -> None:
         try:
             task = self.__sent_unacked.pop(ack.id)
             task.cancel()
         except KeyError:
-            raise WSException(code=CustomWSCloseCode.UnknownEvent)
+            protocol_error(CustomWSCloseCode.UnknownEvent)
 
     def __signal_close__(self, code: IntEnum, /) -> None:
         if not self.__error_futr.done():
