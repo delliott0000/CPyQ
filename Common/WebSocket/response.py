@@ -91,10 +91,13 @@ class WSResponseMixin:
         elif event.is_fatal:
             protocol_error(CustomWSCloseCode.FatalEvent)
 
-        elif not event.payload.valid_in_context(self):
+        elif ...:
             protocol_error(CustomWSCloseCode.BadPayloadContext)
 
         self.__recv_unacked.add(event.id)
+
+        # TODO: schedule an acknowledgement to be sent
+        ...
 
     def __recv_ack__(self, ack: WSAck, /) -> None:
         try:
