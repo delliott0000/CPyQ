@@ -86,7 +86,12 @@ class WSResponseMixin:
 
     def __recv_event__(self, event: WSEvent, /) -> None: ...
 
-    def __recv_ack__(self, ack: WSAck, /) -> None: ...
+    def __recv_ack__(self, ack: WSAck, /) -> None:
+        try:
+            task = self.__sent_unacked.pop(ack.id)
+            task.cancel()
+        except KeyError:
+            raise WSException(code=CustomWSCloseCode.UnknownEvent)
 
     def __signal_close__(self, code: IntEnum, /) -> None:
         if not self.__error_futr.done():
