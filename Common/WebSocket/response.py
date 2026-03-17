@@ -91,8 +91,8 @@ class WSResponseMixin:
         elif event.is_fatal:
             protocol_error(CustomWSCloseCode.FatalEvent)
 
-        elif ...:
-            ...
+        elif not event.payload.valid_in_context(self):
+            protocol_error(CustomWSCloseCode.BadPayloadContext)
 
         self.__recv_unacked.add(event.id)
 
