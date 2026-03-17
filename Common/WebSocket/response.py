@@ -84,7 +84,13 @@ class WSResponseMixin:
 
         raise StopAsyncIteration
 
-    def __recv_event__(self, event: WSEvent, /) -> None: ...
+    def __recv_event__(self, event: WSEvent, /) -> None:
+        if event.id not in self.__recv_unacked:
+            self.__recv_unacked.add(event.id)
+        else:
+            raise WSException(code=CustomWSCloseCode.DuplicateEventID)
+
+        ...
 
     def __recv_ack__(self, ack: WSAck, /) -> None:
         try:
