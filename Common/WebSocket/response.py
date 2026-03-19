@@ -116,7 +116,7 @@ class WSResponseMixin:
         /,
         *,
         wrapped: bool = True,
-        log_cancellation: bool = True,
+        log_cancellation: bool = True,  # If wrapped is False then cancellation will never get logged
     ) -> TN:
         if wrapped:
             real_coro = self.__coro_wrapper__(coro, log_cancellation=log_cancellation)
