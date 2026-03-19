@@ -157,7 +157,6 @@ class WSResponseMixin:
 
     async def send_event(self, event: WSEvent, /) -> None:
         await self.send_json(event.json())  # noqa
-
         task = self.__make_task__(self.__ack_timeout__(), log_cancellation=False)
         self.__sent_unacked[event.id] = task
 
