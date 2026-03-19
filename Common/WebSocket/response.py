@@ -129,6 +129,8 @@ class WSResponseMixin:
         if not self.__error_futr.done():
             self.__error_futr.set_result(code)
 
+    async def __ack_timeout__(self) -> None: ...
+
     async def __wait_for_close__(self) -> None:
         code = await self.__error_futr
         await self.close(_cancel_all=False, code=code)
@@ -152,6 +154,12 @@ class WSResponseMixin:
         task = self.__make_task__(coro)
         self.__submitted_tasks.add(task)
         task.add_done_callback(self.__submitted_tasks.discard)
+
+    async def send_event(self, event: WSEvent, /) -> None:
+        await self.send_json(event.json())  # noqa
+
+        task = self.__make_task__(self.__ack_timeout__(), log_cancellation=False)
+        self.__sent_unacked[event.id] = task
 
     async def close(self, _cancel_all: bool = True, **kwargs: Any) -> bool:
         result = await super().close(**kwargs)  # noqa
