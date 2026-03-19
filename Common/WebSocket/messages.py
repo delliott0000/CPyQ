@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+from abc import ABC
 from json import JSONDecodeError
 from typing import TYPE_CHECKING
 
 from aiohttp import WSMsgType
 
-from ..utils import decode_datetime, protocol_error, validate
+from ..bases import JSONSerialisableABC
+from ..utils import decode_datetime, encode_datetime, protocol_error, validate
 from .enums import CustomWSCloseCode, CustomWSMessageType, WSEventStatus
 from .payloads import payload_factory
 
@@ -22,8 +24,11 @@ if TYPE_CHECKING:
 __all__ = ("CustomWSMessage", "WSEvent", "WSAck", "custom_message_factory")
 
 
-class CustomWSMessage:
+class CustomWSMessage(JSONSerialisableABC, ABC):
     def __init__(self, json: Json, /):
+        # Already validated by the factory
+        self._type = json["type"]
+
         self._id = json["id"]
         self._sent_at = decode_datetime(json["sent_at"])
 
@@ -36,6 +41,13 @@ class CustomWSMessage:
     @property
     def sent_at(self) -> datetime:
         return self._sent_at
+
+    def json(self) -> Json:
+        return {
+            "type": self._type,
+            "id": self._id,
+            "sent_at": encode_datetime(self._sent_at),
+        }
 
 
 class WSEvent(CustomWSMessage):
@@ -62,6 +74,13 @@ class WSEvent(CustomWSMessage):
     @property
     def payload(self) -> Payload:
         return self._payload
+
+    def json(self) -> Json:
+        return super().json() | {
+            "status": self._status.value,
+            "reason": self._reason,
+            "payload": self._payload.json(),
+        }
 
 
 class WSAck(CustomWSMessage):
