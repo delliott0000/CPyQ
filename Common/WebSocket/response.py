@@ -110,9 +110,16 @@ class WSResponseMixin:
         except KeyError:
             protocol_error(CustomWSCloseCode.UnknownEvent)
 
-    def __make_task__(self, coro: Coro, /, *, wrapped: bool = True) -> TN:
+    def __make_task__(
+        self,
+        coro: Coro,
+        /,
+        *,
+        wrapped: bool = True,
+        log_cancellation: bool = True,
+    ) -> TN:
         if wrapped:
-            real_coro = self.__coro_wrapper__(coro)
+            real_coro = self.__coro_wrapper__(coro, log_cancellation=log_cancellation)
         else:
             real_coro = coro
 
@@ -126,11 +133,12 @@ class WSResponseMixin:
         code = await self.__error_futr
         await self.close(_cancel_all=False, code=code)
 
-    async def __coro_wrapper__(self, coro: Coro, /) -> None:
+    async def __coro_wrapper__(self, coro: Coro, /, *, log_cancellation: bool = True) -> None:
         try:
             await coro
         except CancelledError:
-            log(f"WebSocket task {coro} was cancelled.")
+            if log_cancellation:
+                log(f"WebSocket task {coro} was cancelled.")
             raise
         except WSException as error:
             self.__signal_close__(error.code)
