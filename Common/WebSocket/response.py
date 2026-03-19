@@ -53,7 +53,7 @@ class WSResponseMixin:
         self.__submitted_tasks: set[TN] = set()
 
         self.__error_futr: Future[IntEnum] = get_running_loop().create_future()
-        self.__error_task: TN = create_task(self.__wait_for_close__())
+        self.__error_task: TN = self.__make_task__(self.__wait_for_close__(), wrapped=False)
 
     async def __anext__(self) -> WSEvent:
         try:
@@ -110,6 +110,14 @@ class WSResponseMixin:
         except KeyError:
             protocol_error(CustomWSCloseCode.UnknownEvent)
 
+    def __make_task__(self, coro: Coro, /, *, wrapped: bool) -> TN:
+        if wrapped:
+            real_coro = self.__coro_wrapper__(coro)
+        else:
+            real_coro = coro
+
+        return create_task(real_coro)
+
     def __signal_close__(self, code: IntEnum, /) -> None:
         if not self.__error_futr.done():
             self.__error_futr.set_result(code)
@@ -133,8 +141,7 @@ class WSResponseMixin:
     def _valid_context(self, payload: Payload, /) -> bool: ...
 
     def submit(self, coro: Coro, /) -> None:
-        wrapped = self.__coro_wrapper__(coro)
-        task = create_task(wrapped)
+        task = self.__make_task__(coro, wrapped=True)
         self.__submitted_tasks.add(task)
         task.add_done_callback(self.__submitted_tasks.discard)
 
