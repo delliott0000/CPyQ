@@ -110,7 +110,7 @@ class WSResponseMixin:
         except KeyError:
             protocol_error(CustomWSCloseCode.UnknownEvent)
 
-    def __make_task__(self, coro: Coro, /, *, wrapped: bool) -> TN:
+    def __make_task__(self, coro: Coro, /, *, wrapped: bool = True) -> TN:
         if wrapped:
             real_coro = self.__coro_wrapper__(coro)
         else:
@@ -141,7 +141,7 @@ class WSResponseMixin:
     def _valid_context(self, payload: Payload, /) -> bool: ...
 
     def submit(self, coro: Coro, /) -> None:
-        task = self.__make_task__(coro, wrapped=True)
+        task = self.__make_task__(coro)
         self.__submitted_tasks.add(task)
         task.add_done_callback(self.__submitted_tasks.discard)
 
