@@ -18,8 +18,6 @@ if TYPE_CHECKING:
     from enum import IntEnum
     from typing import Any, ClassVar
 
-    from .payloads import Payload
-
     Coro = Coroutine[Any, Any, None]
     TN = Task[None]
 
@@ -95,7 +93,8 @@ class WSResponseMixin:
         elif event.is_fatal:
             protocol_error(CustomWSCloseCode.FatalEvent)
 
-        elif not self._valid_context(event.payload):
+        # TODO: implement payload contexts
+        elif not ...:
             protocol_error(CustomWSCloseCode.BadPayloadContext)
 
         self.__recv_unacked.add(event.id)
@@ -147,8 +146,6 @@ class WSResponseMixin:
         except Exception as error:
             log(f"WebSocket task {coro} raised an exception.", ERROR, error=error)
             self.__signal_close__(CustomWSCloseCode.InternalError)
-
-    def _valid_context(self, payload: Payload, /) -> bool: ...
 
     def submit(self, coro: Coro, /) -> None:
         task = self.__make_task__(coro)
