@@ -156,7 +156,13 @@ class WSResponseMixin:
         task.add_done_callback(self.__submitted_tasks.discard)
 
     async def send_event(self, event: WSEvent, /) -> None:
+        if event.id in self.__sent_unacked:
+            raise RuntimeError(
+                "This event has already been sent and is pending acknowledgement."
+            )
+
         await self.send_json(event.json())  # noqa
+
         task = self.__make_task__(self.__ack_timeout__(), log_cancellation=False)
         self.__sent_unacked[event.id] = task
 
