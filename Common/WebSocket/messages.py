@@ -3,6 +3,7 @@ from __future__ import annotations
 from abc import ABC
 from json import JSONDecodeError
 from typing import TYPE_CHECKING
+from uuid import uuid4
 
 from aiohttp import WSMsgType
 
@@ -21,7 +22,7 @@ if TYPE_CHECKING:
 
     Json = dict[str, Any]
 
-__all__ = ("CustomWSMessage", "WSEvent", "WSAck", "parse_received_message")
+__all__ = ("CustomWSMessage", "WSEvent", "WSAck", "make_id", "parse_received_message")
 
 
 class CustomWSMessage(JSONSerialisableABC, ABC):
@@ -76,6 +77,24 @@ class WSEvent(CustomWSMessage):
 
         validate(str, self._reason, optional=True)
 
+    @classmethod
+    def from_payload(
+        cls,
+        payload: Payload,
+        /,
+        *,
+        status: str = WSEventStatus.Normal.value,
+        reason: str | None = None,
+    ) -> Self:
+        json = {
+            "type": CustomWSMessageType.Event.value,
+            "id": make_id(),
+            "status": status,
+            "reason": reason,
+            "payload": payload.json(),
+        }
+        return cls(json, with_sent_at=False)
+
     @property
     def status(self) -> WSEventStatus:
         return self._status
@@ -101,13 +120,23 @@ class WSEvent(CustomWSMessage):
 
 
 class WSAck(CustomWSMessage):
-    pass
+    @classmethod
+    def from_event_id(cls, event_id: str, /) -> Self:
+        json = {
+            "type": CustomWSMessageType.Ack.value,
+            "id": event_id,
+        }
+        return cls(json, with_sent_at=False)
 
 
 _MAPPING = {
     CustomWSMessageType.Event: WSEvent,
     CustomWSMessageType.Ack: WSAck,
 }
+
+
+def make_id() -> str:
+    return str(uuid4())
 
 
 def parse_received_message(message: WSMessage, /) -> CustomWSMessage:
