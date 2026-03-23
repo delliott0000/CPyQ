@@ -13,7 +13,7 @@ from .payloads import payload_factory
 
 if TYPE_CHECKING:
     from datetime import datetime
-    from typing import Any
+    from typing import Any, Self
 
     from aiohttp import WSMessage
 
@@ -25,12 +25,12 @@ __all__ = ("CustomWSMessage", "WSEvent", "WSAck", "parse_received_message")
 
 
 class CustomWSMessage(JSONSerialisableABC, ABC):
-    def __init__(self, json: Json, /, *, received: bool):
+    def __init__(self, json: Json, /, *, with_sent_at: bool):
         # Assume type already validated
         self._type = json["type"]
         self._id = json["id"]
 
-        if received:
+        if with_sent_at:
             self._sent_at = decode_datetime(json["sent_at"])
         else:
             self._sent_at = None
@@ -49,6 +49,12 @@ class CustomWSMessage(JSONSerialisableABC, ABC):
     def has_sent_at(self) -> bool:
         return self._sent_at is not None
 
+    def with_sent_at(self, sent_at: datetime, /) -> Self:
+        cls = type(self)
+        json = self.json()
+        json["sent_at"] = encode_datetime(sent_at)
+        return cls(json, with_sent_at=True)
+
     def json(self) -> Json:
         json = {
             "type": self._type,
@@ -62,8 +68,8 @@ class CustomWSMessage(JSONSerialisableABC, ABC):
 
 
 class WSEvent(CustomWSMessage):
-    def __init__(self, json: Json, /, *, received: bool):
-        super().__init__(json, received=received)
+    def __init__(self, json: Json, /, *, with_sent_at: bool):
+        super().__init__(json, with_sent_at=with_sent_at)
         self._status = WSEventStatus(json["status"])
         self._reason = json.get("reason")
         self._payload = payload_factory(json["payload"])
@@ -112,7 +118,7 @@ def parse_received_message(message: WSMessage, /) -> CustomWSMessage:
         json = message.json()
         type_ = CustomWSMessageType(json["type"])
         cls = _MAPPING[type_]
-        return cls(json, received=True)
+        return cls(json, with_sent_at=True)
 
     except JSONDecodeError:
         protocol_error(CustomWSCloseCode.InvalidJSON)
