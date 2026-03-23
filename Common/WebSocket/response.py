@@ -101,8 +101,8 @@ class WSResponseMixin:
 
         self.__recv_unacked.add(event.id)
 
-        # TODO: schedule an acknowledgement to be sent
-        ...
+        ack = WSAck.from_event_id(event.id)
+        self.submit(self.__send_ack__(ack))
 
     def __recv_ack__(self, ack: WSAck, /) -> None:
         try:
