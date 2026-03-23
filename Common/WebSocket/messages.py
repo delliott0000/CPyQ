@@ -44,13 +44,17 @@ class CustomWSMessage(JSONSerialisableABC, ABC):
     def sent_at(self) -> datetime | None:
         return self._sent_at
 
+    @property
+    def ready(self) -> bool:
+        return self._sent_at is not None
+
     def json(self) -> Json:
         json = {
             "type": self._type,
             "id": self._id,
         }
 
-        if self._sent_at is not None:
+        if self.ready:
             json["sent_at"] = encode_datetime(self._sent_at)
 
         return json
