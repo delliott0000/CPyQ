@@ -46,7 +46,7 @@ class CustomWSMessage(JSONSerialisableABC, ABC):
         return self._sent_at
 
     @property
-    def ready(self) -> bool:
+    def has_timestamp(self) -> bool:
         return self._sent_at is not None
 
     def json(self) -> Json:
@@ -55,7 +55,7 @@ class CustomWSMessage(JSONSerialisableABC, ABC):
             "id": self._id,
         }
 
-        if self.ready:
+        if self.has_timestamp:
             json["sent_at"] = encode_datetime(self._sent_at)
 
         return json
