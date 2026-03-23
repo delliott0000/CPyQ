@@ -21,16 +21,20 @@ if TYPE_CHECKING:
 
     Json = dict[str, Any]
 
-__all__ = ("CustomWSMessage", "WSEvent", "WSAck", "custom_message_factory")
+__all__ = ("CustomWSMessage", "WSEvent", "WSAck", "parse_received_message")
 
 
 class CustomWSMessage(JSONSerialisableABC, ABC):
-    def __init__(self, json: Json, /):
+    def __init__(self, json: Json, /, *, sent: bool):
         # Already validated by the factory
         self._type = json["type"]
 
         self._id = json["id"]
-        self._sent_at = decode_datetime(json["sent_at"])
+
+        if sent:
+            self._sent_at = decode_datetime(json["sent_at"])
+        else:
+            self._sent_at = None
 
         validate(str, self._id)
 
@@ -39,20 +43,24 @@ class CustomWSMessage(JSONSerialisableABC, ABC):
         return self._id
 
     @property
-    def sent_at(self) -> datetime:
+    def sent_at(self) -> datetime | None:
         return self._sent_at
 
     def json(self) -> Json:
-        return {
+        json = {
             "type": self._type,
             "id": self._id,
-            "sent_at": encode_datetime(self._sent_at),
         }
+
+        if self._sent_at is not None:
+            json["sent_at"] = encode_datetime(self._sent_at)
+
+        return json
 
 
 class WSEvent(CustomWSMessage):
-    def __init__(self, json: Json, /):
-        super().__init__(json)
+    def __init__(self, json: Json, /, *, sent: bool):
+        super().__init__(json, sent=sent)
         self._status = WSEventStatus(json["status"])
         self._reason = json.get("reason")
         self._payload = payload_factory(json["payload"])
@@ -93,7 +101,7 @@ _MAPPING = {
 }
 
 
-def custom_message_factory(message: WSMessage, /) -> CustomWSMessage:
+def parse_received_message(message: WSMessage, /) -> CustomWSMessage:
     if message.type != WSMsgType.TEXT:
         protocol_error(CustomWSCloseCode.InvalidFrameType)
 
@@ -101,7 +109,7 @@ def custom_message_factory(message: WSMessage, /) -> CustomWSMessage:
         json = message.json()
         type_ = CustomWSMessageType(json["type"])
         cls = _MAPPING[type_]
-        return cls(json)
+        return cls(json, sent=True)
 
     except JSONDecodeError:
         protocol_error(CustomWSCloseCode.InvalidJSON)

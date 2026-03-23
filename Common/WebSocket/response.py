@@ -10,7 +10,7 @@ from aiohttp.web import WebSocketResponse
 from ..errors import RatelimitException, WSException
 from ..utils import check_ratelimit, log, protocol_error
 from .enums import CustomWSCloseCode
-from .messages import WSAck, WSEvent, custom_message_factory
+from .messages import WSAck, WSEvent, parse_received_message
 
 if TYPE_CHECKING:
     from asyncio import Future, Task
@@ -61,7 +61,7 @@ class WSResponseMixin:
                 if self.ratelimited:
                     check_ratelimit(self.__hits, limit=self.limit, interval=self.interval)
 
-                custom_message = custom_message_factory(message)
+                custom_message = parse_received_message(message)
 
                 if isinstance(custom_message, WSEvent):
                     self.__recv_event__(custom_message)
@@ -71,7 +71,7 @@ class WSResponseMixin:
                     self.__recv_ack__(custom_message)
                     continue
 
-                # The message factory should never allow this to be reached
+                # The parser should never allow this to be reached
                 raise RuntimeError(f"Encountered an unexpected message: {custom_message}.")
 
         except StopAsyncIteration:
