@@ -25,12 +25,12 @@ __all__ = ("CustomWSMessage", "WSEvent", "WSAck", "parse_received_message")
 
 
 class CustomWSMessage(JSONSerialisableABC, ABC):
-    def __init__(self, json: Json, /, *, sent: bool):
+    def __init__(self, json: Json, /, *, received: bool):
         # Assume type already validated
         self._type = json["type"]
         self._id = json["id"]
 
-        if sent:
+        if received:
             self._sent_at = decode_datetime(json["sent_at"])
         else:
             self._sent_at = None
@@ -46,7 +46,7 @@ class CustomWSMessage(JSONSerialisableABC, ABC):
         return self._sent_at
 
     @property
-    def has_timestamp(self) -> bool:
+    def has_sent_at(self) -> bool:
         return self._sent_at is not None
 
     def json(self) -> Json:
@@ -55,15 +55,15 @@ class CustomWSMessage(JSONSerialisableABC, ABC):
             "id": self._id,
         }
 
-        if self.has_timestamp:
+        if self.has_sent_at:
             json["sent_at"] = encode_datetime(self._sent_at)
 
         return json
 
 
 class WSEvent(CustomWSMessage):
-    def __init__(self, json: Json, /, *, sent: bool):
-        super().__init__(json, sent=sent)
+    def __init__(self, json: Json, /, *, received: bool):
+        super().__init__(json, received=received)
         self._status = WSEventStatus(json["status"])
         self._reason = json.get("reason")
         self._payload = payload_factory(json["payload"])
@@ -112,7 +112,7 @@ def parse_received_message(message: WSMessage, /) -> CustomWSMessage:
         json = message.json()
         type_ = CustomWSMessageType(json["type"])
         cls = _MAPPING[type_]
-        return cls(json, sent=True)
+        return cls(json, received=True)
 
     except JSONDecodeError:
         protocol_error(CustomWSCloseCode.InvalidJSON)
