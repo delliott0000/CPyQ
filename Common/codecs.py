@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 __all__ = (
     "Codec",
     "JSONCodec",
+    "EnumCodec",
     "TypedCodec",
     "DatetimeCodec",
     "float_codec",
@@ -34,6 +35,12 @@ class Codec(ABC):
 
 
 class JSONCodec(Codec):
+    def encode(self, value: ..., /) -> ...: ...
+
+    def decode(self, value: ..., /) -> ...: ...
+
+
+class EnumCodec(Codec):
     def encode(self, value: ..., /) -> ...: ...
 
     def decode(self, value: ..., /) -> ...: ...
