@@ -26,9 +26,8 @@ __all__ = ("CustomWSMessage", "WSEvent", "WSAck", "parse_received_message")
 
 class CustomWSMessage(JSONSerialisableABC, ABC):
     def __init__(self, json: Json, /, *, sent: bool):
-        # Assume this is already validated
+        # Assume type already validated
         self._type = json["type"]
-
         self._id = json["id"]
 
         if sent:
