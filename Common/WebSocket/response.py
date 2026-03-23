@@ -147,6 +147,17 @@ class WSResponseMixin:
             log(f"WebSocket task {coro} raised an exception.", ERROR, error=error)
             self.__signal_close__(CustomWSCloseCode.InternalError)
 
+    async def __send_event__(self, event: WSEvent, /) -> None:
+        if event.id in self.__sent_unacked:
+            raise RuntimeError(
+                f"Cannot send event {event.id}: the event is already sent and pending acknowledgement."
+            )
+
+        task = self.__make_task__(self.__ack_timeout__(), log_cancellation=False)
+        self.__sent_unacked[event.id] = task
+
+        await self.send_json(event.json())  # noqa
+
     async def __send_ack__(self, ack: WSAck, /) -> None:
         if ack.id not in self.__recv_unacked:
             raise RuntimeError(
@@ -161,17 +172,6 @@ class WSResponseMixin:
         task = self.__make_task__(coro)
         self.__submitted_tasks.add(task)
         task.add_done_callback(self.__submitted_tasks.discard)
-
-    async def send_event(self, event: WSEvent, /) -> None:
-        if event.id in self.__sent_unacked:
-            raise RuntimeError(
-                f"Cannot send event {event.id}: the event is already sent and pending acknowledgement."
-            )
-
-        task = self.__make_task__(self.__ack_timeout__(), log_cancellation=False)
-        self.__sent_unacked[event.id] = task
-
-        await self.send_json(event.json())  # noqa
 
     async def close(self, _cancel_all: bool = True, **kwargs: Any) -> bool:
         result = await super().close(**kwargs)  # noqa
