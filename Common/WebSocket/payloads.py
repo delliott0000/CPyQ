@@ -61,6 +61,8 @@ class Handshake(Payload, ABC):
         "ack_timeout": float_codec,
     }
 
+    ack_timeout: float
+
 
 EMPTY_PAYLOAD = EmptyPayload()
 
