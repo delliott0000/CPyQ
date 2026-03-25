@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from asyncio import Future, Task
     from collections.abc import Coroutine
     from enum import IntEnum
-    from typing import Any, ClassVar
+    from typing import Any
 
     from .payloads import Payload
 
@@ -27,8 +27,6 @@ __all__ = ("WSResponseMixin", "CustomWSResponse", "CustomClientWSResponse")
 
 
 class WSResponseMixin:
-    SERVER: ClassVar[bool]
-
     def __init__(
         self,
         *,
@@ -202,8 +200,8 @@ class WSResponseMixin:
 
 
 class CustomWSResponse(WSResponseMixin, WebSocketResponse):
-    SERVER = True
+    pass
 
 
 class CustomClientWSResponse(WSResponseMixin, ClientWebSocketResponse):
-    SERVER = False
+    pass
