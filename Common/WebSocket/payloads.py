@@ -15,7 +15,14 @@ if TYPE_CHECKING:
 
     Json = dict[str, Any]
 
-__all__ = ("Payload", "EmptyPayload", "EMPTY_PAYLOAD", "payload_kind", "payload_factory")
+__all__ = (
+    "Payload",
+    "EmptyPayload",
+    "Handshake",
+    "EMPTY_PAYLOAD",
+    "payload_kind",
+    "payload_factory",
+)
 
 
 class Payload(JSONSerialisableABC, ABC):
