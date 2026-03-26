@@ -30,5 +30,7 @@ class WSEventStatus(StrEnum):
     Fatal  = "fatal"
 
 
-class PayloadKind(StrEnum): ...
+class PayloadKind(StrEnum):
+    UserHandshake      = "user_handshake"
+    AutopilotHandshake = "autopilot_handshake"
 # fmt: on

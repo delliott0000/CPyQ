@@ -19,6 +19,8 @@ __all__ = (
     "Payload",
     "EmptyPayload",
     "Handshake",
+    "UserHandshake",
+    "AutopilotHandshake",
     "EMPTY_PAYLOAD",
     "payload_kind",
     "payload_factory",
@@ -64,10 +66,27 @@ class Handshake(Payload, ABC):
     ack_timeout: float
 
 
+class UserHandshake(Handshake):
+    # TODO: Add more fields as/when needed
+    CODECS = Handshake.CODECS | {}
+
+    ...
+
+
+class AutopilotHandshake(Handshake):
+    # TODO: Add more fields as/when needed
+    CODECS = Handshake.CODECS | {}
+
+    ...
+
+
 EMPTY_PAYLOAD = EmptyPayload()
 
 
-_MAPPING = {}
+_MAPPING = {
+    PayloadKind.UserHandshake: UserHandshake,
+    PayloadKind.AutopilotHandshake: AutopilotHandshake,
+}
 
 
 def payload_kind(kind: PayloadKind, /) -> type[Payload]:
