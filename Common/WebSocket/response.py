@@ -124,6 +124,10 @@ class WSResponseMixin:
 
         return create_task(real_coro)
 
+    def __check_closed__(self, message: str, /) -> None:
+        if self.closed:  # noqa
+            raise RuntimeError(f"{message}; connection closed.")
+
     def __signal_close__(self, code: IntEnum, /) -> None:
         if not self.__error_futr.done():
             self.__error_futr.set_result(code)
@@ -148,9 +152,9 @@ class WSResponseMixin:
             self.__signal_close__(CustomWSCloseCode.InternalError)
 
     async def __send_event__(self, event: WSEvent, /) -> None:
-        if self.closed:  # noqa
-            raise RuntimeError("Event may not be sent; connection closed.")
-        elif event.id in self.__sent_unacked:
+        self.__check_closed__("Can not send event")
+
+        if event.id in self.__sent_unacked:
             raise RuntimeError(
                 f"Cannot send event {event.id}: the event is already sent and pending acknowledgement."
             )
@@ -162,9 +166,9 @@ class WSResponseMixin:
         await self.send_json(prepared_event.json())  # noqa
 
     async def __send_ack__(self, ack: WSAck, /) -> None:
-        if self.closed:  # noqa
-            raise RuntimeError("Acknowledgement may not be sent; connection closed.")
-        elif ack.id not in self.__recv_unacked:
+        self.__check_closed__("Can not send acknowledgement")
+
+        if ack.id not in self.__recv_unacked:
             raise RuntimeError(
                 f"Cannot acknowledge event {ack.id}: the corresponding event is unknown or already acknowledged."
             )
@@ -175,8 +179,7 @@ class WSResponseMixin:
         await self.send_json(prepared_ack.json())  # noqa
 
     def submit(self, coro: Coro, /) -> None:
-        if self.closed:  # noqa
-            raise RuntimeError("Task may not be submitted; connection closed.")
+        self.__check_closed__("Can not submit task")
 
         task = self.__make_task__(coro)
         self.__submitted_tasks.add(task)
