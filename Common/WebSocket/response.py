@@ -171,11 +171,17 @@ class WSResponseMixin:
         await self.send_json(prepared_ack.json())  # noqa
 
     def submit(self, coro: Coro, /) -> None:
+        if self.closed:  # noqa
+            raise RuntimeError("Task may not be submitted; connection closed.")
+
         task = self.__make_task__(coro)
         self.__submitted_tasks.add(task)
         task.add_done_callback(self.__submitted_tasks.discard)
 
     async def send_payload(self, payload: Payload, /, **kwargs: Any) -> None:
+        if self.closed:  # noqa
+            raise RuntimeError("Payload may not be sent; connection closed.")
+
         event = WSEvent.from_payload(payload, **kwargs)
         await self.__send_event__(event)
 
