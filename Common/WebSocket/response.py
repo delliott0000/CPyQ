@@ -175,9 +175,9 @@ class WSResponseMixin:
         self.__submitted_tasks.add(task)
         task.add_done_callback(self.__submitted_tasks.discard)
 
-    def send_payload(self, payload: Payload, /, **kwargs: Any) -> Coro:
+    async def send_payload(self, payload: Payload, /, **kwargs: Any) -> None:
         event = WSEvent.from_payload(payload, **kwargs)
-        return self.__send_event__(event)
+        await self.__send_event__(event)
 
     async def close(self, _cancel_all: bool = True, **kwargs: Any) -> bool:
         result = await super().close(**kwargs)  # noqa
