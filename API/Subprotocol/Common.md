@@ -76,18 +76,18 @@ It *is not* a violation of the subprotocol to:
 # Payloads
 Each concrete non-empty `Payload` must be of a certain kind. This is denoted by the `"kind"` field. The value of this field drives all other fields in the `Payload`.
 
-Some `Payload` kinds only make sense in a certain context. This is documented on a per-kind basis. Payloads sent outside the correct context are violations of the subprotocol.
+Some `Payload` kinds only make sense in a certain context. A context is defined by the direction of travel and the current [Connection Phase](#connection-phases). ***Special exceptions*** also apply to some `Payload` kinds. This is all documented on a per-kind basis. Payloads sent outside the correct context are violations of the subprotocol.
 
 Sending a `Payload` of an unknown kind or with an otherwise invalid body is also a violation, as per the rules listed in [Message Structure](#message-structure).
 
-Below is a list of generic `Payload` kinds. Further `Payload` kinds, as well as extensions of some of the below kinds, can be found in [Contents](Contents).
+Below is a list of universal `Payload` kinds. Further `Payload` kinds, as well as extensions of some of the below kinds, can be found in [Contents](Contents).
 
-- **Empty Payload** - Normally used in unsuccessful `Events` when there is nothing to report beyond the error itself, or for troubleshooting/debugging. Successful `Events` with empty payloads sent during the [Messaging Phase](#connection-phases) should simply be treated as inert non-ops.
+- **Empty Payload** - Sent by either peer during the [Messaging Phase](#connection-phases). Normally used in unsuccessful `Events` when there is nothing to report beyond the reason for the error. It may also be used in successful `Events` for troubleshooting/debugging, in which case the connection should treat it as an inert non-op.
 ```py
 {}
 ```
 
-- **Handshake Payload** - Sent once by the server (not the client) during the [Handshake Phase](#connection-phases). It must not be sent outside this phase, and other `Payload` kinds must not be sent during this phase. The `"ack_timeout"` applies to all `Events` sent by either peer throughout the entire connection, including the handshake itself. This `Payload` acts as an **abstract base definition**; in practice, extensions of this `Payload` must be used. Therefore, this definition does not specify a `"kind"` value. This is conceptually similar to [Python ABCs](https://docs.python.org/3/library/abc.html).
+- **Handshake Payload** - Sent by the server during the [Handshake Phase](#connection-phases). ***Must not be sent more than once per connection.*** The `"ack_timeout"` applies to all `Events` sent by either peer throughout the entire connection, including the handshake itself. This `Payload` acts as an **abstract base definition**; in practice, extensions of this `Payload` must be used. Therefore, this definition does not specify a `"kind"` value. This is conceptually similar to [Python ABCs](https://docs.python.org/3/library/abc.html).
 ```py
 {
     "ack_timeout": float  # In seconds; this should be greater than 0
