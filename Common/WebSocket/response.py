@@ -148,7 +148,9 @@ class WSResponseMixin:
             self.__signal_close__(CustomWSCloseCode.InternalError)
 
     async def __send_event__(self, event: WSEvent, /) -> None:
-        if event.id in self.__sent_unacked:
+        if self.closed:  # noqa
+            raise RuntimeError("Event may not be sent; connection closed.")
+        elif event.id in self.__sent_unacked:
             raise RuntimeError(
                 f"Cannot send event {event.id}: the event is already sent and pending acknowledgement."
             )
@@ -160,7 +162,9 @@ class WSResponseMixin:
         await self.send_json(prepared_event.json())  # noqa
 
     async def __send_ack__(self, ack: WSAck, /) -> None:
-        if ack.id not in self.__recv_unacked:
+        if self.closed:  # noqa
+            raise RuntimeError("Acknowledgement may not be sent; connection closed.")
+        elif ack.id not in self.__recv_unacked:
             raise RuntimeError(
                 f"Cannot acknowledge event {ack.id}: the corresponding event is unknown or already acknowledged."
             )
@@ -179,9 +183,6 @@ class WSResponseMixin:
         task.add_done_callback(self.__submitted_tasks.discard)
 
     async def send_payload(self, payload: Payload, /, **kwargs: Any) -> None:
-        if self.closed:  # noqa
-            raise RuntimeError("Payload may not be sent; connection closed.")
-
         event = WSEvent.from_payload(payload, **kwargs)
         await self.__send_event__(event)
 
