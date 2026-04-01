@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from asyncio import CancelledError, create_task, gather, get_running_loop, sleep
 from logging import ERROR
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Generic
 
 from aiohttp import ClientWebSocketResponse, WSCloseCode
 from aiohttp.web import WebSocketResponse
@@ -10,7 +10,9 @@ from aiohttp.web import WebSocketResponse
 from ..errors import RatelimitException, WSException
 from ..utils import check_ratelimit, log, now, protocol_error
 from .enums import CustomWSCloseCode
+from .handshake import HandshakeManager, HandshakeT
 from .messages import WSAck, WSEvent, parse_received_message
+from .payloads import AutopilotHandshake, UserHandshake
 
 if TYPE_CHECKING:
     from asyncio import Future, Task
@@ -23,13 +25,19 @@ if TYPE_CHECKING:
     Coro = Coroutine[Any, Any, None]
     TN = Task[None]
 
-__all__ = ("WSResponseMixin", "CustomWSResponse", "CustomClientWSResponse")
+__all__ = (
+    "WSResponseMixin",
+    "CustomWSResponse",
+    "CustomUserWSResponse",
+    "CustomAutopilotWSResponse",
+)
 
 
-class WSResponseMixin:
+class WSResponseMixin(Generic[HandshakeT]):
     def __init__(
         self,
         *,
+        handshake_cls: type[HandshakeT],
         ratelimited: bool = False,
         limit: int | None = None,
         interval: float | None = None,
@@ -52,6 +60,10 @@ class WSResponseMixin:
 
         self.__error_futr: Future[IntEnum] = get_running_loop().create_future()
         self.__error_task: TN = self.__make_task__(self.__wait_for_close__(), wrapped=False)
+
+        self.__handshake_manager: HandshakeManager[HandshakeT] = HandshakeManager(
+            cls=handshake_cls,
+        )
 
     async def __anext__(self) -> WSEvent:
         try:
@@ -209,9 +221,15 @@ class WSResponseMixin:
         return result
 
 
-class CustomWSResponse(WSResponseMixin, WebSocketResponse):
+class CustomWSResponse(WSResponseMixin[HandshakeT], WebSocketResponse, Generic[HandshakeT]):
     pass
 
 
-class CustomClientWSResponse(WSResponseMixin, ClientWebSocketResponse):
-    pass
+class CustomUserWSResponse(WSResponseMixin[UserHandshake], ClientWebSocketResponse):
+    def __init__(self, **kwargs: Any):
+        super().__init__(handshake_cls=UserHandshake, **kwargs)
+
+
+class CustomAutopilotWSResponse(WSResponseMixin[AutopilotHandshake], ClientWebSocketResponse):
+    def __init__(self, **kwargs: Any):
+        super().__init__(handshake_cls=AutopilotHandshake, **kwargs)

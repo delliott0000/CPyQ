@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from aiohttp import WSCloseCode
 from aiohttp.web import HTTPConflict
 
-from Common import CustomWSResponse, log
+from Common import AutopilotHandshake, CustomWSResponse, HandshakeT, UserHandshake, log
 
 from .base_service import BaseService
 from .decorators import (
@@ -27,13 +27,21 @@ __all__ = ("BaseWebSocketService", "UserWebSocketService", "AutopilotWebSocketSe
 
 
 class BaseWebSocketService(BaseService, ABC):
-    async def prepare_ws(self, request: Request, token: Token, /) -> CustomWSResponse:
+    async def prepare_ws(
+        self,
+        request: Request,
+        token: Token,
+        /,
+        *,
+        handshake_cls: type[HandshakeT],
+    ) -> CustomWSResponse[HandshakeT]:
         if token in token.session.connections:
             raise HTTPConflict(reason="Already connected")
 
         config = self.server.config
 
         response = CustomWSResponse(
+            handshake_cls=handshake_cls,
             ratelimited=True,
             limit=config.ws_message_limit,
             interval=config.ws_message_interval,
@@ -59,9 +67,15 @@ class BaseWebSocketService(BaseService, ABC):
             f"Received code {response.close_code}. (Token ID: {token.id})"
         )
 
-    async def serve_ws(self, request: Request, /) -> CustomWSResponse:
+    async def serve_ws(
+        self,
+        request: Request,
+        /,
+        *,
+        handshake_cls: type[HandshakeT],
+    ) -> CustomWSResponse[HandshakeT]:
         token = self.token_from_request(request)
-        response = await self.prepare_ws(request, token)
+        response = await self.prepare_ws(request, token, handshake_cls=handshake_cls)
 
         try:
             async for _ in response:
@@ -81,8 +95,8 @@ class UserWebSocketService(BaseWebSocketService):
     @ratelimit(limit=10, interval=60, bucket_type=BucketType.Token)
     @user_only
     @validate_access
-    async def ws_user(self, request: Request, /) -> CustomWSResponse:
-        return await self.serve_ws(request)
+    async def ws_user(self, request: Request, /) -> CustomWSResponse[UserHandshake]:
+        return await self.serve_ws(request, handshake_cls=UserHandshake)
 
 
 class AutopilotWebSocketService(BaseWebSocketService):
@@ -93,5 +107,5 @@ class AutopilotWebSocketService(BaseWebSocketService):
     @ratelimit(limit=10, interval=60, bucket_type=BucketType.Token)
     @autopilot_only
     @validate_access
-    async def ws_autopilot(self, request: Request, /) -> CustomWSResponse:
-        return await self.serve_ws(request)
+    async def ws_autopilot(self, request: Request, /) -> CustomWSResponse[AutopilotHandshake]:
+        return await self.serve_ws(request, handshake_cls=AutopilotHandshake)
