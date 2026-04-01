@@ -61,7 +61,7 @@ class WSResponseMixin(Generic[HandshakeT]):
         self.__error_futr: Future[IntEnum] = get_running_loop().create_future()
         self.__error_task: TN = self.__make_task__(self.__wait_for_close__(), wrapped=False)
 
-        self._handshake_manager: HandshakeManager[HandshakeT] = HandshakeManager(
+        self.__handshake_manager: HandshakeManager[HandshakeT] = HandshakeManager(
             cls=handshake_cls,
         )
 
@@ -189,6 +189,10 @@ class WSResponseMixin(Generic[HandshakeT]):
 
         prepared_ack = ack.with_sent_at(now())
         await self.send_json(prepared_ack.json())  # noqa
+
+    @property
+    def handshake_manager(self) -> HandshakeManager[HandshakeT]:
+        return self.__handshake_manager
 
     def submit(self, coro: Coro, /) -> None:
         self.__check_closed__("Can not submit task")
