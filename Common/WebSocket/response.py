@@ -61,7 +61,7 @@ class WSResponseMixin(Generic[HandshakeT]):
         self.__error_futr: Future[IntEnum] = get_running_loop().create_future()
         self.__error_task: TN = self.__make_task__(self.__wait_for_close__(), wrapped=False)
 
-        self.__handshake_manager: HandshakeManager[HandshakeT] = HandshakeManager(
+        self._handshake_manager: HandshakeManager[HandshakeT] = HandshakeManager(
             cls=handshake_cls,
         )
 
