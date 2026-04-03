@@ -26,6 +26,8 @@ __all__ = ("CustomWSMessage", "WSEvent", "WSAck", "make_id", "parse_received_mes
 
 
 class CustomWSMessage(JSONSerialisableABC, ABC):
+    __slots__ = ("_type", "_id", "_sent_at")
+
     def __init__(self, json: Json, /, *, with_sent_at: bool):
         # Assume type already validated
         self._type = json["type"]
@@ -69,6 +71,8 @@ class CustomWSMessage(JSONSerialisableABC, ABC):
 
 
 class WSEvent(CustomWSMessage):
+    __slots__ = ("_status", "_reason", "_payload")
+
     def __init__(self, json: Json, /, *, with_sent_at: bool):
         super().__init__(json, with_sent_at=with_sent_at)
         self._status = WSEventStatus(json["status"])
@@ -120,6 +124,8 @@ class WSEvent(CustomWSMessage):
 
 
 class WSAck(CustomWSMessage):
+    __slots__ = ()
+
     @classmethod
     def from_event_id(cls, event_id: str, /) -> Self:
         json = {
