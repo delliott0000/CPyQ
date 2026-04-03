@@ -17,6 +17,8 @@ HandshakeT = TypeVar("HandshakeT", bound=Handshake)
 
 
 class HandshakeManager(Generic[HandshakeT]):
+    __slots__ = ("__cls", "__handshake", "__wired", "__done_futr")
+
     def __init__(self, *, cls: type[HandshakeT]):
         if cls is Handshake or not issubclass(cls, Handshake):
             raise ValueError("A subclass of Handshake is required.")
