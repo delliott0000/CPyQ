@@ -83,7 +83,7 @@ class AutopilotHandshake(Handshake):
 EMPTY_PAYLOAD = EmptyPayload()
 
 
-_MAPPING = {
+_MAPPING: dict[PayloadKind, type[Payload]] = {
     PayloadKind.UserHandshake: UserHandshake,
     PayloadKind.AutopilotHandshake: AutopilotHandshake,
 }
