@@ -23,6 +23,7 @@ __all__ = (
     "AutopilotHandshake",
     "EMPTY_PAYLOAD",
     "payload_kind_to_cls",
+    "payload_cls_to_kind",
     "payload_factory",
 )
 
@@ -89,8 +90,15 @@ _MAPPING: dict[PayloadKind, type[Payload]] = {
 }
 
 
+_RMAPPING: dict[type[Payload], PayloadKind] = {v: k for k, v in _MAPPING.items()}
+
+
 def payload_kind_to_cls(kind: PayloadKind, /) -> type[Payload]:
     return _MAPPING[kind]
+
+
+def payload_cls_to_kind(cls: type[Payload], /) -> PayloadKind:
+    return _RMAPPING[cls]
 
 
 def payload_factory(json: Json, /) -> Payload:
