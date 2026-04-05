@@ -1,12 +1,20 @@
 from __future__ import annotations
 
 from abc import ABC
+from dataclasses import asdict
 from typing import TYPE_CHECKING
 
 from aiohttp import WSCloseCode
 from aiohttp.web import HTTPConflict
 
-from Common import AutopilotHandshake, CustomWSResponse, HandshakeT, UserHandshake, log
+from Common import (
+    AutopilotHandshake,
+    CustomWSResponse,
+    HandshakeT,
+    UserHandshake,
+    build_payload,
+    log,
+)
 
 from .base_service import BaseService
 from .decorators import (
@@ -48,6 +56,11 @@ class BaseWebSocketService(BaseService, ABC):
             heartbeat=config.ws_heartbeat,
             max_msg_size=config.ws_max_message_size * 1024,
         )
+
+        handshake_json = asdict(self.server.config.handshake_policy)
+        handshake = build_payload(handshake_cls, handshake_json)
+        response.handshake_manager.set_handshake(handshake)
+
         token.session.connections[token] = response
 
         await response.prepare(request)
