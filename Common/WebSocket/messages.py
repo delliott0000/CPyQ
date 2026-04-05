@@ -10,7 +10,7 @@ from aiohttp import WSMsgType
 from ..bases import JSONSerialisableABC
 from ..utils import decode_datetime, encode_datetime, protocol_error, validate
 from .enums import CustomWSCloseCode, CustomWSMessageType, WSEventStatus
-from .payloads import payload_factory
+from .payloads import parse_received_payload
 
 if TYPE_CHECKING:
     from datetime import datetime
@@ -77,7 +77,7 @@ class WSEvent(CustomWSMessage):
         super().__init__(json, with_sent_at=with_sent_at)
         self._status = WSEventStatus(json["status"])
         self._reason = json.get("reason")
-        self._payload = payload_factory(json["payload"])
+        self._payload = parse_received_payload(json["payload"])
 
         validate(str, self._reason, optional=True)
 

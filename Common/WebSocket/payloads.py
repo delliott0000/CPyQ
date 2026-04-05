@@ -24,7 +24,7 @@ __all__ = (
     "EMPTY_PAYLOAD",
     "payload_kind_to_cls",
     "payload_cls_to_kind",
-    "payload_factory",
+    "parse_received_payload",
 )
 
 
@@ -101,7 +101,7 @@ def payload_cls_to_kind(cls: type[Payload], /) -> PayloadKind:
     return _RMAPPING[cls]
 
 
-def payload_factory(json: Json, /) -> Payload:
+def parse_received_payload(json: Json, /) -> Payload:
     validate(dict, json)
 
     if not json:
