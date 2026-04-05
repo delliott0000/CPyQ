@@ -25,6 +25,7 @@ __all__ = (
     "payload_kind_to_cls",
     "payload_cls_to_kind",
     "parse_received_payload",
+    "build_payload",
 )
 
 
@@ -111,3 +112,15 @@ def parse_received_payload(json: Json, /) -> Payload:
         kind = PayloadKind(json["kind"])
         cls = payload_kind_to_cls(kind)
         return cls(json)
+
+
+if TYPE_CHECKING:
+    from typing import TypeVar
+
+    PayloadT = TypeVar("PayloadT", bound=Payload)
+
+
+def build_payload(cls: type[PayloadT], json: Json, /) -> PayloadT:
+    kind = payload_cls_to_kind(cls)
+    json["kind"] = kind.value
+    return cls(json)
