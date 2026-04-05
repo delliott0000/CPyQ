@@ -91,4 +91,4 @@ config_file_path = root_dir() / "config.toml"
 with config_file_path.open("rb") as config_file:
     config_data = load(config_file)
 
-config = from_dict(GlobalConfig, config_data)  # noqa
+config: GlobalConfig = from_dict(GlobalConfig, config_data)  # noqa
