@@ -6,6 +6,7 @@ from dacite import from_dict
 from .utils import root_dir
 
 __all__ = (
+    "HandshakePolicyConfig",
     "PostgresConfig",
     "HTTPConfig",
     "APIConfig",
@@ -15,6 +16,11 @@ __all__ = (
     "GlobalConfig",
     "config",
 )
+
+
+@dataclass(kw_only=True, frozen=True)
+class HandshakePolicyConfig:
+    ack_timeout: float
 
 
 @dataclass(kw_only=True, frozen=True)
@@ -71,6 +77,7 @@ class ServerConfig:
     task_interval: float
     max_process_pool_workers: int
     postgres: PostgresConfig
+    handshake_policy: HandshakePolicyConfig
 
 
 @dataclass(kw_only=True, frozen=True)

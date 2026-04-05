@@ -32,6 +32,9 @@ resource_grace = 300.0
 task_interval = 5.0
 max_process_pool_workers = 4
 
+[server.handshake_policy]
+ack_timeout = 3.0
+
 [server.postgres]
 host = "localhost"
 port = 5432
