@@ -22,7 +22,7 @@ __all__ = (
     "UserHandshake",
     "AutopilotHandshake",
     "EMPTY_PAYLOAD",
-    "payload_kind",
+    "payload_kind_to_cls",
     "payload_factory",
 )
 
@@ -89,7 +89,7 @@ _MAPPING = {
 }
 
 
-def payload_kind(kind: PayloadKind, /) -> type[Payload]:
+def payload_kind_to_cls(kind: PayloadKind, /) -> type[Payload]:
     return _MAPPING[kind]
 
 
@@ -101,5 +101,5 @@ def payload_factory(json: Json, /) -> Payload:
 
     else:
         kind = PayloadKind(json["kind"])
-        cls = payload_kind(kind)
+        cls = payload_kind_to_cls(kind)
         return cls(json)
