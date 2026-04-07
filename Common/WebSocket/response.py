@@ -36,14 +36,14 @@ __all__ = (
 class WSResponseMixin(Generic[HandshakeT]):
     def __init__(
         self,
-        *,
+        *args: Any,
         handshake_cls: type[HandshakeT],
         ratelimited: bool = False,
         limit: int | None = None,
         interval: float | None = None,
         **kwargs: Any,
     ):
-        super().__init__(**kwargs)
+        super().__init__(*args, **kwargs)
 
         if ratelimited and (limit is None or interval is None):
             raise TypeError("Limit and interval must both be specified.")
@@ -233,10 +233,10 @@ class CustomWSResponse(WSResponseMixin[HandshakeT], WebSocketResponse, Generic[H
 
 
 class CustomUserWSResponse(WSResponseMixin[UserHandshake], ClientWebSocketResponse):
-    def __init__(self, **kwargs: Any):
-        super().__init__(handshake_cls=UserHandshake, **kwargs)
+    def __init__(self, *args: Any, **kwargs: Any):
+        super().__init__(*args, handshake_cls=UserHandshake, **kwargs)
 
 
 class CustomAutopilotWSResponse(WSResponseMixin[AutopilotHandshake], ClientWebSocketResponse):
-    def __init__(self, **kwargs: Any):
-        super().__init__(handshake_cls=AutopilotHandshake, **kwargs)
+    def __init__(self, *args: Any, **kwargs: Any):
+        super().__init__(*args, handshake_cls=AutopilotHandshake, **kwargs)
