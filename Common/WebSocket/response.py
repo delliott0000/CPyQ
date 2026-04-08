@@ -220,6 +220,9 @@ class WSResponseMixin(Generic[HandshakeT]):
         self.__submitted_tasks.add(task)
         task.add_done_callback(self.__submitted_tasks.discard)
 
+    def wait_for_handshake_done(self) -> Coroutine[Any, Any, HandshakeT]:
+        return self._handshake_manager.wait_for_done()
+
     async def send_payload(self, payload: Payload, /, **kwargs: Any) -> WSEvent:
         event = WSEvent.from_payload(payload, **kwargs)
         return await self.__send_event__(event)
@@ -235,6 +238,12 @@ class WSResponseMixin(Generic[HandshakeT]):
             try:
                 self._handshake_manager.set_fail(WSException(code))
             except RuntimeError:
+                pass
+
+            # Suppress the "Future exception was never retrieved" warning
+            try:
+                await self.wait_for_handshake_done()
+            except WSException:
                 pass
 
             # Catch any tasks that were just submitted
