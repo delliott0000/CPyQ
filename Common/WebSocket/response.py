@@ -12,7 +12,7 @@ from ..utils import check_ratelimit, log, now, protocol_error
 from .enums import CustomWSCloseCode
 from .handshake import HandshakeManager, HandshakeT
 from .messages import WSAck, WSEvent, parse_received_message
-from .payloads import AutopilotHandshake, UserHandshake
+from .payloads import AutopilotHandshake, Handshake, UserHandshake
 
 if TYPE_CHECKING:
     from asyncio import Future, Task
@@ -245,6 +245,24 @@ class CustomClientWSResponse(
 
     def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, handshake_cls=self.HANDSHAKE_CLS, **kwargs)
+
+    def __recv_event__(self, event: WSEvent, /) -> None:
+        super().__recv_event__(event)
+
+        payload = event.payload
+
+        if isinstance(payload, Handshake):
+
+            manager = self.handshake_manager
+
+            # Handshake.valid_context can't (cleanly) check if the handshake is of the correct subtype ahead of time
+            # So if the wrong type of handshake is received, deal with it here
+            try:
+                manager.set_handshake(payload)
+            except TypeError:
+                protocol_error(CustomWSCloseCode.BadPayloadContext)
+
+            manager.set_wired()
 
 
 class CustomUserWSResponse(CustomClientWSResponse[UserHandshake]):
