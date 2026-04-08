@@ -168,7 +168,7 @@ class WSResponseMixin(Generic[HandshakeT]):
             log(f"WebSocket task {coro} raised an exception.", ERROR, error=error)
             self.__signal_close__(CustomWSCloseCode.InternalError)
 
-    async def __send_event__(self, event: WSEvent, /) -> None:
+    async def __send_event__(self, event: WSEvent, /) -> WSEvent:
         self.__check_closed__("Can not send event")
 
         if event.id in self.__sent_unacked:
@@ -181,6 +181,7 @@ class WSResponseMixin(Generic[HandshakeT]):
 
         prepared_event = event.with_sent_at(now())
         await self.send_json(prepared_event.json())  # noqa
+        return prepared_event
 
     async def __send_ack__(self, ack: WSAck, /) -> None:
         self.__check_closed__("Can not send acknowledgement")
@@ -206,9 +207,9 @@ class WSResponseMixin(Generic[HandshakeT]):
         self.__submitted_tasks.add(task)
         task.add_done_callback(self.__submitted_tasks.discard)
 
-    async def send_payload(self, payload: Payload, /, **kwargs: Any) -> None:
+    async def send_payload(self, payload: Payload, /, **kwargs: Any) -> WSEvent:
         event = WSEvent.from_payload(payload, **kwargs)
-        await self.__send_event__(event)
+        return await self.__send_event__(event)
 
     async def close(self, _cancel_all: bool = True, **kwargs: Any) -> bool:
         result = await super().close(**kwargs)  # noqa
