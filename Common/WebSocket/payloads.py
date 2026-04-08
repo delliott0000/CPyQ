@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from abc import ABC
+from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 from ..bases import JSONSerialisableABC
@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from typing import Any, ClassVar
 
     from ..codecs import Codec
+    from .response import WSResponseMixin
 
     Json = dict[str, Any]
 
@@ -46,6 +47,10 @@ class Payload(JSONSerialisableABC, ABC):
         for key, codec in self.CODECS.items():
             setattr(self, key, codec.decode(json[key]))
 
+    @abstractmethod
+    def valid_context(self, *, receiver: WSResponseMixin) -> bool:
+        pass
+
     def json(self) -> Json:
         return {"kind": self._kind} | {
             key: codec.encode(getattr(self, key)) for key, codec in self.CODECS.items()
@@ -55,6 +60,9 @@ class Payload(JSONSerialisableABC, ABC):
 class EmptyPayload(Payload):
     def __init__(self):  # noqa
         pass
+
+    def valid_context(self, *, receiver: WSResponseMixin) -> bool:
+        return receiver.handshake_manager.is_done
 
     def json(self) -> Json:
         return {}
@@ -66,6 +74,9 @@ class Handshake(Payload, ABC):
     }
 
     ack_timeout: float
+
+    def valid_context(self, *, receiver: WSResponseMixin) -> bool:
+        return not receiver.SERVER and not receiver.handshake_manager.is_wired
 
 
 class UserHandshake(Handshake):

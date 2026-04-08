@@ -108,8 +108,7 @@ class WSResponseMixin(Generic[HandshakeT]):
         elif event.is_fatal:
             protocol_error(CustomWSCloseCode.FatalEvent)
 
-        # TODO: implement payload contexts
-        elif not ...:
+        elif not event.payload.valid_context(receiver=self):
             protocol_error(CustomWSCloseCode.BadPayloadContext)
 
         self.__recv_unacked.add(event.id)
