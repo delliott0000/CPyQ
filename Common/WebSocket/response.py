@@ -244,8 +244,8 @@ class CustomWSResponse(WSResponseMixin[HandshakeT], WebSocketResponse, Generic[H
     SERVER = True
 
     async def send_handshake(self) -> None:
-        self.__handshake_manager.set_wired()
-        await self.send_payload(self.__handshake_manager.handshake)
+        self.handshake_manager.set_wired()
+        await self.send_payload(self.handshake_manager.handshake)
 
 
 class CustomClientWSResponse(
