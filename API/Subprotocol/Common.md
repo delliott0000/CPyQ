@@ -82,7 +82,7 @@ Sending a `Payload` of an unknown kind or with an otherwise invalid body is also
 
 Below is a list of universal `Payload` kinds. Further `Payload` kinds, as well as extensions of some of the below kinds, can be found in [Contents](Contents).
 
-- **Empty Payload** - Sent by either peer during the [Messaging Phase](#connection-phases). Normally used in unsuccessful `Events` when there is nothing to report beyond the reason for the error. It may also be used in successful `Events` for troubleshooting/debugging, in which case the connection should treat it as an inert non-op.
+- **Empty Payload** - Sent by either peer during the [Messaging Phase](#connection-phases). Normally used in unsuccessful `Events` when there is nothing to report beyond the reason for the error. It may also be used in successful `Events` for troubleshooting/debugging, in which case the receiving peer should treat it as an inert non-op.
 ```py
 {}
 ```
