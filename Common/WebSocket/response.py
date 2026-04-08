@@ -35,6 +35,19 @@ __all__ = (
 
 
 class WSResponseMixin(Generic[HandshakeT]):
+    """
+    IMPORTANT
+
+    This object must be limited to a single reader.
+
+    This guarantees that:
+    - No yielding occurs between two or more messages from the same response.
+    - Each message is fully processed internally before the next message begins.
+    - Critical state updates (e.g. handshake completion) occur in the correct order and at the correct time.
+
+    Breaking this invariant can introduce subtle race conditions.
+    """
+
     SERVER: ClassVar[bool]
 
     def __init__(
