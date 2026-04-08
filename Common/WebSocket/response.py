@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     from asyncio import Future, Task
     from collections.abc import Coroutine
     from enum import IntEnum
-    from typing import Any
+    from typing import Any, ClassVar
 
     from .payloads import Payload
 
@@ -28,12 +28,15 @@ if TYPE_CHECKING:
 __all__ = (
     "WSResponseMixin",
     "CustomWSResponse",
+    "CustomClientWSResponse",
     "CustomUserWSResponse",
     "CustomAutopilotWSResponse",
 )
 
 
 class WSResponseMixin(Generic[HandshakeT]):
+    SERVER: ClassVar[bool]
+
     def __init__(
         self,
         *args: Any,
@@ -229,14 +232,23 @@ class WSResponseMixin(Generic[HandshakeT]):
 
 
 class CustomWSResponse(WSResponseMixin[HandshakeT], WebSocketResponse, Generic[HandshakeT]):
-    pass
+    SERVER = True
 
 
-class CustomUserWSResponse(WSResponseMixin[UserHandshake], ClientWebSocketResponse):
+class CustomClientWSResponse(WSResponseMixin[HandshakeT], ClientWebSocketResponse, Generic[HandshakeT]):
+    SERVER = False
+
+    # This must differ on a per-subclass basis, but it also depends on the generic type
+    # Python typing doesn't let us model this properly, but the below annotation is as close as we can get
+    HANDSHAKE_CLS: ClassVar[type[HandshakeT]]  # noqa
+
     def __init__(self, *args: Any, **kwargs: Any):
-        super().__init__(*args, handshake_cls=UserHandshake, **kwargs)
+        super().__init__(*args, handshake_cls=self.HANDSHAKE_CLS, **kwargs)
 
 
-class CustomAutopilotWSResponse(WSResponseMixin[AutopilotHandshake], ClientWebSocketResponse):
-    def __init__(self, *args: Any, **kwargs: Any):
-        super().__init__(*args, handshake_cls=AutopilotHandshake, **kwargs)
+class CustomUserWSResponse(CustomClientWSResponse[UserHandshake]):
+    HANDSHAKE_CLS = UserHandshake
+
+
+class CustomAutopilotWSResponse(CustomClientWSResponse[AutopilotHandshake]):
+    HANDSHAKE_CLS = AutopilotHandshake
