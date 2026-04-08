@@ -235,7 +235,9 @@ class CustomWSResponse(WSResponseMixin[HandshakeT], WebSocketResponse, Generic[H
     SERVER = True
 
 
-class CustomClientWSResponse(WSResponseMixin[HandshakeT], ClientWebSocketResponse, Generic[HandshakeT]):
+class CustomClientWSResponse(
+    WSResponseMixin[HandshakeT], ClientWebSocketResponse, Generic[HandshakeT]
+):
     SERVER = False
 
     # This must differ on a per-subclass basis, but it also depends on the generic type
