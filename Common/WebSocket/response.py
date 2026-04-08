@@ -67,6 +67,7 @@ class WSResponseMixin(Generic[HandshakeT]):
         self._handshake_manager: HandshakeManager[HandshakeT] = HandshakeManager(
             cls=handshake_cls,
         )
+        self._handshake_event_id: str | None = None
 
     async def __anext__(self) -> WSEvent:
         try:
