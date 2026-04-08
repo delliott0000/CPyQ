@@ -111,7 +111,7 @@ class UserWebSocketService(BaseWebSocketService):
     @ratelimit(limit=10, interval=60, bucket_type=BucketType.Token)
     @user_only
     @validate_access
-    async def ws_user(self, request: Request, /) -> CustomWSResponse[UserHandshake]:
+    async def ws_user(self, request: Request, /) -> CustomWSResponse:
         return await self.serve_ws(request, handshake_cls=UserHandshake)
 
 
@@ -123,5 +123,5 @@ class AutopilotWebSocketService(BaseWebSocketService):
     @ratelimit(limit=10, interval=60, bucket_type=BucketType.Token)
     @autopilot_only
     @validate_access
-    async def ws_autopilot(self, request: Request, /) -> CustomWSResponse[AutopilotHandshake]:
+    async def ws_autopilot(self, request: Request, /) -> CustomWSResponse:
         return await self.serve_ws(request, handshake_cls=AutopilotHandshake)
