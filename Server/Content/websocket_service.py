@@ -91,6 +91,9 @@ class BaseWebSocketService(BaseService, ABC):
         response = await self.prepare_ws(request, token, handshake_cls=handshake_cls)
 
         try:
+            response.handshake_manager.set_wired()
+            await response.send_payload(response.handshake_manager.handshake)
+
             async for _ in response:
                 ...
 
