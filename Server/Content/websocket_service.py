@@ -59,7 +59,7 @@ class BaseWebSocketService(BaseService, ABC):
 
         handshake_json = asdict(self.server.config.handshake_policy)
         handshake = build_payload(handshake_cls, handshake_json)
-        response.handshake_manager.set_handshake(handshake)
+        response.set_handshake(handshake)
 
         token.session.connections[token] = response
 

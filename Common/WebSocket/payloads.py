@@ -58,11 +58,11 @@ class Payload(JSONSerialisableABC, ABC):
 
 
 class EmptyPayload(Payload):
-    def __init__(self):  # noqa
+    def __init__(self, _: Json):  # noqa
         pass
 
     def valid_context(self, *, receiver: WSResponseMixin) -> bool:
-        return receiver.handshake_manager.is_done
+        return receiver.handshake_done
 
     def json(self) -> Json:
         return {}
@@ -76,7 +76,7 @@ class Handshake(Payload, ABC):
     ack_timeout: float
 
     def valid_context(self, *, receiver: WSResponseMixin) -> bool:
-        return not receiver.SERVER and not receiver.handshake_manager.is_wired
+        return not receiver.SERVER and not receiver.handshake_wired
 
 
 class UserHandshake(Handshake):
@@ -93,7 +93,7 @@ class AutopilotHandshake(Handshake):
     ...
 
 
-EMPTY_PAYLOAD = EmptyPayload()
+EMPTY_PAYLOAD = EmptyPayload({})
 
 
 _MAPPING: dict[PayloadKind, type[Payload]] = {

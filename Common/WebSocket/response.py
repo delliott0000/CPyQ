@@ -64,7 +64,7 @@ class WSResponseMixin(Generic[HandshakeT]):
         self.__error_futr: Future[IntEnum] = get_running_loop().create_future()
         self.__error_task: TN = self.__make_task__(self.__wait_for_close__(), wrapped=False)
 
-        self.__handshake_manager: HandshakeManager[HandshakeT] = HandshakeManager(
+        self._handshake_manager: HandshakeManager[HandshakeT] = HandshakeManager(
             cls=handshake_cls,
         )
 
@@ -147,7 +147,7 @@ class WSResponseMixin(Generic[HandshakeT]):
             self.__error_futr.set_result(code)
 
     async def __ack_timeout__(self) -> None:
-        timeout = self.__handshake_manager.handshake.ack_timeout
+        timeout = self._handshake_manager.handshake.ack_timeout
         await sleep(timeout)
         protocol_error(CustomWSCloseCode.AckTimeout)
 
@@ -197,8 +197,20 @@ class WSResponseMixin(Generic[HandshakeT]):
         await self.send_json(prepared_ack.json())  # noqa
 
     @property
-    def handshake_manager(self) -> HandshakeManager[HandshakeT]:
-        return self.__handshake_manager
+    def has_handshake(self) -> bool:
+        return self._handshake_manager.has_handshake
+
+    @property
+    def handshake_wired(self) -> bool:
+        return self._handshake_manager.is_wired
+
+    @property
+    def handshake_done(self) -> bool:
+        return self._handshake_manager.is_done
+
+    @property
+    def handshake_fail(self) -> bool:
+        return self._handshake_manager.is_fail
 
     def submit(self, coro: Coro, /) -> None:
         self.__check_closed__("Can not submit task")
@@ -220,7 +232,7 @@ class WSResponseMixin(Generic[HandshakeT]):
             # Wake up the handshake future with an exception
             # If the handshake has already complete or (for whatever reason) failed, ignore and continue
             try:
-                self.__handshake_manager.set_fail(WSException(code))
+                self._handshake_manager.set_fail(WSException(code))
             except RuntimeError:
                 pass
 
@@ -243,9 +255,13 @@ class WSResponseMixin(Generic[HandshakeT]):
 class CustomWSResponse(WSResponseMixin[HandshakeT], WebSocketResponse, Generic[HandshakeT]):
     SERVER = True
 
+    def set_handshake(self, handshake: HandshakeT, /) -> None:
+        self._handshake_manager.set_handshake(handshake)
+
     async def send_handshake(self) -> None:
-        self.handshake_manager.set_wired()
-        await self.send_payload(self.handshake_manager.handshake)
+        manager = self._handshake_manager
+        manager.set_wired()
+        await self.send_payload(manager.handshake)
 
 
 class CustomClientWSResponse(
@@ -267,7 +283,7 @@ class CustomClientWSResponse(
 
         if isinstance(payload, Handshake):
 
-            manager = self.handshake_manager
+            manager = self._handshake_manager
 
             # Handshake.valid_context can't (cleanly) check if the handshake is of the correct subtype ahead of time
             # So if the wrong type of handshake is received, deal with it here
