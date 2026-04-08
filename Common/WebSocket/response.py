@@ -147,6 +147,10 @@ class WSResponseMixin(Generic[HandshakeT]):
         if not self.__error_futr.done():
             self.__error_futr.set_result(code)
 
+    def __handshake_ack_check__(self, ack: WSAck, /) -> None:
+        if ack.id == self._handshake_event_id:
+            self._handshake_manager.set_done()
+
     async def __ack_timeout__(self) -> None:
         timeout = self._handshake_manager.handshake.ack_timeout
         await sleep(timeout)
