@@ -217,6 +217,13 @@ class WSResponseMixin(Generic[HandshakeT]):
         result = await super().close(code=code, **kwargs)  # noqa
 
         if result is True:
+            # Wake up the handshake future with an exception
+            # If the handshake has already complete or (for whatever reason) failed, ignore and continue
+            try:
+                self.__handshake_manager.set_fail(WSException(code))
+            except RuntimeError:
+                pass
+
             # Catch any tasks that were just submitted
             await sleep(0)
 
