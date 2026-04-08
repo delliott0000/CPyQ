@@ -132,6 +132,9 @@ if TYPE_CHECKING:
 
 
 def build_payload(cls: type[PayloadT], json: Json, /) -> PayloadT:
+    if "kind" in json:
+        raise ValueError('The supplied JSON contains a "kind" field.')
+
     kind = payload_cls_to_kind(cls)
-    json["kind"] = kind.value
-    return cls(json)
+    real_json = {**json, "kind": kind.value}
+    return cls(real_json)
