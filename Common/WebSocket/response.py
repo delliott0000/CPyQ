@@ -316,6 +316,13 @@ class CustomClientWSResponse(
 
             manager.set_wired()
 
+            self._handshake_event_id = event.id
+
+    async def __send_ack__(self, ack: WSAck, /) -> None:
+        # See CustomWSResponse.send_handshake for why we do these two things in this order
+        self.__handshake_ack_check__(ack)
+        await super().__send_ack__(ack)
+
 
 class CustomUserWSResponse(CustomClientWSResponse[UserHandshake]):
     HANDSHAKE_CLS = UserHandshake
