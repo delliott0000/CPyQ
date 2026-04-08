@@ -87,7 +87,7 @@ Below is a list of universal `Payload` kinds. Further `Payload` kinds, as well a
 {}
 ```
 
-- **Handshake Payload** - Sent by the server during the [Handshake Phase](#connection-phases). ***Must not be sent more than once per connection.*** The `"ack_timeout"` applies to all `Events` sent by either peer throughout the entire connection, including the handshake itself. This `Payload` acts as an **abstract base definition**; in practice, extensions of this `Payload` must be used. Therefore, this definition does not specify a `"kind"` value. This is conceptually similar to [Python ABCs](https://docs.python.org/3/library/abc.html).
+- **Handshake Payload** - Sent by the server during the [Handshake Phase](#connection-phases). ***Must not be sent more than once per connection.*** The `"ack_timeout"` applies to all `Events` sent by either peer throughout the entire connection, including the handshake itself. This `Payload` acts as an **abstract base definition**; in practice, extensions of this `Payload` must be used. Therefore, this definition does not specify a `"kind"` value. ***The exact extension used depends on the type of client.*** This is conceptually similar to [Python ABCs](https://docs.python.org/3/library/abc.html).
 ```py
 {
     "ack_timeout": float  # In seconds; this should be greater than 0
