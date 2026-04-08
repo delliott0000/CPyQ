@@ -269,13 +269,21 @@ class WSResponseMixin(Generic[HandshakeT]):
 class CustomWSResponse(WSResponseMixin[HandshakeT], WebSocketResponse, Generic[HandshakeT]):
     SERVER = True
 
+    def __recv_ack__(self, ack: WSAck, /) -> None:
+        super().__recv_ack__(ack)
+        self.__handshake_ack_check__(ack)
+
     def set_handshake(self, handshake: HandshakeT, /) -> None:
         self._handshake_manager.set_handshake(handshake)
 
     async def send_handshake(self) -> None:
         manager = self._handshake_manager
         manager.set_wired()
-        await self.send_payload(manager.handshake)
+
+        # Send the payload after calling
+        # In a race, only one caller will succeed
+        event = await self.send_payload(manager.handshake)
+        self._handshake_event_id = event.id
 
 
 class CustomClientWSResponse(
