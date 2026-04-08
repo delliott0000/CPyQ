@@ -211,8 +211,10 @@ class WSResponseMixin(Generic[HandshakeT]):
         event = WSEvent.from_payload(payload, **kwargs)
         return await self.__send_event__(event)
 
-    async def close(self, _cancel_all: bool = True, **kwargs: Any) -> bool:
-        result = await super().close(**kwargs)  # noqa
+    async def close(
+        self, *, _cancel_all: bool = True, code: IntEnum = WSCloseCode.OK, **kwargs: Any
+    ) -> bool:
+        result = await super().close(code=code, **kwargs)  # noqa
 
         if result is True:
             # Catch any tasks that were just submitted
