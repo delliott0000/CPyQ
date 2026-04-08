@@ -210,10 +210,6 @@ class WSResponseMixin(Generic[HandshakeT]):
         event = WSEvent.from_payload(payload, **kwargs)
         await self.__send_event__(event)
 
-    async def send_handshake(self) -> None:
-        self.__handshake_manager.set_wired()
-        await self.send_payload(self.__handshake_manager.handshake)
-
     async def close(self, _cancel_all: bool = True, **kwargs: Any) -> bool:
         result = await super().close(**kwargs)  # noqa
 
@@ -236,6 +232,10 @@ class WSResponseMixin(Generic[HandshakeT]):
 
 class CustomWSResponse(WSResponseMixin[HandshakeT], WebSocketResponse, Generic[HandshakeT]):
     SERVER = True
+
+    async def send_handshake(self) -> None:
+        self.__handshake_manager.set_wired()
+        await self.send_payload(self.__handshake_manager.handshake)
 
 
 class CustomClientWSResponse(
