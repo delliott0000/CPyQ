@@ -35,19 +35,6 @@ __all__ = (
 
 
 class WSResponseMixin(Generic[HandshakeT]):
-    """
-    IMPORTANT
-
-    This object must be limited to a single reader.
-
-    This guarantees that:
-    - No yielding occurs between two or more messages from the same response.
-    - Each message is fully processed internally before the next message begins.
-    - Critical state updates (e.g. handshake completion) occur in the correct order and at the correct time.
-
-    Breaking this invariant can introduce subtle race conditions.
-    """
-
     SERVER: ClassVar[bool]
 
     def __init__(
@@ -237,8 +224,8 @@ class WSResponseMixin(Generic[HandshakeT]):
         self.__submitted_tasks.add(task)
         task.add_done_callback(self.__submitted_tasks.discard)
 
-    def wait_for_handshake_done(self) -> Coroutine[Any, Any, HandshakeT]:
-        return self._handshake_manager.wait_for_done()
+    def ready(self) -> Coroutine[Any, Any, HandshakeT]:
+        return self._handshake_manager.ready()
 
     async def send_payload(self, payload: Payload, /, **kwargs: Any) -> WSEvent:
         event = WSEvent.from_payload(payload, **kwargs)
@@ -259,7 +246,7 @@ class WSResponseMixin(Generic[HandshakeT]):
 
             # Suppress the "Future exception was never retrieved" warning
             try:
-                await self.wait_for_handshake_done()
+                await self.ready()
             except WSException:
                 pass
 

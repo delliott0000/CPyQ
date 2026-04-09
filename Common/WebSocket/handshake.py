@@ -86,5 +86,5 @@ class HandshakeManager(Generic[HandshakeT]):
         self.__pre_check__(expect_handshake=True, expect_fail=False)
         return self.__handshake
 
-    async def wait_for_done(self) -> HandshakeT:
+    async def ready(self) -> HandshakeT:
         return await self.__done_futr
