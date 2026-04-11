@@ -26,7 +26,7 @@ from .errors import RatelimitException, WSException
 from .format import ENCODE_DATETIME_FORMAT, FILE_DATE_FORMAT, LOGGING_FORMAT
 
 if TYPE_CHECKING:
-    from asyncio import Future
+    from asyncio import AbstractEventLoop, Future
     from collections.abc import Callable
     from enum import IntEnum
     from typing import Any, ParamSpec, Self, TypeVar
@@ -47,6 +47,7 @@ __all__ = (
     "check_password",
     "encrypt_password",
     "check_ratelimit",
+    "make_future",
     "to_json",
     "protocol_error",
     "LoggingContext",
@@ -115,6 +116,13 @@ def check_ratelimit(hits: list[float], /, *, limit: int, interval: float) -> Non
         raise RatelimitException(hits, limit=limit, interval=interval)
 
     hits.append(t)
+
+
+def make_future(loop: AbstractEventLoop | None = None, /) -> Future:
+    if loop is None:
+        loop = get_running_loop()
+
+    return loop.create_future()
 
 
 async def to_json(r: Request | ClientResponse, /, *, strict: bool = False) -> Json:
