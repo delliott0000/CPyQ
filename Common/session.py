@@ -11,11 +11,10 @@ from .utils import log
 if TYPE_CHECKING:
     from typing import Any
 
-    from Common import CustomWSResponse
-
     from .resource import Resource
     from .token import Token
     from .user import User
+    from .WebSocket import CustomWSResponse
 
     Json = dict[str, Any]
 
