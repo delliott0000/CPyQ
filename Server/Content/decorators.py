@@ -11,14 +11,12 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Coroutine
     from typing import Any
 
-    from aiohttp.web import Request, Response
-
-    from Common import CustomWSResponse
+    from aiohttp.web import Request, Response, WebSocketResponse
 
     from .base_service import BaseService
 
     Json = dict[str, Any]
-    RespType = Response | CustomWSResponse
+    RespType = Response | WebSocketResponse
     RespCoro = Coroutine[Any, Any, RespType]
     RespFunc = Callable[[BaseService, Request], RespCoro]
     RespDeco = Callable[[RespFunc], RespFunc]
