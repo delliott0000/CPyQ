@@ -24,8 +24,6 @@ __all__ = ("WSResponseType", "WSProxy")
 
 class WSResponseType(Protocol):
     def __aiter__(self) -> AsyncIterator[WSMessage]: ...
-    @property
-    def close_code(self) -> CloseCode | None: ...
     async def send_json(self, json: Json, /) -> Any: ...
     async def close(self, *, code: CloseCode = ...) -> Any: ...
 
@@ -84,7 +82,8 @@ class WSProxy:
 
     @property
     def close_code(self) -> CloseCode | None:
-        return self.__response.close_code
+        if self.__started and self.__close_future.done():
+            return self.__close_future.result()
 
     def __make_task__(self, coro: CN, /, *, wrap: bool) -> TN: ...
 
