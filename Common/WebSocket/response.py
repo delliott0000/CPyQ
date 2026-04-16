@@ -85,6 +85,10 @@ class WSProxy:
 
     async def __wrap_coro__(self, coro: CN, /) -> None: ...
 
+    def __signal_close__(self, code: CloseCode, /) -> None: ...
+
+    async def __wait_for_close__(self) -> None: ...
+
     def start(self) -> bool:
         if self.__started:
             return False
