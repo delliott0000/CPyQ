@@ -1,18 +1,22 @@
 from __future__ import annotations
 
 from asyncio import CancelledError, create_task
+from logging import DEBUG, ERROR
 from typing import TYPE_CHECKING, Protocol
 
-from ..utils import make_future
+from aiohttp import WSCloseCode
+
+from ..errors import RatelimitException, WSException
+from ..utils import log, make_future
+from .enums import CustomWSCloseCode
 
 if TYPE_CHECKING:
     from asyncio import Future, Task
     from collections.abc import AsyncIterator, Coroutine
     from typing import Any
 
-    from aiohttp import WSCloseCode, WSMessage
+    from aiohttp import WSMessage
 
-    from .enums import CustomWSCloseCode
     from .messages import WSEvent
 
     Json = dict[str, Any]
@@ -102,8 +106,20 @@ class WSProxy:
             await coro
 
         except CancelledError:
-            ...
+            log(f"WebSocket task {coro} was cancelled.", DEBUG)
             raise
+
+        except RatelimitException:
+            log(f"WebSocket task {coro} exceeded a rate limit.", DEBUG)
+            self.__signal_close__(WSCloseCode.POLICY_VIOLATION)
+
+        except WSException as error:
+            log(f"WebSocket task {coro} triggered closure ({error.code.value}).", DEBUG)
+            self.__signal_close__(error.code)
+
+        except Exception as error:
+            log(f"WebSocket task {coro} raised an exception.", ERROR, error=error)
+            self.__signal_close__(CustomWSCloseCode.InternalError)
 
     def __signal_close__(self, code: CloseCode, /) -> None:
         if not self.__close_future.done():
