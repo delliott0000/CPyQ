@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Protocol
 
+from ..utils import make_future
+
 if TYPE_CHECKING:
-    from asyncio import Task
+    from asyncio import Future, Task
     from collections.abc import AsyncIterator, Coroutine
     from typing import Any
 
@@ -35,6 +37,8 @@ class WSProxy:
         "__limit",
         "__interval",
         "__hits",
+        "__close_future",
+        "__close_task",
         "__started",
         "__closed",
     )
@@ -59,7 +63,8 @@ class WSProxy:
         self.__interval = interval
         self.__hits: list[float] = []
 
-        ...
+        self.__close_future: Future[CloseCode] | None = None
+        self.__close_task: TN | None = None
 
         self.__started: bool = False
         self.__closed: bool = False
@@ -95,7 +100,8 @@ class WSProxy:
 
         self.__started = True
 
-        ...
+        self.__close_future = make_future()
+        self.__close_task = self.__make_task__(self.__wait_for_close__(), wrap=False)
 
         return True
 
