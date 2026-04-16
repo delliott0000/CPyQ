@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from asyncio import create_task
 from typing import TYPE_CHECKING, Protocol
 
 from ..utils import make_future
@@ -85,7 +86,16 @@ class WSProxy:
         if self.__started and self.__close_future.done():
             return self.__close_future.result()
 
-    def __make_task__(self, coro: CN, /, *, wrap: bool) -> TN: ...
+    def __make_task__(self, coro: CN, /, *, wrap: bool) -> TN:
+        if not self.running:
+            raise RuntimeError(f"{type(self).__name__} is not running.")
+
+        if wrap:
+            real_coro = self.__wrap_coro__(coro)
+        else:
+            real_coro = coro
+
+        return create_task(real_coro)
 
     async def __wrap_coro__(self, coro: CN, /) -> None: ...
 
