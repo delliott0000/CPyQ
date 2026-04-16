@@ -3,7 +3,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Protocol
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncIterator
+    from asyncio import Task
+    from collections.abc import AsyncIterator, Coroutine
     from typing import Any
 
     from aiohttp import WSCloseCode, WSMessage
@@ -12,6 +13,8 @@ if TYPE_CHECKING:
     from .messages import WSEvent
 
     Json = dict[str, Any]
+    CN = Coroutine[Any, Any, None]
+    TN = Task[None]
     CloseCode = WSCloseCode | CustomWSCloseCode
 
 __all__ = ("WSResponseType", "WSProxy")
@@ -77,6 +80,10 @@ class WSProxy:
     @property
     def close_code(self) -> CloseCode | None:
         return self.__response.close_code
+
+    def __make_task__(self, coro: CN, /, *, wrap: bool) -> TN: ...
+
+    async def __wrap_coro__(self, coro: CN, /) -> None: ...
 
     def start(self) -> bool:
         if self.__started:
