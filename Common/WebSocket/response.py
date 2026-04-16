@@ -95,7 +95,7 @@ class WSProxy:
 
         return True
 
-    async def close(self, *, code: CloseCode) -> bool:
+    async def close(self, *, code: CloseCode, _cancel_close_task: bool = True) -> bool:
         if not self.running:
             return False
 
