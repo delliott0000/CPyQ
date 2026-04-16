@@ -71,10 +71,12 @@ class WSProxy:
     async def __anext__(self) -> WSEvent: ...
 
     @property
-    def running(self) -> bool: ...
+    def running(self) -> bool:
+        return self.__started and not self.__closed
 
     @property
-    def close_code(self) -> CloseCode | None: ...
+    def close_code(self) -> CloseCode | None:
+        return self.__response.close_code
 
     def start(self) -> bool: ...
 
