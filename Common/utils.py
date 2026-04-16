@@ -28,15 +28,17 @@ from .format import ENCODE_DATETIME_FORMAT, FILE_DATE_FORMAT, LOGGING_FORMAT
 if TYPE_CHECKING:
     from asyncio import AbstractEventLoop, Future
     from collections.abc import Callable
-    from enum import IntEnum
     from typing import Any, ParamSpec, Self, TypeVar
 
-    from aiohttp import ClientResponse
+    from aiohttp import ClientResponse, WSCloseCode
     from aiohttp.web import Request
+
+    from .WebSocket import CustomWSCloseCode
 
     Json = dict[str, Any]
     P = ParamSpec("P")
     T = TypeVar("T")
+    CloseCode = WSCloseCode | CustomWSCloseCode
 
 __all__ = (
     "root_dir",
@@ -138,7 +140,7 @@ async def to_json(r: Request | ClientResponse, /, *, strict: bool = False) -> Js
         return {}
 
 
-def protocol_error(code: IntEnum, /) -> None:
+def protocol_error(code: CloseCode, /) -> None:
     raise WSException(code=code)
 
 
