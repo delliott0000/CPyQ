@@ -149,7 +149,6 @@ class WSProxy:
         await self.__response.close(code=code)
 
         # Guarantee that the future is set
-        # This method is inert by design after the first call
         self.__signal_close__(code)
 
         ...
