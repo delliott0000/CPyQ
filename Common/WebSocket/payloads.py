@@ -12,7 +12,6 @@ if TYPE_CHECKING:
     from typing import Any, ClassVar
 
     from ..codecs import Codec
-    from .response import WSResponseMixin
 
     Json = dict[str, Any]
 
@@ -48,7 +47,7 @@ class Payload(JSONSerialisableABC, ABC):
             setattr(self, key, codec.decode(json[key]))
 
     @abstractmethod
-    def valid_context(self, *, receiver: WSResponseMixin) -> bool:
+    def valid_context(self, *, receiver: ...) -> bool:
         pass
 
     def json(self) -> Json:
@@ -61,8 +60,7 @@ class EmptyPayload(Payload):
     def __init__(self, _: Json):  # noqa
         pass
 
-    def valid_context(self, *, receiver: WSResponseMixin) -> bool:
-        return receiver.handshake_done
+    def valid_context(self, *, receiver: ...) -> bool: ...
 
     def json(self) -> Json:
         return {}
@@ -75,8 +73,7 @@ class Handshake(Payload, ABC):
 
     ack_timeout: float
 
-    def valid_context(self, *, receiver: WSResponseMixin) -> bool:
-        return not receiver.SERVER and not receiver.handshake_wired
+    def valid_context(self, *, receiver: ...) -> bool: ...
 
 
 class UserHandshake(Handshake):

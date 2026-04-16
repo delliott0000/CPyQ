@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from .resource import Resource
     from .token import Token
     from .user import User
-    from .WebSocket import CustomWSResponse
+    from .WebSocket import WSProxy
 
     Json = dict[str, Any]
 
@@ -59,7 +59,7 @@ class Session(ComparesIDMixin, ComparesIDABC, JSONSerialisableABC):
         return self._resource is not None
 
     @property
-    def connections(self) -> dict[Token, CustomWSResponse]:
+    def connections(self) -> dict[Token, WSProxy]:
         return self._connections
 
     @property

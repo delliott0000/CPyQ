@@ -4,7 +4,7 @@ from asyncio import Condition
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from Common import CustomWSResponse, Token
+    from Common import Token, WSProxy
 
     from .server import Server
 
@@ -22,12 +22,12 @@ class AutopilotInstance:
         return f"Autopilot {self.__token.session.user} (Token ID: {self.__token.id})"
 
     @property
-    def ws(self) -> CustomWSResponse:
-        ws = self.__token.session.connections.get(self.__token)
-        if ws is None or ws.closed:
+    def ws(self) -> WSProxy:
+        proxy = self.__token.session.connections.get(self.__token)
+        if proxy is None or not proxy.running:
             raise RuntimeError(f"{self} is not connected.")
         else:
-            return ws
+            return proxy
 
     @property
     def busy(self) -> bool:
