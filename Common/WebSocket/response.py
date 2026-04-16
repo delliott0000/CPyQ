@@ -78,6 +78,24 @@ class WSProxy:
     def close_code(self) -> CloseCode | None:
         return self.__response.close_code
 
-    def start(self) -> bool: ...
+    def start(self) -> bool:
+        if self.__started:
+            return False
 
-    async def close(self, *, code: CloseCode) -> bool: ...
+        self.__started = True
+
+        ...
+
+        return True
+
+    async def close(self, *, code: CloseCode) -> bool:
+        if not self.running:
+            return False
+
+        self.__closed = True
+
+        await self.__response.close(code=code)
+
+        ...
+
+        return True
