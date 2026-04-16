@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from asyncio import create_task
+from asyncio import CancelledError, create_task
 from typing import TYPE_CHECKING, Protocol
 
 from ..utils import make_future
@@ -97,7 +97,13 @@ class WSProxy:
 
         return create_task(real_coro)
 
-    async def __wrap_coro__(self, coro: CN, /) -> None: ...
+    async def __wrap_coro__(self, coro: CN, /) -> None:
+        try:
+            await coro
+
+        except CancelledError:
+            ...
+            raise
 
     def __signal_close__(self, code: CloseCode, /) -> None:
         if not self.__close_future.done():
