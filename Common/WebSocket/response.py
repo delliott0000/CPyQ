@@ -93,7 +93,9 @@ class WSProxy:
         if not self.__close_future.done():
             self.__close_future.set_result(code)
 
-    async def __wait_for_close__(self) -> None: ...
+    async def __wait_for_close__(self) -> None:
+        code = await self.__close_future
+        await self.close(code=code, _cancel_close_task=False)
 
     def start(self) -> bool:
         if self.__started:
