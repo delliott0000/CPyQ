@@ -26,7 +26,15 @@ class WSResponseType(Protocol):
 
 
 class WSProxy:
-    __slots__ = ()
+    __slots__ = (
+        "__response",
+        "__ratelimited",
+        "__limit",
+        "__interval",
+        "__hits",
+        "__started",
+        "__closed",
+    )
 
     def __init__(
         self,
@@ -37,10 +45,28 @@ class WSProxy:
         limit: int | None = None,
         interval: float | None = None,
         start: bool = False,
-    ): ...
+    ):
+        if ratelimited and (limit is None or interval is None):
+            raise TypeError("Limit and interval must both be specified.")
+
+        self.__response = response
+
+        self.__ratelimited = ratelimited
+        self.__limit = limit
+        self.__interval = interval
+        self.__hits: list[float] = []
+
+        ...
+
+        self.__started: bool = False
+        self.__closed: bool = False
+
+        if start:
+            self.start()
 
     # (...) -> Self is more precise here, but it confuses the type checker for some reason
-    def __aiter__(self) -> AsyncIterator[WSEvent]: ...
+    def __aiter__(self) -> AsyncIterator[WSEvent]:
+        return self
 
     async def __anext__(self) -> WSEvent: ...
 
