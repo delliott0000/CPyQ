@@ -1,4 +1,4 @@
-aiohttp>=3.13.3
+aiohttp>=3.13.4
 asyncpg>=0.30.0
 bcrypt>=4.3.0
 dacite>=1.9.2
