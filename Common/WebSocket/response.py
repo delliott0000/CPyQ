@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Protocol
 from aiohttp import WSCloseCode
 
 from ..errors import RatelimitException, WSException
-from ..utils import log, make_future
+from ..utils import check_ratelimit, log, make_future
 from .enums import CustomWSCloseCode
 
 if TYPE_CHECKING:
@@ -138,6 +138,9 @@ class WSProxy:
     async def __reader__(self) -> None:
 
         async for _ in self.__response:
+
+            if self.__ratelimited:
+                check_ratelimit(self.__hits, limit=self.__limit, interval=self.__interval)
 
             ...
 
