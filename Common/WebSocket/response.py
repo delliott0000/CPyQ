@@ -130,7 +130,7 @@ class WSProxy:
 
     async def __wait_for_close__(self) -> None:
         code = await self.__close_future
-        await self.close(code=code, _cancel_close_task=False)
+        await self.close(code=code)
 
     async def __reader__(self) -> None:
 
@@ -153,7 +153,7 @@ class WSProxy:
 
         return True
 
-    async def close(self, *, code: CloseCode, _cancel_close_task: bool = True) -> bool:
+    async def close(self, *, code: CloseCode) -> bool:
         if not self.running:
             return False
 
