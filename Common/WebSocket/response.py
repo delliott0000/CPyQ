@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from asyncio import CancelledError, create_task
+from asyncio import CancelledError, Queue, create_task
 from logging import DEBUG, ERROR
 from typing import TYPE_CHECKING, Protocol
 
@@ -43,6 +43,7 @@ class WSProxy:
         "__close_future",
         "__close_task",
         "__reader_task",
+        "__queue",
         "__started",
         "__closed",
     )
@@ -71,6 +72,8 @@ class WSProxy:
         self.__close_task: TN | None = None
 
         self.__reader_task: TN | None = None
+
+        self.__queue: Queue[WSEvent] = Queue()
 
         self.__started: bool = False
         self.__closed: bool = False
