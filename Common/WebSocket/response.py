@@ -42,6 +42,7 @@ class WSProxy:
         "__hits",
         "__close_future",
         "__close_task",
+        "__reader_task",
         "__started",
         "__closed",
     )
@@ -68,6 +69,8 @@ class WSProxy:
 
         self.__close_future: Future[CloseCode] | None = None
         self.__close_task: TN | None = None
+
+        self.__reader_task: TN | None = None
 
         self.__started: bool = False
         self.__closed: bool = False
@@ -129,6 +132,8 @@ class WSProxy:
         code = await self.__close_future
         await self.close(code=code, _cancel_close_task=False)
 
+    async def __reader__(self) -> None: ...
+
     def start(self) -> bool:
         if self.__started:
             return False
@@ -137,6 +142,8 @@ class WSProxy:
 
         self.__close_future = make_future()
         self.__close_task = self.__make_task__(self.__wait_for_close__(), wrap=False)
+
+        self.__reader_task = self.__make_task__(self.__reader__(), wrap=True)
 
         return True
 
