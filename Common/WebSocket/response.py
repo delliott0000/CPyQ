@@ -9,6 +9,7 @@ from aiohttp import WSCloseCode
 from ..errors import RatelimitException, WSException
 from ..utils import check_ratelimit, log, make_future
 from .enums import CustomWSCloseCode
+from .messages import WSAck, WSEvent, parse_received_message
 
 if TYPE_CHECKING:
     from asyncio import Future, Task
@@ -16,8 +17,6 @@ if TYPE_CHECKING:
     from typing import Any
 
     from aiohttp import WSMessage
-
-    from .messages import WSEvent
 
     Json = dict[str, Any]
     CN = Coroutine[Any, Any, None]
@@ -137,12 +136,22 @@ class WSProxy:
 
     async def __reader__(self) -> None:
 
-        async for _ in self.__response:
+        async for message in self.__response:
 
             if self.__ratelimited:
                 check_ratelimit(self.__hits, limit=self.__limit, interval=self.__interval)
 
-            ...
+            custom_message = parse_received_message(message)
+
+            if isinstance(custom_message, WSEvent):
+                ...
+
+            elif isinstance(custom_message, WSAck):
+                ...
+
+            # The parser should never allow this to be reached
+            else:
+                raise RuntimeError(f"Encountered an unexpected message: {custom_message}.")
 
         ...
 
