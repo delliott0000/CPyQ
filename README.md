@@ -1,4 +1,4 @@
-[![Python Version](https://img.shields.io/badge/Python-3.13%20%7C%203.14-blue)](https://www.python.org/downloads/)
+[![Python Version](https://img.shields.io/badge/Python-3.13-blue)](https://www.python.org/downloads/)
 [![Code Style: Black](https://img.shields.io/badge/Code%20Style-Black-000000.svg)](https://github.com/psf/black)
 [![Imports: iSort](https://img.shields.io/badge/Imports-iSort-ef8336.svg)](https://github.com/PyCQA/isort)
 

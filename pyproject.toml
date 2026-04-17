@@ -1,5 +1,5 @@
 [tool.black]
-target-version = ["py313", "py314"]
+target-version = ["py313"]
 line-length = 96
 
 [tool.isort]
