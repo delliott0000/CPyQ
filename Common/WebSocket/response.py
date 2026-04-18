@@ -95,6 +95,8 @@ class WSProxy:
         if self.__started and self.__close_future.done():
             return self.__close_future.result()
 
+    def __get_close_code__(self) -> CloseCode: ...
+
     def __make_task__(self, coro: CN, /, *, wrap: bool) -> TN:
         if not self.running:
             raise RuntimeError(f"{type(self).__name__} is not running.")
@@ -153,7 +155,9 @@ class WSProxy:
             else:
                 raise RuntimeError(f"Encountered an unexpected message: {custom_message}.")
 
-        ...
+        # The underlying transport has closed
+        # Get the transport's close code and set it as our close code
+        self.__signal_close__(self.__get_close_code__())
 
     def start(self) -> bool:
         if self.__started:
