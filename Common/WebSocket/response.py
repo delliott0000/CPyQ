@@ -39,10 +39,10 @@ class WSProxy:
         "__limit",
         "__interval",
         "__hits",
+        "__queue",
         "__close_future",
         "__close_task",
         "__reader_task",
-        "__queue",
         "__started",
         "__closed",
     )
@@ -67,12 +67,12 @@ class WSProxy:
         self.__interval = interval
         self.__hits: list[float] = []
 
+        self.__queue: Queue[WSEvent] | None = None
+
         self.__close_future: Future[CloseCode] | None = None
         self.__close_task: TN | None = None
 
         self.__reader_task: TN | None = None
-
-        self.__queue: Queue[WSEvent] | None = None
 
         self.__started: bool = False
         self.__closed: bool = False
@@ -161,12 +161,12 @@ class WSProxy:
 
         self.__started = True
 
+        self.__queue = Queue()
+
         self.__close_future = make_future()
         self.__close_task = self.__make_task__(self.__wait_for_close__(), wrap=False)
 
         self.__reader_task = self.__make_task__(self.__reader__(), wrap=True)
-
-        self.__queue = Queue()
 
         return True
 
