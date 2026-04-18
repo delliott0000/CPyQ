@@ -72,7 +72,7 @@ class WSProxy:
 
         self.__reader_task: TN | None = None
 
-        self.__queue: Queue[WSEvent] = Queue()
+        self.__queue: Queue[WSEvent] | None = None
 
         self.__started: bool = False
         self.__closed: bool = False
@@ -165,6 +165,8 @@ class WSProxy:
         self.__close_task = self.__make_task__(self.__wait_for_close__(), wrap=False)
 
         self.__reader_task = self.__make_task__(self.__reader__(), wrap=True)
+
+        self.__queue = Queue()
 
         return True
 
