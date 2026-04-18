@@ -183,4 +183,6 @@ class WSProxy:
 
         ...
 
+        self.__queue.shutdown()  # noqa
+
         return True
