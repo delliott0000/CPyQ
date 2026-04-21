@@ -3,7 +3,6 @@ from __future__ import annotations
 from abc import ABC
 from typing import TYPE_CHECKING
 
-from aiohttp import WSCloseCode
 from aiohttp.web import HTTPConflict, WebSocketResponse
 
 from Common import WSProxy, log
@@ -55,17 +54,14 @@ class BaseWebSocketService(BaseService, ABC):
 
         return proxy, response
 
-    async def cleanup_ws(self, token: Token, /) -> None:
+    def cleanup_ws(self, token: Token, /) -> None:
         proxy = token.session.connections.pop(token, None)
-        if proxy is None:
-            return
 
-        code = proxy.close_code or WSCloseCode.OK
-        await proxy.close(code=code)
-        log(
-            f"Closed WebSocket for {token.session.user}. "
-            f"Received code {proxy.close_code}. (Token ID: {token.id})"
-        )
+        if proxy is not None:
+            log(
+                f"Closed WebSocket for {token.session.user}. "
+                f"Received code {proxy.close_code}. (Token ID: {token.id})"
+            )
 
     async def serve_ws(self, request: Request, /) -> WebSocketResponse:
         token = self.token_from_request(request)
@@ -76,7 +72,7 @@ class BaseWebSocketService(BaseService, ABC):
                 ...
 
         finally:
-            await self.cleanup_ws(token)
+            self.cleanup_ws(token)
 
         return response
 
