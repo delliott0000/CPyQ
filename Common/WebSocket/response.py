@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from asyncio import CancelledError, Queue, create_task
+from asyncio import CancelledError, Queue, QueueShutDown, create_task  # noqa
 from logging import DEBUG, ERROR
 from typing import TYPE_CHECKING, Protocol
 
@@ -94,7 +94,15 @@ class WSProxy:
     def __aiter__(self) -> AsyncIterator[WSEvent]:
         return self
 
-    async def __anext__(self) -> WSEvent: ...
+    async def __anext__(self) -> WSEvent:
+        if not self.__started:
+            raise RuntimeError(f"{type(self).__name__} has not started.")
+
+        try:
+            return await self.__queue.get()
+
+        except QueueShutDown:
+            raise StopAsyncIteration
 
     @property
     def running(self) -> bool:
