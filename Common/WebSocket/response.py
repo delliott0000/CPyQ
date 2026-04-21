@@ -169,11 +169,10 @@ class WSProxy:
 
             if isinstance(custom_message, WSEvent):
                 self.__receive_event__(custom_message)
-                ...
+                await self.__queue.put(custom_message)
 
             elif isinstance(custom_message, WSAck):
                 self.__receive_ack__(custom_message)
-                ...
 
             # The parser should never allow this to be reached
             else:
