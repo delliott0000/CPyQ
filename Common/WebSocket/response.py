@@ -160,9 +160,11 @@ class WSProxy:
             custom_message = parse_received_message(message)
 
             if isinstance(custom_message, WSEvent):
+                self.__receive_event__(custom_message)
                 ...
 
             elif isinstance(custom_message, WSAck):
+                self.__receive_ack__(custom_message)
                 ...
 
             # The parser should never allow this to be reached
@@ -172,6 +174,10 @@ class WSProxy:
         # The underlying transport has closed
         # Get the transport's close code and set it as our close code
         self.__signal_close__(self.__get_close_code__())
+
+    def __receive_event__(self, event: WSEvent, /) -> None: ...
+
+    def __receive_ack__(self, ack: WSAck, /) -> None: ...
 
     def start(self) -> bool:
         if self.__started:
