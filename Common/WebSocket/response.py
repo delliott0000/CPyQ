@@ -1,6 +1,13 @@
 from __future__ import annotations
 
-from asyncio import CancelledError, Queue, QueueShutDown, create_task  # noqa
+from asyncio import QueueShutDown  # noqa
+from asyncio import (
+    CancelledError,
+    Queue,
+    create_task,
+    gather,
+    sleep,
+)
 from logging import DEBUG, ERROR
 from typing import TYPE_CHECKING, Protocol
 
@@ -220,7 +227,20 @@ class WSProxy:
         # Guarantee that the future is set
         self.__signal_close__(code)
 
-        ...
+        # Allow newly created coroutines to start before cancelling the tasks that schedule them
+        # This will prevent "... was never awaited" warnings
+        await sleep(0)
+
+        tasks = set(self.__sent_unacked.values()) | self.__submitted_tasks
+
+        for task in tasks:
+            task.cancel()
+
+        # The reader task will soon run to completion naturally, so there's no need to cancel it
+        # But it should be allowed to finish before shutting down the message queue
+        tasks.add(self.__reader_task)
+
+        await gather(*tasks, return_exceptions=True)
 
         self.__queue.shutdown()  # noqa
 
