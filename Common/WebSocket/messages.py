@@ -7,7 +7,7 @@ from uuid import uuid4
 
 from aiohttp import WSMsgType
 
-from ..bases import JSONSerialisableABC
+from ..bases import ComparesIDABC, ComparesIDMixin, JSONSerialisableABC
 from ..utils import decode_datetime, encode_datetime, protocol_error, validate
 from .enums import CustomWSCloseCode, CustomWSMessageType, WSEventStatus
 from .payloads import parse_received_payload
@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 __all__ = ("CustomWSMessage", "WSEvent", "WSAck", "make_id", "parse_received_message")
 
 
-class CustomWSMessage(JSONSerialisableABC, ABC):
+class CustomWSMessage(ComparesIDMixin, ComparesIDABC, JSONSerialisableABC, ABC):
     __slots__ = ("_type", "_id", "_sent_at")
 
     def __init__(self, json: Json, /, *, with_sent_at: bool):

@@ -41,6 +41,9 @@ class WSProxy:
         "__limit",
         "__interval",
         "__hits",
+        "__sent_unacked",
+        "__received_unacked",
+        "__submitted_tasks",
         "__queue",
         "__close_future",
         "__close_task",
@@ -68,6 +71,11 @@ class WSProxy:
         self.__limit = limit
         self.__interval = interval
         self.__hits: list[float] = []
+
+        self.__sent_unacked: dict[WSEvent, TN] = dict()
+        self.__received_unacked: set[WSEvent] = set()
+
+        self.__submitted_tasks: set[TN] = set()
 
         self.__queue: Queue[WSEvent] | None = None
 
