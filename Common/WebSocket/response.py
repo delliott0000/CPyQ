@@ -222,6 +222,7 @@ class WSProxy:
 
         self.__closed = True
 
+        # It is assumed that this is safe to call many times
         await self.__response.close(code=code)
 
         # Guarantee that the future is set
