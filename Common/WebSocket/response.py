@@ -225,7 +225,8 @@ class WSProxy:
         # It is assumed that this is safe to call many times
         await self.__response.close(code=code)
 
-        # Guarantee that the future is set
+        # Guarantee that the close future is set and that the close task will unblock
+        # Don't await either of these, otherwise it will deadlock
         self.__signal_close__(code)
 
         # Allow newly created coroutines to start before cancelling the tasks that schedule them
