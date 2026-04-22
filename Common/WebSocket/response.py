@@ -25,6 +25,8 @@ if TYPE_CHECKING:
 
     from aiohttp import WSMessage
 
+    from .payloads import Payload
+
     Json = dict[str, Any]
     CN = Coroutine[Any, Any, None]
     TN = Task[None]
@@ -227,6 +229,10 @@ class WSProxy:
         task = self.__make_task__(coro, wrap=True)
         self.__submitted_tasks.add(task)
         task.add_done_callback(self.__submitted_tasks.discard)
+
+    async def send_payload(self, payload: Payload, /, **kwargs: Any) -> WSEvent:
+        event = WSEvent.from_payload(payload, **kwargs)
+        return await self.__send_event__(event)
 
     async def close(self, *, code: CloseCode) -> bool:
         if not self.running:
