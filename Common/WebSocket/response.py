@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING, Protocol
 from aiohttp import WSCloseCode
 
 from ..errors import RatelimitException, WSException
-from ..utils import check_ratelimit, log, make_future
+from ..utils import check_ratelimit, log, make_future, protocol_error
 from .enums import CustomWSCloseCode
 from .messages import WSAck, WSEvent, parse_received_message
 
@@ -199,7 +199,13 @@ class WSProxy:
 
     def __receive_event__(self, event: WSEvent, /) -> None: ...
 
-    def __receive_ack__(self, ack: WSAck, /) -> None: ...
+    def __receive_ack__(self, ack: WSAck, /) -> None:
+        try:
+            task = self.__sent_unacked.pop(ack.id)
+            task.cancel()
+
+        except KeyError:
+            protocol_error(CustomWSCloseCode.UnknownEvent)
 
     def start(self) -> bool:
         if self.__started:
