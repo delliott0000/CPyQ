@@ -79,8 +79,8 @@ class WSProxy:
         self.__interval = interval
         self.__hits: list[float] = []
 
-        self.__sent_unacked: dict[WSEvent, TN] = dict()
-        self.__received_unacked: set[WSEvent] = set()
+        self.__sent_unacked: dict[str, TN] = dict()
+        self.__received_unacked: set[str] = set()
 
         self.__submitted_tasks: set[TN] = set()
 
