@@ -207,6 +207,10 @@ class WSProxy:
         except KeyError:
             protocol_error(CustomWSCloseCode.UnknownEvent)
 
+    async def __send_event__(self, event: WSEvent, /) -> WSEvent: ...
+
+    async def __send_ack__(self, ack: WSAck, /) -> None: ...
+
     def start(self) -> bool:
         if self.__started:
             return False
