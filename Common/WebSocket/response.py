@@ -145,12 +145,13 @@ class WSProxy:
 
         return create_task(real_coro)
 
-    async def __wrap_coro__(self, coro: CN, /) -> None:
+    async def __wrap_coro__(self, coro: CN, /, *, log_cancellation: bool = True) -> None:
         try:
             await coro
 
         except CancelledError:
-            log(f"WebSocket task {coro} was cancelled.", DEBUG)
+            if log_cancellation:
+                log(f"WebSocket task {coro} was cancelled.", DEBUG)
             raise
 
         except RatelimitException:
