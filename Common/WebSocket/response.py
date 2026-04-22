@@ -134,12 +134,14 @@ class WSProxy:
 
         return WSCloseCode.ABNORMAL_CLOSURE
 
-    def __make_task__(self, coro: CN, /, *, wrap: bool) -> TN:
+    def __make_task__(self, coro: CN, /, *, wrap: bool, **wrap_kwargs: Any) -> TN:
         if not self.running:
             raise RuntimeError(f"{type(self).__name__} is not running.")
+        elif wrap_kwargs and not wrap:
+            raise ValueError("Wrap keyword arguments passed for a non-wrapped task.")
 
         if wrap:
-            real_coro = self.__wrap_coro__(coro)
+            real_coro = self.__wrap_coro__(coro, **wrap_kwargs)
         else:
             real_coro = coro
 
