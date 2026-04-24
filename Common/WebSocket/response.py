@@ -16,6 +16,7 @@ from aiohttp import WSCloseCode
 from ..errors import RatelimitException, WSException
 from ..utils import check_ratelimit, log, make_future
 from .enums import CustomWSCloseCode, WSPeerScope
+from .handshake import HandshakeContext
 from .messages import WSAck, WSEvent, parse_received_message
 
 if TYPE_CHECKING:
@@ -51,6 +52,7 @@ class WSProxy:
         "__limit",
         "__interval",
         "__hits",
+        "__handshake_ctx",
         "__sent_unacked",
         "__received_unacked",
         "__submitted_tasks",
@@ -84,6 +86,8 @@ class WSProxy:
         self.__limit = limit
         self.__interval = interval
         self.__hits: list[float] = []
+
+        self.__handshake_ctx: HandshakeContext = HandshakeContext()
 
         self.__sent_unacked: dict[str, TN] = dict()
         self.__received_unacked: set[str] = set()
