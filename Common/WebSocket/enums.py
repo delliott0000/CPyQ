@@ -9,6 +9,7 @@ __all__ = (
     "WSPeerRole",
     "WSPeerType",
     "WSPeerScope",
+    "HandshakePhase",
 )
 
 
@@ -59,4 +60,10 @@ class WSPeerType(Enum):
 class WSPeerScope:
     role: WSPeerRole
     type: WSPeerType
+
+
+class HandshakePhase(Enum):
+    NotStarted = 0
+    InProgress = 1
+    Done       = 2
 # fmt: on
