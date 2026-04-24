@@ -60,7 +60,7 @@ class HandshakeContext:
         self.__phase = HandshakePhase.Done
         self.__future.set_result(self.__event)
 
-    def fail(self, *, code: CloseCode) -> None:
+    def fail(self, code: CloseCode, /) -> None:
         self.__ensure_mutable__()
 
         exception = WSException(code)
