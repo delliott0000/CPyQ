@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from typing import Any, ClassVar
 
     from ..codecs import Codec
+    from .response import WSProxy
 
     Json = dict[str, Any]
 
@@ -47,7 +48,7 @@ class Payload(JSONSerialisableABC, ABC):
             setattr(self, key, codec.decode(json[key]))
 
     @abstractmethod
-    def valid_context(self, *, receiver: ...) -> bool:
+    def valid_context(self, *, receiver: WSProxy) -> bool:
         pass
 
     def json(self) -> Json:
@@ -60,7 +61,7 @@ class EmptyPayload(Payload):
     def __init__(self, _: Json):  # noqa
         pass
 
-    def valid_context(self, *, receiver: ...) -> bool: ...
+    def valid_context(self, *, receiver: WSProxy) -> bool: ...
 
     def json(self) -> Json:
         return {}
@@ -73,8 +74,6 @@ class Handshake(Payload, ABC):
 
     ack_timeout: float
 
-    def valid_context(self, *, receiver: ...) -> bool: ...
-
 
 class UserHandshake(Handshake):
     # TODO: Add more fields as/when needed
@@ -82,12 +81,16 @@ class UserHandshake(Handshake):
 
     ...
 
+    def valid_context(self, *, receiver: WSProxy) -> bool: ...
+
 
 class AutopilotHandshake(Handshake):
     # TODO: Add more fields as/when needed
     CODECS = Handshake.CODECS | {}
 
     ...
+
+    def valid_context(self, *, receiver: WSProxy) -> bool: ...
 
 
 EMPTY_PAYLOAD = EmptyPayload({})
