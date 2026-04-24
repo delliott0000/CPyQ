@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from enum import IntEnum, StrEnum
+from enum import Enum, IntEnum, StrEnum
 
 __all__ = (
     "CustomWSCloseCode",
@@ -44,12 +44,12 @@ class PayloadKind(StrEnum):
     AutopilotHandshake = "autopilot_handshake"
 
 
-class WSPeerRole(IntEnum):
+class WSPeerRole(Enum):
     Server = 0
     Client = 1
 
 
-class WSPeerType(IntEnum):
+class WSPeerType(Enum):
     User      = 0
     Autopilot = 1
 
