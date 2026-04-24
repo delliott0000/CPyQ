@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from aiohttp.web import HTTPConflict, WebSocketResponse
 
-from Common import WSProxy, log
+from Common import WSPeerRole, WSPeerScope, WSProxy, log
 
 from .base_service import BaseService
 from .decorators import (
@@ -39,9 +39,14 @@ class BaseWebSocketService(BaseService, ABC):
             max_msg_size=config.ws_max_message_size * 1024,
         )
 
+        scope = WSPeerScope(
+            role=WSPeerRole.Server,
+            type=...,
+        )
+
         proxy = WSProxy(
             response,  # noqa
-            scope=...,
+            scope=scope,
             ratelimited=True,
             limit=config.ws_message_limit,
             interval=config.ws_message_interval,
