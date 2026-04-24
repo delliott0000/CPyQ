@@ -46,7 +46,7 @@ class HandshakeContext:
         if self.__phase != HandshakePhase.NotStarted:
             self.__raise__("has already started")
 
-        # In Progress <=> Event is set
+        # In Progress or Done <=> Event is set
         self.__phase = HandshakePhase.InProgress
         self.__event = event
 
