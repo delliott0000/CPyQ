@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from aiohttp.web import HTTPConflict, WebSocketResponse
 
-from Common import WSPeerRole, WSPeerScope, WSProxy, log
+from Common import WSPeerRole, WSPeerScope, WSPeerType, WSProxy, log
 
 from .base_service import BaseService
 from .decorators import (
@@ -18,6 +18,8 @@ from .decorators import (
 )
 
 if TYPE_CHECKING:
+    from typing import ClassVar
+
     from aiohttp.web import Request
 
     from Common import Token
@@ -26,6 +28,8 @@ __all__ = ("BaseWebSocketService", "UserWebSocketService", "AutopilotWebSocketSe
 
 
 class BaseWebSocketService(BaseService, ABC):
+    PEER_TYPE: ClassVar[WSPeerType]
+
     async def prepare_ws(
         self, request: Request, token: Token, /
     ) -> tuple[WSProxy, WebSocketResponse]:
@@ -41,7 +45,7 @@ class BaseWebSocketService(BaseService, ABC):
 
         scope = WSPeerScope(
             role=WSPeerRole.Server,
-            type=...,
+            type=self.PEER_TYPE,
         )
 
         proxy = WSProxy(
@@ -84,6 +88,8 @@ class BaseWebSocketService(BaseService, ABC):
 
 
 class UserWebSocketService(BaseWebSocketService):
+    PEER_TYPE = WSPeerType.User
+
     async def task_coro(self) -> None:
         pass
 
@@ -96,6 +102,8 @@ class UserWebSocketService(BaseWebSocketService):
 
 
 class AutopilotWebSocketService(BaseWebSocketService):
+    PEER_TYPE = WSPeerType.Autopilot
+
     async def task_coro(self) -> None:
         pass
 
