@@ -133,5 +133,5 @@ def build_payload(cls: type[PayloadT], json: Json, /) -> PayloadT:
         raise ValueError('The supplied JSON contains a "kind" field.')
 
     kind = payload_cls_to_kind(cls)
-    real_json = {**json, "kind": kind.value}
+    real_json = {**json, "kind": kind}
     return cls(real_json)

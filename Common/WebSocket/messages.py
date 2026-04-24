@@ -91,9 +91,9 @@ class WSEvent(CustomWSMessage):
         reason: str | None = None,
     ) -> Self:
         json = {
-            "type": CustomWSMessageType.Event.value,
+            "type": CustomWSMessageType.Event,
             "id": make_id(),
-            "status": status.value,
+            "status": status,
             "reason": reason,
             "payload": payload.json(),
         }
@@ -117,7 +117,7 @@ class WSEvent(CustomWSMessage):
 
     def json(self) -> Json:
         return super().json() | {
-            "status": self._status.value,
+            "status": self._status,
             "reason": self._reason,
             "payload": self._payload.json(),
         }
@@ -129,7 +129,7 @@ class WSAck(CustomWSMessage):
     @classmethod
     def from_event(cls, event: WSEvent, /) -> Self:
         json = {
-            "type": CustomWSMessageType.Ack.value,
+            "type": CustomWSMessageType.Ack,
             "id": event.id,
         }
         return cls(json, with_sent_at=False)
