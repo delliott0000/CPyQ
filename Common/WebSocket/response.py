@@ -117,6 +117,10 @@ class WSProxy:
     def running(self) -> bool:
         return self.__started and not self.__closed
 
+    def __ensure_running__(self) -> None:
+        if not self.running:
+            raise RuntimeError(f"{type(self).__name__} is not running.")
+
     @property
     def close_code(self) -> CloseCode | None:
         if self.__started and self.__close_future.done():
@@ -137,9 +141,9 @@ class WSProxy:
         return WSCloseCode.ABNORMAL_CLOSURE
 
     def __make_task__(self, coro: CN, /, *, wrap: bool, **wrap_kwargs: Any) -> TN:
-        if not self.running:
-            raise RuntimeError(f"{type(self).__name__} is not running.")
-        elif wrap_kwargs and not wrap:
+        self.__ensure_running__()
+
+        if wrap_kwargs and not wrap:
             raise ValueError("Wrap keyword arguments passed for a non-wrapped task.")
 
         if wrap:
