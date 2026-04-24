@@ -41,6 +41,7 @@ class BaseWebSocketService(BaseService, ABC):
 
         proxy = WSProxy(
             response,  # noqa
+            scope=...,
             ratelimited=True,
             limit=config.ws_message_limit,
             interval=config.ws_message_interval,

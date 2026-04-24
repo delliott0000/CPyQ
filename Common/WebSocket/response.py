@@ -15,7 +15,7 @@ from aiohttp import WSCloseCode
 
 from ..errors import RatelimitException, WSException
 from ..utils import check_ratelimit, log, make_future
-from .enums import CustomWSCloseCode
+from .enums import CustomWSCloseCode, WSPeerScope
 from .messages import WSAck, WSEvent, parse_received_message
 
 if TYPE_CHECKING:
@@ -46,6 +46,7 @@ class WSResponseType(Protocol):
 class WSProxy:
     __slots__ = (
         "__response",
+        "__scope",
         "__ratelimited",
         "__limit",
         "__interval",
@@ -66,6 +67,7 @@ class WSProxy:
         response: WSResponseType,
         /,
         *,
+        scope: WSPeerScope,
         ratelimited: bool = False,
         limit: int | None = None,
         interval: float | None = None,
@@ -75,6 +77,8 @@ class WSProxy:
             raise TypeError("Limit and interval must both be specified.")
 
         self.__response = response
+
+        self.__scope = scope
 
         self.__ratelimited = ratelimited
         self.__limit = limit

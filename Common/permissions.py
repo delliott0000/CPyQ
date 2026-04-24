@@ -46,7 +46,7 @@ class PermissionScope(Enum):
         return self.__check_null__(other) or self.__rank__[self.value] > self.__rank__[other.value]  # noqa
 
 
-@dataclass(kw_only=True, slots=True, frozen=True)
+@dataclass(kw_only=True, frozen=True, slots=True)
 class Permission(JSONSerialisableABC):
     type:  PermissionType
     scope: PermissionScope

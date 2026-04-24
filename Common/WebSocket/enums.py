@@ -1,6 +1,15 @@
+from dataclasses import dataclass
 from enum import IntEnum, StrEnum
 
-__all__ = ("CustomWSCloseCode", "CustomWSMessageType", "WSEventStatus", "PayloadKind")
+__all__ = (
+    "CustomWSCloseCode",
+    "CustomWSMessageType",
+    "WSEventStatus",
+    "PayloadKind",
+    "WSPeerRole",
+    "WSPeerType",
+    "WSPeerScope",
+)
 
 
 # fmt: off
@@ -33,4 +42,21 @@ class WSEventStatus(StrEnum):
 class PayloadKind(StrEnum):
     UserHandshake      = "user_handshake"
     AutopilotHandshake = "autopilot_handshake"
+
+
+class WSPeerRole(IntEnum):
+    Server = 0
+    Client = 1
+
+
+class WSPeerType(IntEnum):
+    User      = 0
+    Autopilot = 1
+
+
+# Not an enumeration, but defining this here is convenient
+@dataclass(kw_only=True, frozen=True, slots=True)
+class WSPeerScope:
+    role: WSPeerRole
+    type: WSPeerType
 # fmt: on
