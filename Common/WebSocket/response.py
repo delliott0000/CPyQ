@@ -218,6 +218,8 @@ class WSProxy:
 
     async def __send_ack__(self, ack: WSAck, /) -> None: ...
 
+    async def __ack_timeout__(self) -> None: ...
+
     def start(self) -> bool:
         if self.__started:
             return False
