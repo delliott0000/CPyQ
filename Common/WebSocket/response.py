@@ -212,13 +212,6 @@ class WSProxy:
         # Get the transport's close code and set it as our close code
         self.__signal_close__(self.__get_close_code__())
 
-    def __schedule_ack_timeout__(self, event_id: str, /) -> None:
-        coro = self.__ack_timeout__()
-        task = self.__make_task__(coro, wrap=True, log_cancellation=False)
-        self.__sent_unacked[event_id] = task
-
-    async def __ack_timeout__(self) -> None: ...
-
     def __receive_event__(self, event: WSEvent, /) -> None: ...
 
     def __receive_ack__(self, ack: WSAck, /) -> None: ...
@@ -226,6 +219,13 @@ class WSProxy:
     async def __send_event__(self, event: WSEvent, /) -> None: ...
 
     async def __send_ack__(self, ack: WSAck, /) -> None: ...
+
+    def __schedule_ack_timeout__(self, event_id: str, /) -> None:
+        coro = self.__ack_timeout__()
+        task = self.__make_task__(coro, wrap=True, log_cancellation=False)
+        self.__sent_unacked[event_id] = task
+
+    async def __ack_timeout__(self) -> None: ...
 
     def start(self) -> bool:
         if self.__started:
