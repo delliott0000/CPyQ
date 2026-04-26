@@ -257,7 +257,7 @@ class WSProxy:
         await self.__response.close(code=code)
 
         # Guarantee that the close future is set and that the close task will unblock
-        # Don't await either of these, otherwise it will deadlock
+        # Don't await the task, otherwise it will deadlock
         self.__signal_close__(code)
 
         # Allow newly created coroutines to start before cancelling the tasks that schedule them
