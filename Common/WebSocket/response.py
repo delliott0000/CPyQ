@@ -15,7 +15,7 @@ from aiohttp import WSCloseCode
 
 from ..errors import RatelimitException, WSException
 from ..utils import check_ratelimit, log, make_future
-from .enums import CustomWSCloseCode, WSPeerRole, WSPeerScope
+from .enums import CustomWSCloseCode, WSPeerRole
 from .handshake import HandshakeContext
 from .messages import WSAck, WSEvent, parse_received_message
 
@@ -25,6 +25,8 @@ if TYPE_CHECKING:
     from typing import Any
 
     from aiohttp import WSMessage
+
+    from .enums import WSPeerScope
 
     Json = dict[str, Any]
     CN = Coroutine[Any, Any, None]
