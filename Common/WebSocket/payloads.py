@@ -75,6 +75,8 @@ class Handshake(Payload, ABC):
 
     ack_timeout: float
 
+    def valid_context(self, *, receiver: WSProxy) -> bool: ...
+
 
 class UserHandshake(Handshake):
     # TODO: Add more fields as/when needed
@@ -82,16 +84,12 @@ class UserHandshake(Handshake):
 
     ...
 
-    def valid_context(self, *, receiver: WSProxy) -> bool: ...
-
 
 class AutopilotHandshake(Handshake):
     # TODO: Add more fields as/when needed
     CODECS = Handshake.CODECS | {}
 
     ...
-
-    def valid_context(self, *, receiver: WSProxy) -> bool: ...
 
 
 EMPTY_PAYLOAD = EmptyPayload({})
