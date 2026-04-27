@@ -62,7 +62,8 @@ class EmptyPayload(Payload):
     def __init__(self, _: Json):  # noqa
         pass
 
-    def valid_context(self, *, receiver: WSProxy) -> bool: ...
+    def valid_context(self, *, receiver: WSProxy) -> bool:
+        return receiver.handshake_done
 
     def json(self) -> Json:
         return {}
