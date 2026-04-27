@@ -136,6 +136,10 @@ class WSProxy:
         return peer_type_to_handshake_cls(self.__scope.type)
 
     @property
+    def handshake_set(self) -> bool:
+        return self.__handshake_ctx.event is not None
+
+    @property
     def handshake_done(self) -> bool:
         return self.__handshake_ctx.is_done
 

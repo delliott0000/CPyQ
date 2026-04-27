@@ -76,7 +76,12 @@ class Handshake(Payload, ABC):
 
     ack_timeout: float
 
-    def valid_context(self, *, receiver: WSProxy) -> bool: ...
+    def valid_context(self, *, receiver: WSProxy) -> bool:
+        return (
+            not receiver.server
+            and not receiver.handshake_set
+            and type(self) is receiver.handshake_cls
+        )
 
 
 class UserHandshake(Handshake):
