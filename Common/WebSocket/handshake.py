@@ -44,10 +44,6 @@ class HandshakeContext:
     def is_done(self) -> bool:
         return self.__phase == HandshakePhase.Done
 
-    @property
-    def exception(self) -> WSException | None:
-        return self.__future.exception()
-
     def __raise__(self, message: str, /) -> None:
         raise RuntimeError(f"{type(self).__name__} {message}.")
 
