@@ -286,6 +286,19 @@ class WSProxy:
         # Don't await the task, otherwise it will deadlock
         self.__signal_close__(code)
 
+        # Wake up the handshake future with an exception
+        # If the handshake has complete (or failed for some reason), ignore and continue
+        try:
+            self.__handshake_ctx.fail(code)
+        except RuntimeError:
+            pass
+
+        # Surpress the "Future exception was never retrieved" warning
+        try:
+            await self.__handshake_ctx.wait()
+        except WSException:
+            pass
+
         # Allow newly created coroutines to start before cancelling the tasks that schedule them
         # This will prevent "... was never awaited" warnings
         await sleep(0)
