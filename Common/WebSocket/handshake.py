@@ -35,9 +35,7 @@ class HandshakeContext:
         self.__future: Future[WSEvent] = make_future()
 
     @property
-    def event(self) -> WSEvent:
-        if self.__event is None:
-            self.__raise__("is not yet bound")
+    def event(self) -> WSEvent | None:
         return self.__event
 
     @property
