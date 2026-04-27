@@ -268,10 +268,13 @@ class WSProxy:
 
         return True
 
-    def submit(self, coro: CN, /) -> None:
+    def submit(self, coro: CN, /) -> TN:
         task = self.__make_task__(coro, wrap=True)
+
         self.__submitted_tasks.add(task)
         task.add_done_callback(self.__submitted_tasks.discard)
+
+        return task
 
     async def close(self, *, code: CloseCode) -> bool:
         if not self.running:
