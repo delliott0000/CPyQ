@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from ..bases import JSONSerialisableABC
 from ..codecs import float_codec
 from ..utils import validate
-from .enums import PayloadKind
+from .enums import PayloadKind, WSPeerType
 
 if TYPE_CHECKING:
     from typing import Any, ClassVar
@@ -25,6 +25,7 @@ __all__ = (
     "EMPTY_PAYLOAD",
     "payload_kind_to_cls",
     "payload_cls_to_kind",
+    "peer_type_to_handshake_cls",
     "parse_received_payload",
     "build_payload",
 )
@@ -96,21 +97,31 @@ class AutopilotHandshake(Handshake):
 EMPTY_PAYLOAD = EmptyPayload({})
 
 
-_MAPPING: dict[PayloadKind, type[Payload]] = {
+_PAYLOAD_MAP: dict[PayloadKind, type[Payload]] = {
     PayloadKind.UserHandshake: UserHandshake,
     PayloadKind.AutopilotHandshake: AutopilotHandshake,
 }
 
 
-_RMAPPING: dict[type[Payload], PayloadKind] = {v: k for k, v in _MAPPING.items()}
-
-
 def payload_kind_to_cls(kind: PayloadKind, /) -> type[Payload]:
-    return _MAPPING[kind]
+    return _PAYLOAD_MAP[kind]
+
+
+_PAYLOAD_RMAP: dict[type[Payload], PayloadKind] = {v: k for k, v in _PAYLOAD_MAP.items()}
 
 
 def payload_cls_to_kind(cls: type[Payload], /) -> PayloadKind:
-    return _RMAPPING[cls]
+    return _PAYLOAD_RMAP[cls]
+
+
+_HANDSHAKE_MAP: dict[WSPeerType, type[Handshake]] = {
+    WSPeerType.User: UserHandshake,
+    WSPeerType.Autopilot: AutopilotHandshake,
+}
+
+
+def peer_type_to_handshake_cls(peer_type: WSPeerType, /) -> type[Handshake]:
+    return _HANDSHAKE_MAP[peer_type]
 
 
 def parse_received_payload(json: Json, /) -> Payload:
