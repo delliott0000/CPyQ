@@ -20,6 +20,13 @@ __all__ = ("HandshakeContext",)
 
 
 class HandshakeContext:
+    """
+    The following statements (must) always hold true
+    - self.__phase == InProgress or self.__phase == Done <=> self.__event is not None
+    - self.__phase == Done <=> self.__future.result() successfully returns an instance of WSEvent
+    - self.__future.exception() is not None => self.__phase != Done
+    """
+
     __slots__ = ("__phase", "__event", "__future")
 
     def __init__(self):
@@ -32,6 +39,10 @@ class HandshakeContext:
         if self.__event is None:
             self.__raise__("is not yet bound")
         return self.__event
+
+    @property
+    def is_done(self) -> bool:
+        return self.__phase == HandshakePhase.Done
 
     def __raise__(self, message: str, /) -> None:
         raise RuntimeError(f"{type(self).__name__} {message}.")
@@ -52,7 +63,6 @@ class HandshakeContext:
         if self.__phase != HandshakePhase.NotStarted:
             self.__raise__("has already started")
 
-        # In Progress or Done <=> Event is set
         self.__phase = HandshakePhase.InProgress
         self.__event = event
 
@@ -62,7 +72,6 @@ class HandshakeContext:
         if self.__phase != HandshakePhase.InProgress:
             self.__raise__("is not in progress")
 
-        # Done <=> Future is set
         self.__phase = HandshakePhase.Done
         self.__future.set_result(self.__event)
 
