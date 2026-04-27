@@ -225,6 +225,10 @@ class WSProxy:
         task = self.__make_task__(coro, wrap=True, log_cancellation=False)
         self.__sent_unacked[event_id] = task
 
+    def __cancel_ack_timeout__(self, event_id: str, /) -> None:
+        task = self.__sent_unacked.pop(event_id)
+        task.cancel()
+
     async def __ack_timeout__(self) -> None: ...
 
     def start(self) -> bool:
