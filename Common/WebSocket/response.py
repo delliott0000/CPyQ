@@ -18,6 +18,7 @@ from ..utils import check_ratelimit, log, make_future
 from .enums import CustomWSCloseCode, WSPeerRole
 from .handshake import HandshakeContext
 from .messages import WSAck, WSEvent, parse_received_message
+from .payloads import peer_type_to_handshake_cls
 
 if TYPE_CHECKING:
     from asyncio import Future, Task
@@ -27,6 +28,7 @@ if TYPE_CHECKING:
     from aiohttp import WSMessage
 
     from .enums import WSPeerScope
+    from .payloads import Handshake
 
     Json = dict[str, Any]
     CN = Coroutine[Any, Any, None]
@@ -128,6 +130,10 @@ class WSProxy:
     @property
     def running(self) -> bool:
         return self.__started and not self.__closed
+
+    @property
+    def handshake_cls(self) -> type[Handshake]:
+        return peer_type_to_handshake_cls(self.__scope.type)
 
     def __ensure_running__(self) -> None:
         if not self.running:
