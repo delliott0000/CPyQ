@@ -27,6 +27,12 @@ class HandshakeContext:
         self.__event: WSEvent | None = None
         self.__future: Future[WSEvent] = make_future()
 
+    @property
+    def event(self) -> WSEvent:
+        if self.__event is None:
+            self.__raise__("is not yet bound")
+        return self.__event
+
     def __raise__(self, message: str, /) -> None:
         raise RuntimeError(f"{type(self).__name__} {message}.")
 
