@@ -198,8 +198,10 @@ class WSProxy:
             custom_message = parse_received_message(message)
 
             if isinstance(custom_message, WSEvent):
-                self.__receive_event__(custom_message)
-                await self.__queue.put(custom_message)
+                result = self.__receive_event__(custom_message)
+
+                if result:
+                    await self.__queue.put(custom_message)
 
             elif isinstance(custom_message, WSAck):
                 self.__receive_ack__(custom_message)
@@ -212,7 +214,7 @@ class WSProxy:
         # Get the transport's close code and set it as our close code
         self.__signal_close__(self.__get_close_code__())
 
-    def __receive_event__(self, event: WSEvent, /) -> None: ...
+    def __receive_event__(self, event: WSEvent, /) -> bool: ...
 
     def __receive_ack__(self, ack: WSAck, /) -> None: ...
 
