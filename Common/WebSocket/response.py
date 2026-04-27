@@ -15,7 +15,7 @@ from aiohttp import WSCloseCode
 
 from ..errors import RatelimitException, WSException
 from ..utils import check_ratelimit, log, make_future
-from .enums import CustomWSCloseCode, WSPeerScope
+from .enums import CustomWSCloseCode, WSPeerRole, WSPeerScope
 from .handshake import HandshakeContext
 from .messages import WSAck, WSEvent, parse_received_message
 
@@ -118,6 +118,10 @@ class WSProxy:
 
         except QueueShutDown:
             raise StopAsyncIteration
+
+    @property
+    def server(self) -> bool:
+        return self.__scope.role == WSPeerRole.Server
 
     @property
     def running(self) -> bool:
