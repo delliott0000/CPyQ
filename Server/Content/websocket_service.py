@@ -69,8 +69,8 @@ class BaseWebSocketService(BaseService, ABC):
 
         if proxy is not None:
             log(
-                f"Closed WebSocket for {token.session.user}. "
-                f"Received code {proxy.close_code}. (Token ID: {token.id})"
+                f"Closed WebSocket for {token.session.user} "
+                f"with code {proxy.close_code}. (Token ID: {token.id})"
             )
 
     async def serve_ws(self, request: Request, /) -> WebSocketResponse:
