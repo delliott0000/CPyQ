@@ -58,6 +58,7 @@ class WSProxy:
         "__sent_unacked",
         "__received_unacked",
         "__submitted_tasks",
+        "__fatal_event",
         "__queue",
         "__close_future",
         "__close_task",
@@ -95,6 +96,8 @@ class WSProxy:
         self.__received_unacked: set[str] = set()
 
         self.__submitted_tasks: set[TN] = set()
+
+        self.__fatal_event: WSEvent | None = None
 
         self.__queue: Queue[WSEvent] | None = None
 
@@ -146,6 +149,10 @@ class WSProxy:
     def __ensure_running__(self) -> None:
         if not self.running:
             raise RuntimeError(f"{type(self).__name__} is not running.")
+
+    @property
+    def fatal_event(self) -> WSEvent | None:
+        return self.__fatal_event
 
     @property
     def close_code(self) -> CloseCode | None:
@@ -241,15 +248,6 @@ class WSProxy:
     async def __send_event__(self, event: WSEvent, /) -> None: ...
 
     async def __send_ack__(self, ack: WSAck, /) -> None: ...
-
-    def __schedule_ack_timeout__(self, event_id: str, /) -> None:
-        coro = self.__ack_timeout__()
-        task = self.__make_task__(coro, wrap=True, log_cancellation=False)
-        self.__sent_unacked[event_id] = task
-
-    def __cancel_ack_timeout__(self, event_id: str, /) -> None:
-        task = self.__sent_unacked.pop(event_id)
-        task.cancel()
 
     async def __ack_timeout__(self) -> None: ...
 
