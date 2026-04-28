@@ -78,9 +78,7 @@ class Handshake(Payload, ABC):
 
     def valid_context(self, *, receiver: WSProxy) -> bool:
         return (
-            not receiver.server
-            and not receiver.handshake_set
-            and type(self) is receiver.handshake_cls
+            not receiver.server and not receiver.handshake_set and receiver.is_handshake(self)
         )
 
 

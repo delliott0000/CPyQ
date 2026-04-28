@@ -28,7 +28,7 @@ if TYPE_CHECKING:
     from aiohttp import WSMessage
 
     from .enums import WSPeerScope
-    from .payloads import Handshake
+    from .payloads import Handshake, Payload
 
     Json = dict[str, Any]
     CN = Coroutine[Any, Any, None]
@@ -137,6 +137,9 @@ class WSProxy:
     @property
     def handshake_cls(self) -> type[Handshake]:
         return peer_type_to_handshake_cls(self.__scope.type)
+
+    def is_handshake(self, payload: Payload) -> bool:
+        return type(payload) is self.handshake_cls
 
     @property
     def handshake_set(self) -> bool:
