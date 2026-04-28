@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING, Protocol
 from aiohttp import WSCloseCode
 
 from ..errors import RatelimitException, WSException
-from ..utils import check_ratelimit, log, make_future
+from ..utils import check_ratelimit, log, make_future, protocol_error
 from .enums import CustomWSCloseCode, WSPeerRole
 from .handshake import HandshakeContext
 from .messages import WSAck, WSEvent, parse_received_message
@@ -241,7 +241,23 @@ class WSProxy:
         # Get the transport's close code and set it as our close code
         self.__signal_close__(self.__get_close_code__())
 
-    def __receive_event__(self, event: WSEvent, /) -> bool: ...
+    def __receive_event__(self, event: WSEvent, /) -> bool:
+        if event.id in self.__received_unacked:
+            protocol_error(CustomWSCloseCode.DuplicateEventID)
+
+        elif event.is_fatal:
+            self.__fatal_event = event
+            protocol_error(CustomWSCloseCode.FatalEvent)
+
+        elif not event.payload.valid_context(receiver=self):
+            protocol_error(CustomWSCloseCode.BadPayloadContext)
+
+        self.__received_unacked.add(event.id)
+
+        ...
+
+        # Don't enqueue the handshake event
+        return ...
 
     def __receive_ack__(self, ack: WSAck, /) -> None: ...
 
