@@ -257,10 +257,12 @@ class WSProxy:
 
         self.__received_unacked.add(event.id)
 
+        is_handshake = self.is_handshake(event.payload)
+
         ...
 
         # Don't enqueue the handshake event
-        return ...
+        return not is_handshake
 
     def __receive_ack__(self, ack: WSAck, /) -> None: ...
 
