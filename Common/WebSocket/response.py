@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING, Protocol
 from aiohttp import WSCloseCode
 
 from ..errors import RatelimitException, WSException
-from ..utils import check_ratelimit, log, make_future, protocol_error
+from ..utils import check_ratelimit, log, make_future, now, protocol_error
 from .enums import CustomWSCloseCode, WSPeerRole
 from .handshake import HandshakeContext
 from .messages import WSAck, WSEvent, parse_received_message
@@ -273,7 +273,16 @@ class WSProxy:
 
     async def __send_event__(self, event: WSEvent, /) -> None: ...
 
-    async def __send_ack__(self, ack: WSAck, /, *, is_handshake: bool) -> None: ...
+    async def __send_ack__(self, ack: WSAck, /, *, is_handshake: bool) -> None:
+        self.__ensure_running__()
+
+        prepared_ack = ack.with_sent_at(now())
+        await self.__response.send_json(prepared_ack.json())
+
+        self.__received_unacked.discard(ack.id)
+
+        if is_handshake:
+            self.__handshake_ctx.done()
 
     async def __ack_timeout__(self) -> None: ...
 
