@@ -52,11 +52,14 @@ class ResourceMixin(ComparesIDFormattedMixin):
 
     def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
-        self._session = None  # noqa
-        self._set_last_active()
+        self._reset()
 
-    def _set_last_active(self) -> None:
+    def _reset(self) -> None:
+        self._set_session(None)
         self._last_active = now()  # noqa
+
+    def _set_session(self, session: Session | None, /):
+        self._session = session  # noqa
 
     @property
     def current_user(self) -> User | None:
@@ -80,7 +83,7 @@ class ResourceMixin(ComparesIDFormattedMixin):
         if self.locked:
             raise ResourceLocked(session, self)  # noqa
         else:
-            self._session = session  # noqa
+            self._set_session(session)
 
     def release(
         self, session: Session | None = None, /, *, unconditional: bool = False
@@ -90,8 +93,7 @@ class ResourceMixin(ComparesIDFormattedMixin):
         elif not unconditional and self._session != session:
             raise ResourceNotOwned(session, self)  # noqa
         else:
-            self._session = None  # noqa
-            self._set_last_active()
+            self._reset()
 
     def ensure_acquired(self, session: Session, /) -> None:
         if not self.locked or session != self._session:
