@@ -359,6 +359,10 @@ class WSProxy:
 
         return task
 
+    async def send_payload(self, payload: Payload, /, **kwargs: Any) -> WSEvent:
+        event = WSEvent.from_payload(payload, **kwargs)
+        return await self.__send_event__(event)
+
     async def close(self, *, code: CloseCode) -> bool:
         if not self.running:
             return False
