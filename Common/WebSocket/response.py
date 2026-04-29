@@ -311,7 +311,10 @@ class WSProxy:
         if is_handshake:
             self.__handshake_ctx.done()
 
-    async def __ack_timeout__(self) -> None: ...
+    async def __ack_timeout__(self) -> None:
+        timeout = self.handshake.ack_timeout
+        await sleep(timeout)
+        protocol_error(CustomWSCloseCode.AckTimeout)
 
     def start(self) -> bool:
         if self.__started:
