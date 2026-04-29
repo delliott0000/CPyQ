@@ -32,12 +32,14 @@ class ComparesIDABC(ABC):
 class ComparesIDMixin:
     __slots__ = ()
 
+    id: Any  # Provided by ComparesIDABC
+
     def __hash__(self):
-        return hash(self.id)  # noqa
+        return hash(self.id)
 
     def __eq__(self, other):
         if isinstance(other, ComparesIDMixin):
-            return self.id == other.id  # noqa
+            return self.id == other.id
         return NotImplemented
 
 
@@ -53,8 +55,10 @@ class ComparesIDFormattedABC(ComparesIDABC, ABC):
 class ComparesIDFormattedMixin(ComparesIDMixin):
     __slots__ = ()
 
+    formatted_id: str  # Provided by ComparesIDFormattedABC
+
     def __str__(self):
-        return self.formatted_id  # noqa
+        return self.formatted_id
 
 
 class JSONSerialisableABC(ABC):
