@@ -118,8 +118,7 @@ class WSProxy:
         return self
 
     async def __anext__(self) -> WSEvent:
-        if not self.__started:
-            raise RuntimeError(f"{type(self).__name__} has not started.")
+        self.__ensure_started__()
 
         try:
             return await self.__queue.get()
@@ -134,6 +133,10 @@ class WSProxy:
     @property
     def running(self) -> bool:
         return self.__started and not self.__closed
+
+    def __ensure_started__(self) -> None:
+        if not self.__started:
+            raise RuntimeError(f"{type(self).__name__} has not started.")
 
     def __ensure_running__(self) -> None:
         if not self.running:
