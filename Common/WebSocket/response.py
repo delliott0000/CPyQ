@@ -55,11 +55,11 @@ class WSProxy:
         "__limit",
         "__interval",
         "__hits",
-        "__handshake_ctx",
         "__sent_unacked",
         "__received_unacked",
         "__submitted_tasks",
         "__fatal_event",
+        "__handshake_ctx",
         "__queue",
         "__close_future",
         "__close_task",
@@ -91,14 +91,14 @@ class WSProxy:
         self.__interval = interval
         self.__hits: list[float] = []
 
-        self.__handshake_ctx: HandshakeContext = HandshakeContext()
-
         self.__sent_unacked: dict[str, TN] = dict()
         self.__received_unacked: set[str] = set()
 
         self.__submitted_tasks: set[TN] = set()
 
         self.__fatal_event: WSEvent | None = None
+
+        self.__handshake_ctx: HandshakeContext | None = None
 
         self.__queue: Queue[WSEvent] | None = None
 
@@ -151,14 +151,20 @@ class WSProxy:
 
     @property
     def handshake_set(self) -> bool:
+        self.__ensure_started__()
+
         return self.__handshake_ctx.event is not None
 
     @property
     def handshake_done(self) -> bool:
+        self.__ensure_started__()
+
         return self.__handshake_ctx.is_done
 
     @property
     def handshake(self) -> Handshake:
+        self.__ensure_started__()
+
         event = self.__handshake_ctx.event
 
         if event is None:
@@ -167,6 +173,8 @@ class WSProxy:
         return event.payload  # noqa
 
     async def wait_for_handshake(self) -> Handshake:
+        self.__ensure_started__()
+
         event = await self.__handshake_ctx.wait()
 
         return event.payload  # noqa
@@ -314,6 +322,8 @@ class WSProxy:
             return False
 
         self.__started = True
+
+        self.__handshake_ctx = HandshakeContext()
 
         self.__queue = Queue()
 
