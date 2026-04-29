@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 from abc import ABC
+from dataclasses import asdict
 from typing import TYPE_CHECKING
 
 from aiohttp.web import HTTPConflict, WebSocketResponse
 
-from Common import WSPeerRole, WSPeerScope, WSPeerType, WSProxy, log
+from Common import WSPeerRole, WSPeerScope, WSPeerType, WSProxy, build_payload, log
 
 from .base_service import BaseService
 from .decorators import (
@@ -22,13 +23,18 @@ if TYPE_CHECKING:
 
     from aiohttp.web import Request
 
-    from Common import Token
+    from Common import Handshake, Token
 
 __all__ = ("BaseWebSocketService", "UserWebSocketService", "AutopilotWebSocketService")
 
 
 class BaseWebSocketService(BaseService, ABC):
     PEER_TYPE: ClassVar[WSPeerType]
+
+    def build_handshake(self, proxy: WSProxy, /) -> Handshake:
+        cls = proxy.handshake_cls
+        json = asdict(self.server.config.handshake_policy)
+        return build_payload(cls, json)
 
     async def prepare_ws(
         self, request: Request, token: Token, /
