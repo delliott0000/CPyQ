@@ -291,7 +291,15 @@ class WSProxy:
         # Don't enqueue the handshake event
         return not is_handshake
 
-    def __receive_ack__(self, ack: WSAck, /) -> None: ...
+    def __receive_ack__(self, ack: WSAck, /) -> None:
+        try:
+            task = self.__sent_unacked.pop(ack.id)
+            task.cancel()
+
+        except KeyError:
+            protocol_error(CustomWSCloseCode.UnknownEvent)
+
+        ...
 
     async def __send__(self, message: CustomWSMessage, /) -> CustomWSMessage:
         self.__ensure_running__()
@@ -301,7 +309,14 @@ class WSProxy:
 
         return prepared_message
 
-    async def __send_event__(self, event: WSEvent, /) -> None: ...
+    async def __send_event__(self, event: WSEvent, /) -> None:
+        await self.__send__(event)
+
+        ...
+
+        coro = self.__ack_timeout__()
+        task = self.__make_task__(coro, wrap=True, log_cancellation=False)
+        self.__sent_unacked[event.id] = task
 
     async def __send_ack__(self, ack: WSAck, /, *, is_handshake: bool) -> None:
         await self.__send__(ack)
