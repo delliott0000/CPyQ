@@ -259,7 +259,12 @@ class WSProxy:
 
         is_handshake = self.is_handshake(event.payload)
 
-        ...
+        if is_handshake:
+            self.__handshake_ctx.bind(event)
+
+        ack = WSAck.from_event(event)
+        coro = self.__send_ack__(ack, is_handshake=is_handshake)
+        self.submit(coro)
 
         # Don't enqueue the handshake event
         return not is_handshake
@@ -268,7 +273,7 @@ class WSProxy:
 
     async def __send_event__(self, event: WSEvent, /) -> None: ...
 
-    async def __send_ack__(self, ack: WSAck, /) -> None: ...
+    async def __send_ack__(self, ack: WSAck, /, *, is_handshake: bool) -> None: ...
 
     async def __ack_timeout__(self) -> None: ...
 
