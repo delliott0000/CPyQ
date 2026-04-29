@@ -36,9 +36,9 @@ class ComparesIDMixin:
         return hash(self.id)  # noqa
 
     def __eq__(self, other):
-        if not isinstance(other, ComparesIDMixin):
-            return NotImplemented
-        return self.id == other.id  # noqa
+        if isinstance(other, ComparesIDMixin):
+            return self.id == other.id  # noqa
+        return NotImplemented
 
 
 class ComparesIDFormattedABC(ComparesIDABC, ABC):
