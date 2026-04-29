@@ -301,7 +301,12 @@ class WSProxy:
             protocol_error(CustomWSCloseCode.UnknownEvent)
 
         # fmt: off
-        ...
+        if (
+            self.server
+            and ack.id == self.__handshake_ctx.event.id
+            and not self.handshake_done
+        ):
+            self.__handshake_ctx.done()
         # fmt: on
 
     async def __send__(self, message: CustomWSMessageT, /) -> CustomWSMessageT:
@@ -316,7 +321,12 @@ class WSProxy:
         result = await self.__send__(event)
 
         # fmt: off
-        ...
+        if (
+            self.server
+            and self.is_handshake(event.payload)
+            and not self.handshake_set
+        ):
+            self.__handshake_ctx.bind(event)
         # fmt: on
 
         coro = self.__ack_timeout__()
