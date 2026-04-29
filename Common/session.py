@@ -72,7 +72,7 @@ class Session(ComparesIDMixin, ComparesIDABC, JSONSerialisableABC):
             log(f"{self._user} acquired {resource}. (Session ID: {self._id})")
             self._resource = resource
         else:
-            raise SessionBound(self, resource)
+            raise SessionBound(self, resource.id)
 
     def release_resource(self) -> None:
         if self.bound:

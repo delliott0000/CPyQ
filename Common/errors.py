@@ -9,7 +9,6 @@ if TYPE_CHECKING:
 
     from aiohttp import WSCloseCode
 
-    from .resource import Resource
     from .session import Session
     from .WebSocket import CustomWSCloseCode
 
@@ -29,30 +28,30 @@ __all__ = (
 
 
 class ResourceConflict(Exception):
-    def __init__(self, session: Session, resource: Resource, /, *args: Any):
+    def __init__(self, session: Session, resource_id: int, /, *args: Any):
         super().__init__(*args)
         self.session = session  # The *requesting* session
-        self.resource = resource  # The *requested* resource
+        self.resource_id = resource_id  # The *requested* resource
 
 
 class ResourceLocked(ResourceConflict):
-    def __init__(self, session: Session, resource: Resource, /):
+    def __init__(self, session: Session, resource_id: int, /):
         super().__init__(
-            session, resource, "Requested resource is already locked by another session."
+            session, resource_id, "Requested resource is already locked by another session."
         )
 
 
 class SessionBound(ResourceConflict):
-    def __init__(self, session: Session, resource: Resource, /):
+    def __init__(self, session: Session, resource_id: int, /):
         super().__init__(
-            session, resource, "Requesting session is already bound to a resource."
+            session, resource_id, "Requesting session is already bound to a resource."
         )
 
 
 class ResourceNotOwned(ResourceConflict):
-    def __init__(self, session: Session, resource: Resource, /):
+    def __init__(self, session: Session, resource_id: int, /):
         super().__init__(
-            session, resource, "Requesting session is not bound to the requested resource."
+            session, resource_id, "Requesting session is not bound to the requested resource."
         )
 
 

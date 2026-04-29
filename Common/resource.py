@@ -81,7 +81,7 @@ class ResourceMixin(ComparesIDFormattedMixin):
 
     def acquire(self, session: Session, /) -> None:
         if self.locked:
-            raise ResourceLocked(session, self)  # noqa
+            raise ResourceLocked(session, self.id)
         else:
             self._set_session(session)
 
@@ -91,13 +91,13 @@ class ResourceMixin(ComparesIDFormattedMixin):
         if not self.locked:
             return
         elif not unconditional and self._session != session:
-            raise ResourceNotOwned(session, self)  # noqa
+            raise ResourceNotOwned(session, self.id)
         else:
             self._reset()
 
     def ensure_acquired(self, session: Session, /) -> None:
         if not self.locked or session != self._session:
-            raise ResourceNotOwned(session, self)  # noqa
+            raise ResourceNotOwned(session, self.id)
 
 
 @runtime_checkable
