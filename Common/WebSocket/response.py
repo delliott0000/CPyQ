@@ -28,6 +28,7 @@ if TYPE_CHECKING:
     from aiohttp import WSMessage
 
     from .enums import WSPeerScope
+    from .messages import CustomWSMessage
     from .payloads import Handshake, Payload
 
     Json = dict[str, Any]
@@ -271,13 +272,18 @@ class WSProxy:
 
     def __receive_ack__(self, ack: WSAck, /) -> None: ...
 
+    async def __send__(self, message: CustomWSMessage, /) -> CustomWSMessage:
+        self.__ensure_running__()
+
+        prepared_message = message.with_sent_at(now())
+        await self.__response.send_json(prepared_message.json())
+
+        return prepared_message
+
     async def __send_event__(self, event: WSEvent, /) -> None: ...
 
     async def __send_ack__(self, ack: WSAck, /, *, is_handshake: bool) -> None:
-        self.__ensure_running__()
-
-        prepared_ack = ack.with_sent_at(now())
-        await self.__response.send_json(prepared_ack.json())
+        await self.__send__(ack)
 
         self.__received_unacked.discard(ack.id)
 
