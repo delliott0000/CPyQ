@@ -134,6 +134,10 @@ class WSProxy:
     def running(self) -> bool:
         return self.__started and not self.__closed
 
+    def __ensure_running__(self) -> None:
+        if not self.running:
+            raise RuntimeError(f"{type(self).__name__} is not running.")
+
     @property
     def handshake_cls(self) -> type[Handshake]:
         return peer_type_to_handshake_cls(self.__scope.type)
@@ -148,10 +152,6 @@ class WSProxy:
     @property
     def handshake_done(self) -> bool:
         return self.__handshake_ctx.is_done
-
-    def __ensure_running__(self) -> None:
-        if not self.running:
-            raise RuntimeError(f"{type(self).__name__} is not running.")
 
     @property
     def fatal_event(self) -> WSEvent | None:
