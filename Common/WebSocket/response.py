@@ -151,15 +151,11 @@ class WSProxy:
 
     @property
     def handshake_set(self) -> bool:
-        self.__ensure_started__()
-
-        return self.__handshake_ctx.event is not None
+        return self.__started and self.__handshake_ctx.event is not None
 
     @property
     def handshake_done(self) -> bool:
-        self.__ensure_started__()
-
-        return self.__handshake_ctx.is_done
+        return self.__started and self.__handshake_ctx.is_done
 
     @property
     def handshake(self) -> Handshake:
