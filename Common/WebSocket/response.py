@@ -300,7 +300,9 @@ class WSProxy:
         except KeyError:
             protocol_error(CustomWSCloseCode.UnknownEvent)
 
+        # fmt: off
         ...
+        # fmt: on
 
     async def __send__(self, message: CustomWSMessageT, /) -> CustomWSMessageT:
         self.__ensure_running__()
@@ -313,7 +315,9 @@ class WSProxy:
     async def __send_event__(self, event: WSEvent, /) -> WSEvent:
         result = await self.__send__(event)
 
+        # fmt: off
         ...
+        # fmt: on
 
         coro = self.__ack_timeout__()
         task = self.__make_task__(coro, wrap=True, log_cancellation=False)
