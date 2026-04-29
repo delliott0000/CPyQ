@@ -85,12 +85,10 @@ class ResourceMixin(ComparesIDFormattedMixin):
         else:
             self._set_session(session)
 
-    def release(
-        self, session: Session | None = None, /, *, unconditional: bool = False
-    ) -> None:
+    def release(self, session: Session, /) -> None:
         if not self.locked:
             return
-        elif not unconditional and self._session != session:
+        elif self._session != session:
             raise ResourceNotOwned(session, self.id)
         else:
             self._reset()
@@ -122,8 +120,6 @@ class Resource(Protocol):
     def last_active(self) -> datetime: ...
     def is_idle(self, grace: timedelta, /) -> bool: ...
     def acquire(self, session: Session, /) -> None: ...
-    def release(
-        self, session: Session | None = None, /, *, unconditional: bool = False
-    ) -> None: ...
+    def release(self, session: Session, /) -> None: ...
     def ensure_acquired(self, session: Session, /) -> None: ...
     def json(self, *, version: ResourceJSONVersion = ...) -> Json: ...
