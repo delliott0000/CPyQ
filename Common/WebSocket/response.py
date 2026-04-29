@@ -155,6 +155,20 @@ class WSProxy:
         return self.__handshake_ctx.is_done
 
     @property
+    def handshake(self) -> Handshake:
+        event = self.__handshake_ctx.event
+
+        if event is None:
+            raise RuntimeError("Handshake is not set.")
+
+        return event.payload  # noqa
+
+    async def wait_for_handshake(self) -> Handshake:
+        event = await self.__handshake_ctx.wait()
+
+        return event.payload  # noqa
+
+    @property
     def fatal_event(self) -> WSEvent | None:
         return self.__fatal_event
 
