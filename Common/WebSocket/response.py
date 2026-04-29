@@ -310,14 +310,16 @@ class WSProxy:
 
         return prepared_message
 
-    async def __send_event__(self, event: WSEvent, /) -> None:
-        await self.__send__(event)
+    async def __send_event__(self, event: WSEvent, /) -> WSEvent:
+        result = await self.__send__(event)
 
         ...
 
         coro = self.__ack_timeout__()
         task = self.__make_task__(coro, wrap=True, log_cancellation=False)
         self.__sent_unacked[event.id] = task
+
+        return result
 
     async def __send_ack__(self, ack: WSAck, /, *, is_handshake: bool) -> None:
         await self.__send__(ack)
