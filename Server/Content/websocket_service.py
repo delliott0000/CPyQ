@@ -84,6 +84,9 @@ class BaseWebSocketService(BaseService, ABC):
         proxy, response = await self.prepare_ws(request, token)
 
         try:
+            handshake = self.build_handshake(proxy)
+            await proxy.send_payload(handshake)
+
             async for _ in proxy:
                 ...
 
