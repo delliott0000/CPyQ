@@ -43,6 +43,9 @@ class BaseWebSocketService(BaseService, ABC):
             max_msg_size=config.ws_max_message_size * 1024,
         )
 
+        await response.prepare(request)
+        log(f"Opened WebSocket for {token.session.user}. (Token ID: {token.id})")
+
         scope = WSPeerScope(
             role=WSPeerRole.Server,
             type=self.PEER_TYPE,
@@ -58,9 +61,6 @@ class BaseWebSocketService(BaseService, ABC):
         )
 
         token.session.connections[token] = proxy
-
-        await response.prepare(request)
-        log(f"Opened WebSocket for {token.session.user}. (Token ID: {token.id})")
 
         return proxy, response
 
