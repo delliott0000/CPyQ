@@ -23,7 +23,7 @@ from .payloads import peer_type_to_handshake_cls
 if TYPE_CHECKING:
     from asyncio import Future, Task
     from collections.abc import AsyncIterator, Coroutine
-    from typing import Any
+    from typing import Any, TypeVar
 
     from aiohttp import WSMessage
 
@@ -35,6 +35,7 @@ if TYPE_CHECKING:
     CN = Coroutine[Any, Any, None]
     TN = Task[None]
     CloseCode = WSCloseCode | CustomWSCloseCode
+    CustomWSMessageT = TypeVar("CustomWSMessageT", bound=CustomWSMessage)
 
 __all__ = ("WSResponseType", "WSProxy")
 
@@ -301,7 +302,7 @@ class WSProxy:
 
         ...
 
-    async def __send__(self, message: CustomWSMessage, /) -> CustomWSMessage:
+    async def __send__(self, message: CustomWSMessageT, /) -> CustomWSMessageT:
         self.__ensure_running__()
 
         prepared_message = message.with_sent_at(now())
