@@ -62,15 +62,13 @@ class ResourceMixin(ComparesIDFormattedMixin):
         self._session = session  # noqa
 
     @property
-    def current_user(self) -> User | None:
-        try:
-            return self._session.user
-        except AttributeError:
-            return None
-
-    @property
     def locked(self) -> bool:
         return self._session is not None
+
+    @property
+    def current_user(self) -> User | None:
+        if self.locked:
+            return self._session.user
 
     @property
     def last_active(self) -> datetime:
@@ -113,9 +111,9 @@ class Resource(Protocol):
     @property
     def owner(self) -> User: ...
     @property
-    def current_user(self) -> User | None: ...
-    @property
     def locked(self) -> bool: ...
+    @property
+    def current_user(self) -> User | None: ...
     @property
     def last_active(self) -> datetime: ...
     def is_idle(self, grace: timedelta, /) -> bool: ...
