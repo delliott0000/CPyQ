@@ -21,23 +21,6 @@ DUMMY_HASH = "$2b$12$9sVei45B23z0M.gV2EI4cunVKdBC2xu64pRAKqTHDnVPOWD8HHBQu"
 
 
 class AuthService(BaseService):
-    def add_token_keys(self, token: Token, /) -> None:
-        self.server.key_to_token[token.access] = token
-        self.server.key_to_token[token.refresh] = token
-
-    def pop_token_keys(self, token: Token, /) -> None:
-        self.server.key_to_token.pop(token.access, None)
-        self.server.key_to_token.pop(token.refresh, None)
-
-    def ok_response(self, token: Token, /) -> Response:
-        return json_response(
-            {
-                "message": "OK",
-                "token": token.json(),
-            },
-            status=200,
-        )
-
     async def task_coro(self) -> None:
         key_to_token = self.server.key_to_token
         user_to_tokens = self.server.user_to_tokens
@@ -90,6 +73,23 @@ class AuthService(BaseService):
             if session.user not in user_to_tokens:
                 session_id_to_session.pop(session_id, None)
                 log(f"Session discarded for {session.user}. (Session ID: {session_id})")
+
+    def add_token_keys(self, token: Token, /) -> None:
+        self.server.key_to_token[token.access] = token
+        self.server.key_to_token[token.refresh] = token
+
+    def pop_token_keys(self, token: Token, /) -> None:
+        self.server.key_to_token.pop(token.access, None)
+        self.server.key_to_token.pop(token.refresh, None)
+
+    def ok_response(self, token: Token, /) -> Response:
+        return json_response(
+            {
+                "message": "OK",
+                "token": token.json(),
+            },
+            status=200,
+        )
 
     @route("post", "/auth/login")
     @ratelimit(limit=10, interval=60, bucket_type=BucketType.IP)

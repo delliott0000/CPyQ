@@ -42,6 +42,22 @@ __all__ = ("ResourceService",)
 
 
 class ResourceService(BaseService):
+    async def task_coro(self) -> None:
+        rtype_rid_to_resource = self.server.rtype_rid_to_resource
+        grace = timedelta(seconds=self.server.config.resource_grace)
+
+        for key in list(rtype_rid_to_resource):
+            try:
+                resource = rtype_rid_to_resource[key]
+            except KeyError:
+                continue
+
+            if resource.is_idle(grace):
+                rtype_rid_to_resource.pop(key, None)
+
+                last_active = resource.last_active.strftime("%Y-%m-%d %H:%M:%S")
+                log(f"Resource {resource} unloaded. Last active at {last_active}.")
+
     @property
     def resource_map(self) -> dict[str, RLoader]:
         return {"quote": self.load_quote}  # noqa
@@ -53,21 +69,6 @@ class ResourceService(BaseService):
             raise HTTPNotFound(reason="Quote does not exist")
 
         return quote
-
-    def ok_response(
-        self,
-        resource: Resource,
-        /,
-        *,
-        version: ResourceJSONVersion = ResourceJSONVersion.default,
-    ) -> Response:
-        return json_response(
-            {
-                "message": "OK",
-                "resource": resource.json(version=version),
-            },
-            status=200,
-        )
 
     def convert_conflict(self, error: ResourceConflict, extra_data: Json, /) -> HTTPConflict:
         return self.attach_extra_data(HTTPConflict(reason=str(error).strip(".")), extra_data)
@@ -126,29 +127,32 @@ class ResourceService(BaseService):
 
         return resource
 
-    async def task_coro(self) -> None:
-        rtype_rid_to_resource = self.server.rtype_rid_to_resource
-        grace = timedelta(seconds=self.server.config.resource_grace)
+    async def get_resource_and_session(self, request: Request, /) -> tuple[Resource, Session]:
+        resource = await self.load_resource(request)
+        session = self.session_from_request(request)
+        return resource, session
 
-        for key in list(rtype_rid_to_resource):
-            try:
-                resource = rtype_rid_to_resource[key]
-            except KeyError:
-                continue
-
-            if resource.is_idle(grace):
-                rtype_rid_to_resource.pop(key, None)
-
-                last_active = resource.last_active.strftime("%Y-%m-%d %H:%M:%S")
-                log(f"Resource {resource} unloaded. Last active at {last_active}.")
+    def ok_response(
+        self,
+        resource: Resource,
+        /,
+        *,
+        version: ResourceJSONVersion = ResourceJSONVersion.default,
+    ) -> Response:
+        return json_response(
+            {
+                "message": "OK",
+                "resource": resource.json(version=version),
+            },
+            status=200,
+        )
 
     @route("post", "/resource/{rtype}/{rid}/acquire")
     @ratelimit(limit=10, interval=60, bucket_type=BucketType.User)
     @user_only
     @validate_access
     async def acquire(self, request: Request, /) -> Response:
-        resource = await self.load_resource(request)
-        session = self.session_from_request(request)
+        resource, session = await self.get_resource_and_session(request)
 
         self.permission_check(session.user, resource, PermissionType.acquire)
         # No acquisition check necessary
@@ -167,8 +171,7 @@ class ResourceService(BaseService):
     @user_only
     @validate_access
     async def release(self, request: Request, /) -> Response:
-        resource = await self.load_resource(request)
-        session = self.session_from_request(request)
+        resource, session = await self.get_resource_and_session(request)
 
         # No permission check necessary
         # No acquisition check necessary
@@ -185,8 +188,7 @@ class ResourceService(BaseService):
     @user_only
     @validate_access
     async def preview(self, request: Request, /) -> Response:
-        resource = await self.load_resource(request)
-        session = self.session_from_request(request)
+        resource, session = await self.get_resource_and_session(request)
 
         self.permission_check(session.user, resource, PermissionType.preview)
         # No acquisition check necessary
@@ -198,8 +200,7 @@ class ResourceService(BaseService):
     @user_only
     @validate_access
     async def view(self, request: Request, /) -> Response:
-        resource = await self.load_resource(request)
-        session = self.session_from_request(request)
+        resource, session = await self.get_resource_and_session(request)
 
         self.permission_check(session.user, resource, PermissionType.view)
         self.acquisition_check(session, resource)
