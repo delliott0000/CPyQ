@@ -34,6 +34,7 @@ class AuthService(BaseService):
                 token = key_to_token[key]
             except KeyError:
                 continue
+
             if not token.expired:
                 continue
 
@@ -49,10 +50,7 @@ class AuthService(BaseService):
                 log(f"Token discarded for {user}. (Token ID: {token.id})")
 
         for user in list(user_to_tokens):
-            try:
-                tokens = user_to_tokens[user]
-            except KeyError:
-                continue
+            tokens = user_to_tokens[user]
 
             if not tokens:
                 user_to_tokens.pop(user, None)
@@ -63,21 +61,14 @@ class AuthService(BaseService):
         await gather(*coros)
 
         for session_id in list(session_id_to_session):
-            try:
-                session = session_id_to_session[session_id]
-            except KeyError:
-                continue
+            session = session_id_to_session[session_id]
 
             if session.bound and not session.connected:
-                try:
-                    resource = resource_id_to_resource[session.resource_id]
-                except KeyError:
-                    continue
-
+                resource = resource_id_to_resource[session.resource_id]
                 resource.unlock(session)
 
             if session.user not in user_to_tokens:
-                session_id_to_session.pop(session_id, None)
+                session_id_to_session.pop(session_id)
                 log(f"Session discarded for {session.user}. (Session ID: {session_id})")
 
     def add_token_keys(self, token: Token, /) -> None:

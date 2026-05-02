@@ -47,14 +47,10 @@ class ResourceService(BaseService):
         grace = timedelta(seconds=self.server.config.resource_grace)
 
         for resource_id in list(cache):
-            try:
-                resource = cache[resource_id]
-            except KeyError:
-                continue
+            resource = cache[resource_id]
 
             if resource.is_idle(grace):
-                cache.pop(resource_id, None)
-
+                cache.pop(resource_id)
                 last_active = resource.last_active.strftime("%Y-%m-%d %H:%M:%S")
                 log(f"Resource {resource} unloaded. Last active at {last_active}.")
 
