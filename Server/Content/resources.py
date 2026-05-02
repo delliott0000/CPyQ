@@ -1,32 +1,29 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from enum import Enum
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
-from .bases import ComparesIDFormattedABC, ComparesIDFormattedMixin, JSONSerialisableABC
-from .errors import ResourceLocked, ResourceNotOwned, SessionBound
-from .utils import log, now
+from Common import (
+    ComparesIDFormattedABC,
+    ComparesIDFormattedMixin,
+    JSONSerialisableABC,
+    Quote,
+    ResourceLocked,
+    ResourceNotOwned,
+    SessionBound,
+    log,
+    now,
+)
 
 if TYPE_CHECKING:
     from datetime import datetime, timedelta
     from typing import Any
 
-    from .session import Session
-    from .user import User
+    from Common import ResourceJSONVersion, Session, User
 
     Json = dict[str, Any]
 
-__all__ = ("ResourceJSONVersion", "ResourceABC", "ResourceMixin", "Resource")
-
-
-# fmt: off
-class ResourceJSONVersion(Enum):
-    metadata = 0
-    preview  = 1
-    view     = 2
-    default  = metadata
-# fmt: on
+__all__ = ("ResourceABC", "ResourceMixin", "Resource", "QuoteResource")
 
 
 class ResourceABC(ComparesIDFormattedABC, JSONSerialisableABC, ABC):
@@ -43,7 +40,7 @@ class ResourceABC(ComparesIDFormattedABC, JSONSerialisableABC, ABC):
         pass
 
     @abstractmethod
-    def json(self, *, version: ResourceJSONVersion = ResourceJSONVersion.default) -> Json:
+    def json(self, *, version: ResourceJSONVersion = ...) -> Json:
         pass
 
 
@@ -125,3 +122,7 @@ class Resource(Protocol):
     def unlock(self, session: Session, /) -> None: ...
     def ensure_acquired(self, session: Session, /) -> None: ...
     def json(self, *, version: ResourceJSONVersion = ...) -> Json: ...
+
+
+class QuoteResource(ResourceMixin, Quote, ResourceABC):
+    __slots__ = ("_session", "_last_active")

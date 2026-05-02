@@ -19,7 +19,9 @@ from .websocket_service import AutopilotWebSocketService, UserWebSocketService
 if TYPE_CHECKING:
     from typing import Self
 
-    from Common import LoggingContext, Resource, ServerConfig, Session, Token, User
+    from Common import LoggingContext, ServerConfig, Session, Token, User
+
+    from .resources import Resource
 
 __all__ = ("Server",)
 

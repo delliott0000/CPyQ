@@ -25,7 +25,7 @@ from Common import (
 
 from .base_service import BaseService
 from .decorators import BucketType, ratelimit, route, user_only, validate_access
-from .resource_types import QuoteResource
+from .resources import QuoteResource
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Coroutine
@@ -33,7 +33,9 @@ if TYPE_CHECKING:
 
     from aiohttp.web import Request, Response
 
-    from Common import Resource, User
+    from Common import User
+
+    from .resources import Resource
 
     Json = dict[str, Any]
     RLoader = Callable[[int], Coroutine[Any, Any, Resource]]
