@@ -56,7 +56,7 @@ class Server:
         self.key_to_token: dict[str, Token] = {}
         self.user_to_tokens: dict[User, set[Token]] = {}
         self.session_id_to_session: dict[str, Session] = {}
-        self.rtype_rid_to_resource: dict[tuple[str, int], Resource] = {}
+        self.resource_id_to_resource: dict[int, Resource] = {}
 
     async def __aenter__(self) -> Self:
         await self.__start__()

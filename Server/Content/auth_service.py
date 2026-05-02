@@ -25,6 +25,7 @@ class AuthService(BaseService):
         key_to_token = self.server.key_to_token
         user_to_tokens = self.server.user_to_tokens
         session_id_to_session = self.server.session_id_to_session
+        resource_id_to_resource = self.server.resource_id_to_resource
 
         expired_cons = set()
 
@@ -67,8 +68,13 @@ class AuthService(BaseService):
             except KeyError:
                 continue
 
-            if not session.connected:
-                session.release_resource()
+            if session.bound and not session.connected:
+                try:
+                    resource = resource_id_to_resource[session.resource_id]
+                except KeyError:
+                    continue
+
+                resource.unlock(session)
 
             if session.user not in user_to_tokens:
                 session_id_to_session.pop(session_id, None)

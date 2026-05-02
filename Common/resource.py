@@ -5,8 +5,8 @@ from enum import Enum
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 from .bases import ComparesIDFormattedABC, ComparesIDFormattedMixin, JSONSerialisableABC
-from .errors import ResourceLocked, ResourceNotOwned
-from .utils import now
+from .errors import ResourceLocked, ResourceNotOwned, SessionBound
+from .utils import log, now
 
 if TYPE_CHECKING:
     from datetime import datetime, timedelta
@@ -77,21 +77,25 @@ class ResourceMixin(ComparesIDFormattedMixin):
     def is_idle(self, grace: timedelta, /) -> bool:
         return not self.locked and self._last_active + grace < now()
 
-    def acquire(self, session: Session, /) -> None:
-        if self.locked:
+    def lock(self, session: Session, /) -> None:
+        if session.bound:
+            raise SessionBound(session, self.id)
+        elif self.locked:
             raise ResourceLocked(session, self.id)
-        else:
-            self._set_session(session)
 
-    def release(self, session: Session, /) -> None:
-        if not self.locked:
-            return
-        elif self._session != session:
-            raise ResourceNotOwned(session, self.id)
-        else:
-            self._reset()
+        session.bind(self.id)
+        self._set_session(session)
+        log(f"{self} acquired by {session.user}.")
+
+    def unlock(self, session: Session, /) -> None:
+        self.ensure_acquired(session)
+
+        session.unbind()
+        self._reset()
+        log(f"{self} released by {session.user}.")
 
     def ensure_acquired(self, session: Session, /) -> None:
+        # Assume session == self._session <=> session.resource_id == self.id
         if not self.locked or session != self._session:
             raise ResourceNotOwned(session, self.id)
 
@@ -117,7 +121,7 @@ class Resource(Protocol):
     @property
     def last_active(self) -> datetime: ...
     def is_idle(self, grace: timedelta, /) -> bool: ...
-    def acquire(self, session: Session, /) -> None: ...
-    def release(self, session: Session, /) -> None: ...
+    def lock(self, session: Session, /) -> None: ...
+    def unlock(self, session: Session, /) -> None: ...
     def ensure_acquired(self, session: Session, /) -> None: ...
     def json(self, *, version: ResourceJSONVersion = ...) -> Json: ...

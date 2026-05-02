@@ -43,17 +43,17 @@ __all__ = ("ResourceService",)
 
 class ResourceService(BaseService):
     async def task_coro(self) -> None:
-        rtype_rid_to_resource = self.server.rtype_rid_to_resource
+        cache = self.server.resource_id_to_resource
         grace = timedelta(seconds=self.server.config.resource_grace)
 
-        for key in list(rtype_rid_to_resource):
+        for resource_id in list(cache):
             try:
-                resource = rtype_rid_to_resource[key]
+                resource = cache[resource_id]
             except KeyError:
                 continue
 
             if resource.is_idle(grace):
-                rtype_rid_to_resource.pop(key, None)
+                cache.pop(resource_id, None)
 
                 last_active = resource.last_active.strftime("%Y-%m-%d %H:%M:%S")
                 log(f"Resource {resource} unloaded. Last active at {last_active}.")
@@ -89,39 +89,41 @@ class ResourceService(BaseService):
             raise self.convert_conflict(error, {"session": session.json()})
 
     async def load_resource(self, request: Request, /) -> Resource:
-        rtype = request.match_info["rtype"]
-        rid = request.match_info["rid"]
+        resource_type = request.match_info["rtype"]
+        resource_id = request.match_info["rid"]
 
-        extra_data = {"resource_type": rtype, "resource_id": rid}
+        extra_data = {
+            "resource_type": resource_type,
+            "resource_id": resource_id,
+        }
 
         try:
-            rid = int(rid)
+            resource_id = int(resource_id)
         except ValueError:
             raise self.attach_extra_data(
                 HTTPBadRequest(reason="Resource ID must be an integral string"),
                 extra_data,
             )
 
-        cache = self.server.rtype_rid_to_resource
-        key = rtype, rid
+        cache = self.server.resource_id_to_resource
 
-        cached = cache.get(key)
+        cached = cache.get(resource_id)
         if cached is not None:
             return cached
 
         try:
-            loader = self.resource_map[rtype]
+            loader = self.resource_map[resource_type]
         except KeyError:
             raise self.attach_extra_data(
                 HTTPBadRequest(reason="Unknown resource type"), extra_data
             )
 
         try:
-            resource = await loader(rid)
+            resource = await loader(resource_id)
         except HTTPException as error:
             raise self.attach_extra_data(error, extra_data)
 
-        cache[key] = resource
+        cache[resource_id] = resource
 
         log(f"Resource {resource} loaded.")
 
@@ -158,7 +160,7 @@ class ResourceService(BaseService):
         # No acquisition check necessary
 
         try:
-            session.acquire_resource(resource)
+            resource.lock(session)
         except ResourceLocked as error:
             raise self.convert_conflict(error, {"locked_by": str(resource.current_user)})
         except SessionBound as error:
@@ -177,7 +179,7 @@ class ResourceService(BaseService):
         # No acquisition check necessary
 
         try:
-            resource.release(session)
+            resource.unlock(session)
         except ResourceNotOwned as error:
             raise self.convert_conflict(error, {"session": session.json()})
 
