@@ -72,7 +72,7 @@ class ResourceService(BaseService):
     def permission_check(
         self, user: User, resource: Resource, permission_type: PermissionType, /
     ) -> None:
-        if not user.has_permission_for(permission_type, resource):
+        if not user.has_permission_from(permission_type, resource.owner):
             raise self.attach_extra_data(
                 HTTPForbidden(reason="Missing required permission"),
                 {"permission": permission_type.value},
