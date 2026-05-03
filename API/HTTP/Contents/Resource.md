@@ -34,7 +34,7 @@ Returned by the API:
 }
 ```
 
-- If the requested `Resource` is acquired by a different `Session` to the one requesting, the API will return `409 Conflict`. (Attempting to release an unacquired `Resource` is a no-op and will not cause an error to be returned.)
+- If the requesting `Session` has not acquired the requested `Resource`, the API will return `409 Conflict`.
 
 This endpoint is `Client-only`.
 
