@@ -17,10 +17,6 @@ __all__ = (
     "EnumCodec",
     "TypedCodec",
     "DatetimeCodec",
-    "float_codec",
-    "int_codec",
-    "str_codec",
-    "dt_codec",
 )
 
 
@@ -59,14 +55,15 @@ class TypedCodec(Codec):
 
 
 class DatetimeCodec(Codec):
-    def encode(self, value: datetime, /) -> str:
+    def __init__(self, *, optional: bool = False):
+        self.optional = optional
+
+    def encode(self, value: datetime | None, /) -> str | None:
+        if self.optional and value is None:
+            return None
         return encode_datetime(value)
 
-    def decode(self, value: str, /) -> datetime:
+    def decode(self, value: str | None, /) -> datetime | None:
+        if self.optional and value is None:
+            return None
         return decode_datetime(value)
-
-
-float_codec = TypedCodec(float)
-int_codec = TypedCodec(int)
-str_codec = TypedCodec(str)
-dt_codec = DatetimeCodec()
