@@ -6,7 +6,6 @@ from .enums import *
 from .errors import *
 from .http_client import *
 from .permissions import *
-from .postgre_client import *
 from .quote import *
 from .route import *
 from .session import *

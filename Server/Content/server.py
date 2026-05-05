@@ -12,7 +12,7 @@ from Common import create_process_pool, initialize_process, log
 from .auth_service import AuthService
 from .manager import AutopilotManager
 from .middlewares import middlewares
-from .postgre_client import ServerPostgreSQLClient
+from .postgresql import PostgreSQLClient
 from .resource_service import ResourceService
 from .websocket_service import AutopilotWebSocketService, UserWebSocketService
 
@@ -41,7 +41,7 @@ class Server:
             initargs=(log_ctx.level, log_ctx.queue),
         )
 
-        self.db = ServerPostgreSQLClient(config=config.postgres)
+        self.db = PostgreSQLClient(config=config.postgres)
 
         self.app = Application(middlewares=middlewares)
         self.runner = AppRunner(self.app, access_log=None)

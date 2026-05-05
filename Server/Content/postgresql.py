@@ -6,12 +6,16 @@ from typing import TYPE_CHECKING
 
 from asyncpg import create_pool
 
-from .company import Company
-from .permissions import Permission, PermissionScope, PermissionType
-from .quote import Quote
-from .team import Team
-from .user import User
-from .utils import log
+from Common import (
+    Company,
+    Permission,
+    PermissionScope,
+    PermissionType,
+    Quote,
+    Team,
+    User,
+    log,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Coroutine, Iterable
@@ -19,7 +23,7 @@ if TYPE_CHECKING:
 
     from asyncpg import Connection, Pool, Record
 
-    from .config import PostgresConfig
+    from Common import PostgresConfig
 
     T = TypeVar("T")
     QuoteT = TypeVar("QuoteT", bound=Quote)
@@ -109,6 +113,10 @@ class PostgreSQLClient:
 
     async def execute(self, query: str, /, *args: Any) -> str:
         return await self.make_call(lambda connection: connection.execute(query, *args))
+
+    async def get_new_id(self) -> int:
+        record = await self.fetch_one("INSERT INTO ids DEFAULT VALUES RETURNING id")
+        return record["id"]
 
     async def get_user(
         self,
