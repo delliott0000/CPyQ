@@ -47,15 +47,15 @@ class EnumCodec(Codec):
 
 
 class TypedCodec(Codec):
-    def __init__(self, expected_types: type | tuple[type, ...], /, *, optional: bool = False):
-        self.expected_types = expected_types
+    def __init__(self, *types: type, optional: bool = False):
+        self.types = types
         self.optional = optional
 
     def encode(self, value: T, /) -> T:
-        return validate(self.expected_types, value, optional=self.optional)
+        return validate(value, *self.types, optional=self.optional)
 
     def decode(self, value: T, /) -> T:
-        return validate(self.expected_types, value, optional=self.optional)
+        return validate(value, *self.types, optional=self.optional)
 
 
 class DatetimeCodec(Codec):

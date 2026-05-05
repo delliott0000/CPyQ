@@ -127,7 +127,7 @@ def peer_type_to_handshake_cls(peer_type: WSPeerType, /) -> type[Handshake]:
 
 
 def parse_received_payload(json: Json, /) -> Payload:
-    validate(dict, json)
+    validate(json, dict)
 
     if not json:
         return EMPTY_PAYLOAD

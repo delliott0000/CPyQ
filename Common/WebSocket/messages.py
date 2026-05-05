@@ -38,7 +38,7 @@ class CustomWSMessage(ComparesIDMixin, ComparesIDABC, JSONSerialisableABC, ABC):
         else:
             self._sent_at = None
 
-        validate(str, self._id)
+        validate(self._id, str)
 
     @property
     def id(self) -> str:
@@ -79,7 +79,7 @@ class WSEvent(CustomWSMessage):
         self._reason = json.get("reason")
         self._payload = parse_received_payload(json["payload"])
 
-        validate(str, self._reason, optional=True)
+        validate(self._reason, str, optional=True)
 
     @classmethod
     def from_payload(

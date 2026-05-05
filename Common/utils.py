@@ -84,19 +84,14 @@ def encode_datetime(t: datetime, /) -> str:
         return t.strftime(ENCODE_DATETIME_FORMAT)
 
 
-def validate(
-    class_or_tuple: type | tuple[type, ...], obj: T, /, *, optional: bool = False
-) -> T:
-    if isinstance(obj, class_or_tuple):
-        return obj
-    elif optional is True and obj is None:
+def validate(obj: T, *types: type, optional: bool = False) -> T:
+    if optional:
+        types += (type(None),)
+
+    if isinstance(obj, types):
         return obj
 
-    elif isinstance(class_or_tuple, tuple):
-        expected = ", ".join(cls.__name__ for cls in class_or_tuple)
-    else:
-        expected = class_or_tuple.__name__
-
+    expected = ", ".join(cls.__name__ for cls in types)
     raise TypeError(f"Expected {expected}; got {type(obj).__name__}")
 
 
