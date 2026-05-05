@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS permissions (
     permission_scope permission_scope,
     CONSTRAINT type_scope_valid CHECK (
         (permission_type = 'create' AND permission_scope IS NULL)
-	OR
-	(permission_type <> 'create' AND permission_scope IS NOT NULL)
+	    OR
+	    (permission_type <> 'create' AND permission_scope IS NOT NULL)
     )
 );
