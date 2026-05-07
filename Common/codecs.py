@@ -13,6 +13,11 @@ __all__ = (
     "EnumCodec",
     "TypedCodec",
     "DatetimeCodec",
+    "ContainerCodec",
+    "ListCodec",
+    "TupleCodec",
+    "SetCodec",
+    "FrozenSetCodec",
 )
 
 
@@ -62,3 +67,34 @@ class DatetimeCodec(Codec):
     def decode(self, value, /):
         if not self.optional or value is not None:
             return decode_datetime(value)
+
+
+class ContainerCodec(Codec, ABC):
+    cls: type
+
+    def __init__(self, item_codec: Codec, /):
+        self.item_codec = item_codec
+
+    def encode(self, value, /):
+        validate(value, self.cls)
+        return [self.item_codec.encode(item) for item in value]
+
+    def decode(self, value, /):
+        validate(value, list)
+        return self.cls(self.item_codec.decode(item) for item in value)
+
+
+class ListCodec(ContainerCodec):
+    cls = list
+
+
+class TupleCodec(ContainerCodec):
+    cls = tuple
+
+
+class SetCodec(ContainerCodec):
+    cls = set
+
+
+class FrozenSetCodec(ContainerCodec):
+    cls = frozenset
