@@ -6,14 +6,10 @@ from typing import TYPE_CHECKING
 from .utils import decode_datetime, encode_datetime, validate
 
 if TYPE_CHECKING:
-    from datetime import datetime
-    from typing import Any, TypeVar
-
-    T = TypeVar("T")
+    from enum import Enum
 
 __all__ = (
     "Codec",
-    "JSONCodec",
     "EnumCodec",
     "TypedCodec",
     "DatetimeCodec",
@@ -22,24 +18,23 @@ __all__ = (
 
 class Codec(ABC):
     @abstractmethod
-    def encode(self, value: Any, /) -> Any:
+    def encode(self, value, /):
         pass
 
     @abstractmethod
-    def decode(self, value: Any, /) -> Any:
+    def decode(self, value, /):
         pass
 
 
-class JSONCodec(Codec):
-    def encode(self, value: ..., /) -> ...: ...
-
-    def decode(self, value: ..., /) -> ...: ...
-
-
 class EnumCodec(Codec):
-    def encode(self, value: ..., /) -> ...: ...
+    def __init__(self, cls: type[Enum], /):
+        self.cls = cls
 
-    def decode(self, value: ..., /) -> ...: ...
+    def encode(self, value, /):
+        return value.value
+
+    def decode(self, value, /):
+        return self.cls(value)
 
 
 class TypedCodec(Codec):
@@ -47,10 +42,10 @@ class TypedCodec(Codec):
         self.types = types
         self.optional = optional
 
-    def encode(self, value: T, /) -> T:
+    def encode(self, value, /):
         return validate(value, *self.types, optional=self.optional)
 
-    def decode(self, value: T, /) -> T:
+    def decode(self, value, /):
         return validate(value, *self.types, optional=self.optional)
 
 
@@ -58,12 +53,10 @@ class DatetimeCodec(Codec):
     def __init__(self, *, optional: bool = False):
         self.optional = optional
 
-    def encode(self, value: datetime | None, /) -> str | None:
-        if self.optional and value is None:
-            return None
-        return encode_datetime(value)
+    def encode(self, value, /):
+        if not self.optional or value is not None:
+            return encode_datetime(value)
 
-    def decode(self, value: str | None, /) -> datetime | None:
-        if self.optional and value is None:
-            return None
-        return decode_datetime(value)
+    def decode(self, value, /):
+        if not self.optional or value is not None:
+            return decode_datetime(value)
