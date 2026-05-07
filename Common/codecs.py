@@ -31,10 +31,12 @@ class EnumCodec(Codec):
         self.cls = cls
 
     def encode(self, value, /):
+        validate(value, self.cls)
         return value.value
 
     def decode(self, value, /):
-        return self.cls(value)
+        obj = self.cls(value)
+        return obj
 
 
 class TypedCodec(Codec):
