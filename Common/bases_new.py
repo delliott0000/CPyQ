@@ -9,6 +9,8 @@ ID = str | int
 if TYPE_CHECKING:
     from typing import Any, ClassVar, TypeVar
 
+    from asyncpg import Record
+
     from .codecs import Codec
 
     Json = dict[str, Any]
@@ -69,7 +71,7 @@ class SerialisableMeta(type):
 class Serialisable(metaclass=SerialisableMeta):
     codecs: ClassVar[dict[str, Codec]] = {}
 
-    def __init__(self, json: Json, /):
+    def __init__(self, json: Json | Record, /):
         cls = type(self)
 
         if cls is Serialisable:
