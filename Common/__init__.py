@@ -1,4 +1,5 @@
 from .bases import *
+from .bases_new import *
 from .codecs import *
 from .company import *
 from .config import *
