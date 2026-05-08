@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from .codecs import TypedCodec
+from .codecs import PrimitiveCodec
 
 if TYPE_CHECKING:
     from typing import Any, ClassVar, TypeVar
@@ -97,7 +97,7 @@ class Serialisable(metaclass=SerialisableMeta):
 
 class Identifiable(Serialisable):
     codecs = {
-        "id": TypedCodec(object),
+        "id": PrimitiveCodec(object),
     }
 
     id: object
@@ -113,7 +113,7 @@ class Identifiable(Serialisable):
 
 class StrIdentifiable(Identifiable):
     codecs = {
-        "id": TypedCodec(str),
+        "id": PrimitiveCodec(str),
     }
 
     id: str
@@ -121,7 +121,7 @@ class StrIdentifiable(Identifiable):
 
 class IntIdentifiable(Identifiable):
     codecs = {
-        "id": TypedCodec(int),
+        "id": PrimitiveCodec(int),
     }
 
     id: int

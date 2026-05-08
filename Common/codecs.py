@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 __all__ = (
     "Codec",
     "EnumCodec",
-    "TypedCodec",
+    "PrimitiveCodec",
     "DatetimeCodec",
     "ContainerCodec",
 )
@@ -42,7 +42,7 @@ class EnumCodec(Codec):
         return obj
 
 
-class TypedCodec(Codec):
+class PrimitiveCodec(Codec):
     def __init__(self, *types: type, optional: bool = False):
         self.types = types
         self.optional = optional

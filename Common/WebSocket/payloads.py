@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 from ..bases import JSONSerialisableABC
-from ..codecs import TypedCodec
+from ..codecs import PrimitiveCodec
 from ..utils import validate
 from .enums import PayloadKind, WSPeerType
 
@@ -71,7 +71,7 @@ class EmptyPayload(Payload):
 
 class Handshake(Payload, ABC):
     CODECS = {
-        "ack_timeout": TypedCodec(float),
+        "ack_timeout": PrimitiveCodec(float),
     }
 
     ack_timeout: float
