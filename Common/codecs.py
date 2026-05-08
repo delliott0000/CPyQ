@@ -1,6 +1,14 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
 
 from .utils import decode_datetime, encode_datetime, validate
+
+if TYPE_CHECKING:
+    from enum import Enum
+
+    Container = list | tuple | set | frozenset
 
 __all__ = (
     "Codec",
@@ -22,7 +30,7 @@ class Codec(ABC):
 
 
 class EnumCodec(Codec):
-    def __init__(self, cls: type, /):
+    def __init__(self, cls: type[Enum], /):
         self.cls = cls
 
     def encode(self, value, /):
@@ -60,7 +68,7 @@ class DatetimeCodec(Codec):
 
 
 class ContainerCodec(Codec):
-    def __init__(self, cls: type, item_codec: Codec, /):
+    def __init__(self, cls: type[Container], item_codec: Codec, /):
         self.cls = cls
         self.item_codec = item_codec
 
