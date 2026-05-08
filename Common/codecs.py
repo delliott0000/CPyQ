@@ -60,7 +60,6 @@ class DatetimeCodec(Codec):
 
 
 class ContainerCodec(Codec):
-
     def __init__(self, cls: type, item_codec: Codec, /):
         self.cls = cls
         self.item_codec = item_codec
