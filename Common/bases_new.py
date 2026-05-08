@@ -4,6 +4,8 @@ from typing import TYPE_CHECKING
 
 from .codecs import PrimitiveCodec
 
+ID = str | int
+
 if TYPE_CHECKING:
     from typing import Any, ClassVar, TypeVar
 
@@ -97,10 +99,10 @@ class Serialisable(metaclass=SerialisableMeta):
 
 class Identifiable(Serialisable):
     codecs = {
-        "id": PrimitiveCodec(object),
+        "id": PrimitiveCodec(ID),
     }
 
-    id: object
+    id: ID
 
     def __hash__(self):
         return hash(self.id)

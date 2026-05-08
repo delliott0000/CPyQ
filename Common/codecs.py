@@ -8,6 +8,7 @@ from .utils import decode_datetime, encode_datetime, validate
 if TYPE_CHECKING:
     from enum import Enum
 
+    Primitive = str | int | float | bool
     Container = list | tuple | set | frozenset
 
 __all__ = (
@@ -43,7 +44,7 @@ class EnumCodec(Codec):
 
 
 class PrimitiveCodec(Codec):
-    def __init__(self, *types: type, optional: bool = False):
+    def __init__(self, *types: type[Primitive], optional: bool = False):
         self.types = types
         self.optional = optional
 
