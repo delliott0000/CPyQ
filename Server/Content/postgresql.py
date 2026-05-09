@@ -6,16 +6,7 @@ from typing import TYPE_CHECKING
 
 from asyncpg import create_pool
 
-from Common import (
-    Company,
-    Permission,
-    PermissionScope,
-    PermissionType,
-    Quote,
-    Team,
-    User,
-    log,
-)
+from Common import Company, Permission, Quote, Team, User, log
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Coroutine, Iterable
@@ -195,12 +186,8 @@ class PostgreSQLClient:
         permissions = {id_: [] for id_ in team_ids}
 
         for record in permission_records:
-            permissions[record["team_id"]].append(
-                Permission(
-                    type=PermissionType(record["type"]),
-                    scope=PermissionScope(record["scope"]),
-                )
-            )
+            permission = Permission(record)
+            permissions[record["team_id"]].append(permission)
 
         return permissions
 

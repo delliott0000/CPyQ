@@ -83,16 +83,14 @@ class User(ComparesIDMixin, ComparesIDABC, JSONSerialisableABC):
     def highest_team_in(self, company: Company, /) -> Team | None:
         return max((team for team in self._teams if team.company == company), default=None)
 
-    def has_permission_from(self, permission_type: PermissionType, owner: User, /) -> bool:
-        if self._admin:
+    def has_permission_from(self, permission_type: PermissionType, other: User, /) -> bool:
+        if self._admin or self == other:
             return True
 
-        shared_companies = self.companies.intersection(owner.companies)
+        shared_companies = self.companies.intersection(other.companies)
 
         if any(
-            team.has_permission(
-                Permission(type=permission_type, scope=PermissionScope.universal)
-            )
+            team.has_permission(Permission.new(permission_type, PermissionScope.universal))
             for team in self._teams
         ):
             return True
@@ -102,19 +100,15 @@ class User(ComparesIDMixin, ComparesIDABC, JSONSerialisableABC):
 
         elif any(
             team.company in shared_companies
-            and team.has_permission(
-                Permission(type=permission_type, scope=PermissionScope.company)
-            )
+            and team.has_permission(Permission.new(permission_type, PermissionScope.company))
             for team in self._teams
         ):
             return True
 
         elif any(
             team.company in shared_companies
-            and team >= owner.highest_team_in(team.company)
-            and team.has_permission(
-                Permission(type=permission_type, scope=PermissionScope.safe)
-            )
+            and team >= other.highest_team_in(team.company)
+            and team.has_permission(Permission.new(permission_type, PermissionScope.safe))
             for team in self._teams
         ):
             return True

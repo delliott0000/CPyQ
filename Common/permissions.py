@@ -1,15 +1,13 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from enum import Enum
 from typing import TYPE_CHECKING
 
-from .bases import JSONSerialisableABC
+from .bases_new import Serialisable
+from .codecs import EnumCodec
 
 if TYPE_CHECKING:
-    from typing import Any
-
-    Json = dict[str, Any]
+    from typing import Self
 
 __all__ = ("PermissionType", "PermissionScope", "Permission")
 
@@ -31,6 +29,7 @@ class PermissionScope(Enum):
     company   = "company"
     universal = "universal"
     null      = None
+    # fmt: on
 
     __rank__ = {safe: 0, company: 1, universal: 2}
 
@@ -46,14 +45,20 @@ class PermissionScope(Enum):
         return self.__check_null__(other) or self.__rank__[self.value] > self.__rank__[other.value]  # noqa
 
 
-@dataclass(kw_only=True, frozen=True, slots=True)
-class Permission(JSONSerialisableABC):
-    type:  PermissionType
+class Permission(Serialisable):
+    codecs = {
+        "type": EnumCodec(PermissionType),
+        "scope": EnumCodec(PermissionScope),
+    }
+
+    type: PermissionType
     scope: PermissionScope
 
-    def json(self) -> Json:
-        return {
-            "type": self.type.value,
-            "scope": self.scope.value,
-        }
-# fmt: on
+    @classmethod
+    def new(cls, permission_type: PermissionType, permission_scope: PermissionScope, /) -> Self:
+        return cls(
+            {
+                "type": permission_type.value,
+                "scope": permission_scope.value,
+            }
+        )
