@@ -83,8 +83,8 @@ BEGIN
 
     INSERT INTO permissions (
         team_id,
-        permission_type,
-        permission_scope
+        type,
+        scope
     ) VALUES
         (team_id, 'acquire', 'safe'),
         (team_id, 'preview', 'safe'),

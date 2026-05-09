@@ -197,8 +197,8 @@ class PostgreSQLClient:
         for record in permission_records:
             permissions[record["team_id"]].append(
                 Permission(
-                    type=PermissionType(record["permission_type"]),
-                    scope=PermissionScope(record["permission_scope"]),
+                    type=PermissionType(record["type"]),
+                    scope=PermissionScope(record["scope"]),
                 )
             )
 
