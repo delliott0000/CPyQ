@@ -23,6 +23,7 @@ __all__ = (
     "PrimitiveCodec",
     "DatetimeCodec",
     "ContainerCodec",
+    "SerialisableCodec",
 )
 
 
