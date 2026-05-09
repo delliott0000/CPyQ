@@ -6,10 +6,16 @@ from typing import TYPE_CHECKING
 from .utils import decode_datetime, encode_datetime, validate
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from enum import Enum
+    from typing import Any
 
+    from .bases_new import Serialisable
+
+    Json = dict[str, Any]
     Primitive = str | int | float | bool
     Container = list | tuple | set | frozenset
+    Factory = Callable[[Json], Serialisable]
 
 __all__ = (
     "Codec",
@@ -80,3 +86,14 @@ class ContainerCodec(Codec):
     def decode(self, value, /):
         validate(value, list)
         return self.cls(self.item_codec.decode(item) for item in value)
+
+
+class SerialisableCodec(Codec):
+    def __init__(self, factory: Factory, /):
+        self.factory = factory
+
+    def encode(self, value, /):
+        return value.json()
+
+    def decode(self, value, /):
+        return self.factory(value)
