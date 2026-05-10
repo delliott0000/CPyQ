@@ -27,6 +27,7 @@ Returned by the API:
 
 - If the username/password is missing or of the wrong type, the API will return `400 Bad Request`.
 - If the username/password is incorrect, the API will return `401 Unauthorized`.
+- If the `User` already has too many unexpired `Tokens`, the API will return `401 Unauthorized`.
 
 ## POST /auth/refresh
 Renew a `Token` by supplying the refresh key, extending the duration that it is valid for.
