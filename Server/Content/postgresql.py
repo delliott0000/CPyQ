@@ -159,6 +159,7 @@ class PostgreSQLClient:
             )
             for record in team_records
         }
+
         self.validate_ids(team_ids, teams.keys(), context="team")
 
         return teams
@@ -172,6 +173,7 @@ class PostgreSQLClient:
         )
 
         companies = {json["id"]: json for json in json_list}
+
         self.validate_ids(company_ids, companies.keys(), context="company")
 
         return companies
