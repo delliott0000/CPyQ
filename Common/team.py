@@ -1,38 +1,26 @@
-from __future__ import annotations
-
-from typing import TYPE_CHECKING
-
-from .bases import ComparesIDABC, ComparesIDMixin, JSONSerialisableABC
-
-if TYPE_CHECKING:
-    from typing import Any
-
-    from .company import Company
-    from .permissions import Permission
-
-    Json = dict[str, Any]
+from .bases_new import IntIdentifiable
+from .codecs import ContainerCodec, PrimitiveCodec, SerialisableCodec
+from .company import Company
+from .permissions import Permission
 
 __all__ = ("Team",)
 
 
-class Team(ComparesIDMixin, ComparesIDABC, JSONSerialisableABC):
-    __slots__ = ("_id", "_name", "_hierarchy_index", "_company", "_permissions")
+class Team(IntIdentifiable):
+    codecs = {
+        "name": PrimitiveCodec(str),
+        "hierarchy_index": PrimitiveCodec(int),
+        "company": SerialisableCodec(Company),
+        "permissions": ContainerCodec(frozenset, SerialisableCodec(Permission)),
+    }
 
-    def __init__(
-        self,
-        json: Json,
-        company: Company,
-        permissions: frozenset[Permission],
-        /,
-    ):
-        self._id = json["id"]
-        self._name = json["name"]
-        self._hierarchy_index = json["hierarchy_index"]
-        self._company = company
-        self._permissions = permissions
+    name: str
+    hierarchy_index: int
+    company: Company
+    permissions: frozenset[Permission]
 
     def __str__(self):
-        return self._name
+        return self.name
 
     def __lt__(self, other):
         return self.__comparison_check__(other) or self.hierarchy_index < other.hierarchy_index
@@ -53,45 +41,16 @@ class Team(ComparesIDMixin, ComparesIDABC, JSONSerialisableABC):
             raise RuntimeError("Cannot compare two teams from different companies.")
         return False
 
-    @property
-    def id(self) -> int:
-        return self._id
-
-    @property
-    def name(self) -> str:
-        return self._name
-
-    @property
-    def hierarchy_index(self) -> int:
-        return self._hierarchy_index
-
-    @property
-    def company(self) -> Company:
-        return self._company
-
-    @property
-    def permissions(self) -> frozenset[Permission]:
-        return self._permissions
-
     def has_permission(self, permission: Permission, /) -> bool:
         # fmt: off
         return (
-            permission in self._permissions
+            permission in self.permissions
             or
             any(
                 perm.type == permission.type
                 and
                 perm.scope > permission.scope
-                for perm in self._permissions
+                for perm in self.permissions
             )
         )
         # fmt: on
-
-    def json(self) -> Json:
-        return {
-            "id": self._id,
-            "name": self._name,
-            "hierarchy_index": self._hierarchy_index,
-            "company": self._company.json(),
-            "permissions": list(permission.json() for permission in self._permissions),
-        }

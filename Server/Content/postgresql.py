@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from asyncpg import create_pool
 
-from Common import Company, Permission, Quote, Team, User, log
+from Common import Quote, Team, User, log
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Coroutine, Iterable
@@ -143,22 +143,25 @@ class PostgreSQLClient:
         if not team_ids:
             return {}
 
-        team_records = await self.fetch_all("SELECT * FROM teams WHERE id = ANY($1)", team_ids)
+        json_list = await self.fetch_all("SELECT * FROM teams WHERE id = ANY($1)", team_ids)
 
-        company_ids = tuple(record["company_id"] for record in team_records)
+        company_ids = tuple(json["company_id"] for json in json_list)
 
         companies, permissions = await gather(
-            self.get_companies(*company_ids), self.get_permissions(*team_ids)
+            self.get_companies(*company_ids),
+            self.get_permissions(*team_ids),
         )
 
-        teams = {
-            record["id"]: Team(
-                record,
-                Company(companies[record["company_id"]]),
-                frozenset(Permission(permission) for permission in permissions[record["id"]]),
-            )
-            for record in team_records
-        }
+        teams = {}
+
+        for json in json_list:
+            team_id = json["id"]
+
+            company = companies[json["company_id"]]
+            perms = permissions[team_id]
+
+            team = Team(json | {"company": company} | {"permissions": perms})
+            teams[team_id] = team
 
         self.validate_ids(team_ids, teams.keys(), context="team")
 
