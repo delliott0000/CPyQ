@@ -8,8 +8,6 @@ from .permissions import Permission, PermissionScope
 if TYPE_CHECKING:
     from typing import Any
 
-    from asyncpg import Record
-
     from .company import Company
     from .permissions import PermissionType
     from .team import Team
@@ -31,14 +29,14 @@ class User(ComparesIDMixin, ComparesIDABC, JSONSerialisableABC):
         "_teams",
     )
 
-    def __init__(self, user_record: Record | Json, teams: frozenset[Team], /):
-        self._id = user_record["id"]
-        self._username = user_record["username"]
-        self._hashed_password = user_record.get("hashed_password")
-        self._display_name = user_record["display_name"]
-        self._email = user_record["email"]
-        self._autopilot = user_record["autopilot"]
-        self._admin = user_record["admin"]
+    def __init__(self, json: Json, teams: frozenset[Team], /):
+        self._id = json["id"]
+        self._username = json["username"]
+        self._hashed_password = json.get("hashed_password")
+        self._display_name = json["display_name"]
+        self._email = json["email"]
+        self._autopilot = json["autopilot"]
+        self._admin = json["admin"]
         self._teams = teams
 
     def __str__(self):

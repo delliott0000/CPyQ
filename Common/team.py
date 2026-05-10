@@ -7,8 +7,6 @@ from .bases import ComparesIDABC, ComparesIDMixin, JSONSerialisableABC
 if TYPE_CHECKING:
     from typing import Any
 
-    from asyncpg import Record
-
     from .company import Company
     from .permissions import Permission
 
@@ -22,14 +20,14 @@ class Team(ComparesIDMixin, ComparesIDABC, JSONSerialisableABC):
 
     def __init__(
         self,
-        team_record: Record | Json,
+        json: Json,
         company: Company,
         permissions: frozenset[Permission],
         /,
     ):
-        self._id = team_record["id"]
-        self._name = team_record["name"]
-        self._hierarchy_index = team_record["hierarchy_index"]
+        self._id = json["id"]
+        self._name = json["name"]
+        self._hierarchy_index = json["hierarchy_index"]
         self._company = company
         self._permissions = permissions
 

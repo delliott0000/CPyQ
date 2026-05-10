@@ -8,8 +8,6 @@ from .enums import ResourceJSONVersion
 if TYPE_CHECKING:
     from typing import Any
 
-    from asyncpg import Record
-
     from .user import User
 
     Json = dict[str, Any]
@@ -20,8 +18,8 @@ __all__ = ("Quote",)
 class Quote(ComparesIDFormattedMixin, ComparesIDFormattedABC, JSONSerialisableABC):
     __slots__ = ("_id", "_owner")
 
-    def __init__(self, quote_record: Record | Json, owner: User, /):
-        self._id = quote_record["id"]
+    def __init__(self, json: Json, owner: User, /):
+        self._id = json["id"]
         self._owner = owner
 
     @property
