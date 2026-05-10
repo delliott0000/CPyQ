@@ -105,10 +105,6 @@ class PostgreSQLClient:
     async def execute(self, query: str, /, *args: Any) -> str:
         return await self.make_call(lambda connection: connection.execute(query, *args))
 
-    async def get_new_id(self) -> int:
-        record = await self.fetch_one("INSERT INTO ids DEFAULT VALUES RETURNING id")
-        return record["id"]
-
     async def get_user(
         self,
         *,
@@ -170,7 +166,9 @@ class PostgreSQLClient:
             "SELECT * FROM companies WHERE id = ANY($1)", company_ids
         )
 
-        companies = {record["id"]: Company(record) for record in company_records}
+        companies = {
+            record["id"]: Company(record) for record in company_records  # noqa; temporary
+        }
         self.validate_ids(company_ids, companies.keys(), context="company")
 
         return companies
@@ -186,7 +184,7 @@ class PostgreSQLClient:
         permissions = {id_: [] for id_ in team_ids}
 
         for record in permission_records:
-            permission = Permission(record)
+            permission = Permission(record)  # noqa; temporary
             permissions[record["team_id"]].append(permission)
 
         return permissions
