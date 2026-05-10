@@ -169,9 +169,7 @@ class PostgreSQLClient:
             "SELECT * FROM companies WHERE id = ANY($1)", company_ids
         )
 
-        companies = {
-            record["id"]: Company(record) for record in company_records  # noqa; temporary
-        }
+        companies = {record["id"]: Company(record) for record in company_records}
         self.validate_ids(company_ids, companies.keys(), context="company")
 
         return companies
@@ -187,7 +185,7 @@ class PostgreSQLClient:
         permissions = {id_: [] for id_ in team_ids}
 
         for record in permission_records:
-            permission = Permission(record)  # noqa; temporary
+            permission = Permission(record)
             permissions[record["team_id"]].append(permission)
 
         return permissions
@@ -200,14 +198,14 @@ class PostgreSQLClient:
         key = key_map[inverse]
         val = key_map[not inverse]
 
-        assignment_records = await self.fetch_all(
+        json_list = await self.fetch_all(
             f"SELECT * FROM assignments WHERE {key} = ANY($1)", ids
         )
 
         assignments = {id_: [] for id_ in ids}
 
-        for record in assignment_records:
-            assignments[record[key]].append(record[val])
+        for json in json_list:
+            assignments[json[key]].append(json[val])
 
         return assignments
 
