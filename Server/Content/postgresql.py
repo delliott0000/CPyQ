@@ -12,10 +12,11 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Coroutine, Iterable
     from typing import Any, Self, TypeVar
 
-    from asyncpg import Connection, Pool, Record
+    from asyncpg import Connection, Pool
 
     from Common import PostgresConfig
 
+    Json = dict[str, Any]
     T = TypeVar("T")
     QuoteT = TypeVar("QuoteT", bound=Quote)
 
@@ -96,11 +97,13 @@ class PostgreSQLClient:
         async with self.__connection_pool.acquire() as connection:
             return await func(connection)
 
-    async def fetch_one(self, query: str, /, *args: Any) -> Record | None:
-        return await self.make_call(lambda connection: connection.fetchrow(query, *args))
+    async def fetch_one(self, query: str, /, *args: Any) -> Json | None:
+        record = await self.make_call(lambda connection: connection.fetchrow(query, *args))
+        return dict(record) if record is not None else None
 
-    async def fetch_all(self, query: str, /, *args: Any) -> list[Record]:
-        return await self.make_call(lambda connection: connection.fetch(query, *args))
+    async def fetch_all(self, query: str, /, *args: Any) -> list[Json]:
+        records = await self.make_call(lambda connection: connection.fetch(query, *args))
+        return [dict(record) for record in records]
 
     async def execute(self, query: str, /, *args: Any) -> str:
         return await self.make_call(lambda connection: connection.execute(query, *args))
