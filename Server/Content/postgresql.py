@@ -153,7 +153,9 @@ class PostgreSQLClient:
 
         teams = {
             record["id"]: Team(
-                record, companies[record["company_id"]], frozenset(permissions[record["id"]])
+                record,
+                companies[record["company_id"]],
+                frozenset(Permission(permission) for permission in permissions[record["id"]]),
             )
             for record in team_records
         }
@@ -174,19 +176,18 @@ class PostgreSQLClient:
 
         return companies
 
-    async def get_permissions(self, *team_ids: int) -> dict[int, list[Permission]]:
+    async def get_permissions(self, *team_ids: int) -> dict[int, list[Json]]:
         if not team_ids:
             return {}
 
-        permission_records = await self.fetch_all(
+        json_list = await self.fetch_all(
             "SELECT * FROM permissions WHERE team_id = ANY($1)", team_ids
         )
 
         permissions = {id_: [] for id_ in team_ids}
 
-        for record in permission_records:
-            permission = Permission(record)
-            permissions[record["team_id"]].append(permission)
+        for json in json_list:
+            permissions[json["team_id"]].append(json)
 
         return permissions
 
