@@ -137,9 +137,9 @@ class PostgreSQLClient:
         team_ids = team_assignments.get(user_record["id"], [])
         teams = await self.get_teams(*team_ids)
 
-        return User(user_record, frozenset(teams.values()))
+        return User(user_record, frozenset(Team(json) for json in teams.values()))
 
-    async def get_teams(self, *team_ids: int) -> dict[int, Team]:
+    async def get_teams(self, *team_ids: int) -> dict[int, Json]:
         if not team_ids:
             return {}
 
@@ -160,7 +160,7 @@ class PostgreSQLClient:
             company = companies[json["company_id"]]
             perms = permissions[team_id]
 
-            team = Team(json | {"company": company} | {"permissions": perms})
+            team = json | {"company": company} | {"permissions": perms}
             teams[team_id] = team
 
         self.validate_ids(team_ids, teams.keys(), context="team")
