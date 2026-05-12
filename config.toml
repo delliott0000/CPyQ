@@ -62,12 +62,3 @@ handle_backoffs = true
 backoff_factor = 1.5
 backoff_start = 1.0
 backoff_cap = 20.0
-
-[autopilot.postgres]
-host = "localhost"
-port = 5432
-database = ""
-username = ""
-password = ""
-min_connection_pool_size = 1
-max_connection_pool_size = 5

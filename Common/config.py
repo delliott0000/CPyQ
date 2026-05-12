@@ -83,7 +83,6 @@ class ServerConfig:
 @dataclass(kw_only=True, frozen=True)
 class AutopilotConfig:
     api: APIConfig
-    postgres: PostgresConfig
 
 
 @dataclass(kw_only=True, frozen=True)
