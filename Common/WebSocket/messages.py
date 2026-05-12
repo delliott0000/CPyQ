@@ -75,8 +75,6 @@ class WSEvent(CustomWSMessage):
 
 
 class WSAck(CustomWSMessage):
-    __slots__ = ()
-
     @classmethod
     def from_event(cls, event: WSEvent, /) -> Self:
         json = {
