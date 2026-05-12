@@ -1,17 +1,15 @@
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
-from ..bases import JSONSerialisableABC
-from ..codecs import PrimitiveCodec
+from ..bases_new import Serialisable
+from ..codecs import EnumCodec, PrimitiveCodec
 from ..utils import validate
 from .enums import PayloadKind, WSPeerType
 
 if TYPE_CHECKING:
-    from typing import Any, ClassVar
+    from typing import Any
 
-    from ..codecs import Codec
     from .response import WSProxy
 
     Json = dict[str, Any]
@@ -19,6 +17,7 @@ if TYPE_CHECKING:
 __all__ = (
     "Payload",
     "EmptyPayload",
+    "NonEmptyPayload",
     "Handshake",
     "UserHandshake",
     "AutopilotHandshake",
@@ -31,46 +30,26 @@ __all__ = (
 )
 
 
-class Payload(JSONSerialisableABC, ABC):
-    CODECS: ClassVar[dict[str, Codec] | None] = None
-
-    def __init__(self, json: Json, /):
-        if type(self) is Payload:
-            raise NotImplementedError(
-                "Payload is an abstract base class and must not be instantiated directly."
-            )
-        elif self.CODECS is None:
-            raise RuntimeError("Payload subclasses must each define their own codecs.")
-
-        # Already validated by the factory
-        self._kind = json["kind"]
-
-        for key, codec in self.CODECS.items():
-            setattr(self, key, codec.decode(json[key]))
-
-    @abstractmethod
+class Payload(Serialisable):
     def valid_context(self, *, receiver: WSProxy) -> bool:
-        pass
-
-    def json(self) -> Json:
-        return {"kind": self._kind} | {
-            key: codec.encode(getattr(self, key)) for key, codec in self.CODECS.items()
-        }
+        raise NotImplementedError
 
 
 class EmptyPayload(Payload):
-    def __init__(self, _: Json):  # noqa
-        pass
-
     def valid_context(self, *, receiver: WSProxy) -> bool:
         return receiver.handshake_done
 
-    def json(self) -> Json:
-        return {}
+
+class NonEmptyPayload(Payload):
+    codecs = {
+        "kind": EnumCodec(PayloadKind),
+    }
+
+    kind: PayloadKind
 
 
-class Handshake(Payload, ABC):
-    CODECS = {
+class Handshake(NonEmptyPayload):
+    codecs = {
         "ack_timeout": PrimitiveCodec(float),
     }
 
@@ -83,17 +62,11 @@ class Handshake(Payload, ABC):
 
 
 class UserHandshake(Handshake):
-    # TODO: Add more fields as/when needed
-    CODECS = Handshake.CODECS | {}
-
-    ...
+    pass
 
 
 class AutopilotHandshake(Handshake):
-    # TODO: Add more fields as/when needed
-    CODECS = Handshake.CODECS | {}
-
-    ...
+    pass
 
 
 EMPTY_PAYLOAD = EmptyPayload({})
