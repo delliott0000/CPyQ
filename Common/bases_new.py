@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from .codecs import PrimitiveCodec
+from .utils import validate
 
 ID = str | int
 
@@ -74,6 +75,8 @@ class Serialisable(metaclass=SerialisableMeta):
 
         if cls is Serialisable:
             raise RuntimeError(f"{cls.__name__} must not be directly instantiated.")
+
+        validate(json, dict)
 
         for key, codec in cls.codecs.items():
             setattr(self, key, codec.decode(json[key]))
