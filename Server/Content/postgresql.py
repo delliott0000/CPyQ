@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from asyncpg import create_pool
 
-from Common import Quote, Team, User, log
+from Common import Quote, User, log
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Coroutine, Iterable
@@ -119,25 +119,25 @@ class PostgreSQLClient:
 
         # fmt: off
         if user_id is not None:
-            user_record = await self.fetch_one(
+            json = await self.fetch_one(
                 "SELECT * FROM users WHERE id = $1",
                 user_id
             )
         else:
-            user_record = await self.fetch_one(
+            json = await self.fetch_one(
                 "SELECT * FROM users WHERE username = $1",
                 username
             )
         # fmt: on
 
-        if user_record is None:
+        if json is None:
             return None
 
-        team_assignments = await self.get_assignments(user_record["id"])
-        team_ids = team_assignments.get(user_record["id"], [])
+        team_assignments = await self.get_assignments(json["id"])
+        team_ids = team_assignments.get(json["id"], [])
         teams = await self.get_teams(*team_ids)
 
-        return User(user_record, frozenset(Team(json) for json in teams.values()))
+        return User(json | {"teams": list(teams.values())})
 
     async def get_teams(self, *team_ids: int) -> dict[int, Json]:
         if not team_ids:
