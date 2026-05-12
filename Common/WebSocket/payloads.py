@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING
 
 from ..bases_new import Serialisable
 from ..codecs import EnumCodec, PrimitiveCodec
-from ..utils import validate
 from .enums import PayloadKind, WSPeerType
 
 if TYPE_CHECKING:
@@ -100,9 +99,7 @@ def peer_type_to_handshake_cls(peer_type: WSPeerType, /) -> type[Handshake]:
 
 
 def parse_received_payload(json: Json, /) -> Payload:
-    validate(json, dict)
-
-    if not json:
+    if json == {}:
         return EMPTY_PAYLOAD
 
     else:
