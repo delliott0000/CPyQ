@@ -31,7 +31,7 @@ Each message must be a text frame that can be parsed into a valid JSON object.
 
 Below is a list of top-level fields and their corresponding types and enumerations for each message type.
 
-All of the fields listed below are mandatory. Types should not be coerced; for instance, `"5"` or `5.0` should be rejected if an integer is expected. However, where a given type is expected, subtypes may also be accepted. For example, `5` may be accepted as a valid floating point number. This behaviour is heavily dependent on the implementation.
+All the fields listed below are mandatory. Types should not be coerced; for instance, `"5"` or `5.0` should be rejected if an integer is expected. However, where a given type is expected, subtypes may also be accepted. For example, `5` may be accepted as a valid floating point number. This behaviour is heavily dependent on the implementation.
 
 `Event` fields:
 ```py

@@ -11,26 +11,18 @@ if TYPE_CHECKING:
     from .company import Company
     from .permissions import PermissionType
 
-__all__ = ("User",)
+__all__ = ("UserBase", "User")
 
 
-class User(IntIdentifiable):
+class UserBase(IntIdentifiable):
     codecs = {
         "username": PrimitiveCodec(str),
-        "hashed_password": PrimitiveCodec(str, optional=True),
         "display_name": PrimitiveCodec(str, optional=True),
-        "email": PrimitiveCodec(str, optional=True),
-        "autopilot": PrimitiveCodec(bool),
-        "admin": PrimitiveCodec(bool),
         "teams": ContainerCodec(frozenset, SerialisableCodec(Team)),
     }
 
     username: str
-    hashed_password: str | None
     display_name: str | None
-    email: str | None
-    autopilot: bool
-    admin: bool
     teams: frozenset[Team]
 
     def __str__(self):
@@ -42,6 +34,20 @@ class User(IntIdentifiable):
 
     def highest_team_in(self, company: Company, /) -> Team | None:
         return max((team for team in self.teams if team.company == company), default=None)
+
+
+class User(UserBase):
+    codecs = {
+        "hashed_password": PrimitiveCodec(str, optional=True),
+        "email": PrimitiveCodec(str, optional=True),
+        "autopilot": PrimitiveCodec(bool),
+        "admin": PrimitiveCodec(bool),
+    }
+
+    hashed_password: str | None
+    email: str | None
+    autopilot: bool
+    admin: bool
 
     def has_permission_from(self, permission_type: PermissionType, other: User, /) -> bool:
         if self.admin or self == other:
