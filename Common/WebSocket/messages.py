@@ -101,8 +101,13 @@ def parse_received_message(message: WSMessage, /) -> CustomWSMessage:
 
     try:
         json = message.json()
+
+        if json["sent_at"] is None:
+            raise TypeError("'sent_at' field required.")
+
         type_ = CustomWSMessageType(json["type"])
         cls = _MAPPING[type_]
+
         return cls(json)
 
     except JSONDecodeError:
