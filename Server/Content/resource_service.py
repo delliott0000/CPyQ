@@ -33,7 +33,7 @@ if TYPE_CHECKING:
 
     from aiohttp.web import Request, Response
 
-    from Common import User
+    from Common import SelfUser
 
     from .resources import Resource
 
@@ -72,7 +72,7 @@ class ResourceService(BaseService):
         return self.attach_extra_data(HTTPConflict(reason=str(error).strip(".")), extra_data)
 
     def permission_check(
-        self, user: User, resource: Resource, permission_type: PermissionType, /
+        self, user: SelfUser, resource: Resource, permission_type: PermissionType, /
     ) -> None:
         if not user.has_permission_from(permission_type, resource.owner):
             raise self.attach_extra_data(

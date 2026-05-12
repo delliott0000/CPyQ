@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from asyncpg import create_pool
 
-from Common import Quote, User, log
+from Common import Quote, SelfUser, log
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Coroutine, Iterable
@@ -113,7 +113,7 @@ class PostgreSQLClient:
         *,
         user_id: int | None = None,
         username: str | None = None,
-    ) -> User | None:
+    ) -> SelfUser | None:
         if (user_id is None) == (username is None):
             raise ValueError("Either an ID or a username is required, but not both.")
 
@@ -137,7 +137,7 @@ class PostgreSQLClient:
         team_ids = team_assignments.get(json["id"], [])
         teams = await self.get_teams(*team_ids)
 
-        return User(json | {"teams": list(teams.values())})
+        return SelfUser(json | {"teams": list(teams.values())})
 
     async def get_teams(self, *team_ids: int) -> dict[int, Json]:
         if not team_ids:

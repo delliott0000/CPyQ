@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 
     from aiohttp.web import Request
 
-    from Common import Session, Token, User
+    from Common import SelfUser, Session, Token
 
     from .server import Server
 
@@ -116,7 +116,7 @@ class BaseService(ABC):
         except AttributeError:
             return None
 
-    def user_from_request(self, request: Request, /) -> User | None:
+    def user_from_request(self, request: Request, /) -> SelfUser | None:
         try:
             return self.session_from_request(request).user
         except AttributeError:

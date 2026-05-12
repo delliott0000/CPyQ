@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from typing import Any
 
     from .token import Token
-    from .user import User
+    from .user import SelfUser
     from .WebSocket import WSProxy
 
     Json = dict[str, Any]
@@ -23,7 +23,7 @@ class Session(ComparesIDMixin, ComparesIDABC, JSONSerialisableABC):
     def __init__(
         self,
         _id: str,
-        user: User,
+        user: SelfUser,
         /,
         *,
         state: State | None = None,
@@ -40,7 +40,7 @@ class Session(ComparesIDMixin, ComparesIDABC, JSONSerialisableABC):
         return self._id
 
     @property
-    def user(self) -> User:
+    def user(self) -> SelfUser:
         return self._user
 
     @property

@@ -8,7 +8,7 @@ from .enums import ResourceJSONVersion
 if TYPE_CHECKING:
     from typing import Any
 
-    from .user import User
+    from .user import SelfUser
 
     Json = dict[str, Any]
 
@@ -18,7 +18,7 @@ __all__ = ("Quote",)
 class Quote(ComparesIDFormattedMixin, ComparesIDFormattedABC, JSONSerialisableABC):
     __slots__ = ("_id", "_owner")
 
-    def __init__(self, json: Json, owner: User, /):
+    def __init__(self, json: Json, owner: SelfUser, /):
         self._id = json["id"]
         self._owner = owner
 
@@ -30,7 +30,7 @@ class Quote(ComparesIDFormattedMixin, ComparesIDFormattedABC, JSONSerialisableAB
     def formatted_id(self) -> str: ...
 
     @property
-    def owner(self) -> User:
+    def owner(self) -> SelfUser:
         return self._owner
 
     def json(self, *, version: ResourceJSONVersion = ResourceJSONVersion.default) -> Json: ...

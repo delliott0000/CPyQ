@@ -11,10 +11,10 @@ if TYPE_CHECKING:
     from .company import Company
     from .permissions import PermissionType
 
-__all__ = ("UserBase", "User")
+__all__ = ("User", "SelfUser")
 
 
-class UserBase(IntIdentifiable):
+class User(IntIdentifiable):
     codecs = {
         "username": PrimitiveCodec(str),
         "display_name": PrimitiveCodec(str, optional=True),
@@ -36,7 +36,7 @@ class UserBase(IntIdentifiable):
         return max((team for team in self.teams if team.company == company), default=None)
 
 
-class User(UserBase):
+class SelfUser(User):
     codecs = {
         "hashed_password": PrimitiveCodec(str, optional=True),
         "email": PrimitiveCodec(str, optional=True),

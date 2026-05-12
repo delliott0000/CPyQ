@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from datetime import datetime, timedelta
     from typing import Any
 
-    from Common import ResourceJSONVersion, Session, User
+    from Common import ResourceJSONVersion, SelfUser, Session
 
     Json = dict[str, Any]
 
@@ -36,7 +36,7 @@ class ResourceABC(ComparesIDFormattedABC, JSONSerialisableABC, ABC):
 
     @property
     @abstractmethod
-    def owner(self) -> User:
+    def owner(self) -> SelfUser:
         pass
 
     @abstractmethod
@@ -63,7 +63,7 @@ class ResourceMixin(ComparesIDFormattedMixin):
         return self._session is not None
 
     @property
-    def current_user(self) -> User | None:
+    def current_user(self) -> SelfUser | None:
         if self.locked:
             return self._session.user
 
@@ -110,11 +110,11 @@ class Resource(Protocol):
     @property
     def formatted_id(self) -> str: ...
     @property
-    def owner(self) -> User: ...
+    def owner(self) -> SelfUser: ...
     @property
     def locked(self) -> bool: ...
     @property
-    def current_user(self) -> User | None: ...
+    def current_user(self) -> SelfUser | None: ...
     @property
     def last_active(self) -> datetime: ...
     def is_idle(self, grace: timedelta, /) -> bool: ...

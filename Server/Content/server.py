@@ -19,7 +19,7 @@ from .websocket_service import AutopilotWebSocketService, UserWebSocketService
 if TYPE_CHECKING:
     from typing import Self
 
-    from Common import LoggingContext, ServerConfig, Session, Token, User
+    from Common import LoggingContext, SelfUser, ServerConfig, Session, Token
 
     from .resources import Resource
 
@@ -56,7 +56,7 @@ class Server:
         self.apm = AutopilotManager(self)
 
         self.key_to_token: dict[str, Token] = {}
-        self.user_to_tokens: dict[User, set[Token]] = {}
+        self.user_to_tokens: dict[SelfUser, set[Token]] = {}
         self.session_id_to_session: dict[str, Session] = {}
         self.resource_id_to_resource: dict[int, Resource] = {}
 
