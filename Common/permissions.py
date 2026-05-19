@@ -3,7 +3,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import TYPE_CHECKING
 
-from .bases_new import Serialisable
+from .bases import Serialisable
 from .codecs import EnumCodec
 
 if TYPE_CHECKING:

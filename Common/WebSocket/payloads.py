@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from ..bases_new import Serialisable
+from ..bases import Serialisable
 from ..codecs import EnumCodec, PrimitiveCodec
 from .enums import PayloadKind, WSPeerType
 

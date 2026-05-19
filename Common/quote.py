@@ -1,36 +1,14 @@
-from __future__ import annotations
+from .bases import Formattable, IntIdentifiable
 
-from typing import TYPE_CHECKING
-
-from .bases import ComparesIDFormattedABC, ComparesIDFormattedMixin, JSONSerialisableABC
-from .enums import ResourceJSONVersion
-
-if TYPE_CHECKING:
-    from typing import Any
-
-    from .user import SelfUser
-
-    Json = dict[str, Any]
-
-__all__ = ("Quote",)
+__all__ = ("QuoteMetadata", "QuotePreview", "QuoteView")
 
 
-class Quote(ComparesIDFormattedMixin, ComparesIDFormattedABC, JSONSerialisableABC):
-    __slots__ = ("_id", "_owner")
+class QuoteMetadata(Formattable, IntIdentifiable):
+    prefix = "SQ"
+    padding = 6
 
-    def __init__(self, json: Json, owner: SelfUser, /):
-        self._id = json["id"]
-        self._owner = owner
 
-    @property
-    def id(self) -> int:
-        return self._id
+class QuotePreview(QuoteMetadata): ...
 
-    @property
-    def formatted_id(self) -> str: ...
 
-    @property
-    def owner(self) -> SelfUser:
-        return self._owner
-
-    def json(self, *, version: ResourceJSONVersion = ResourceJSONVersion.default) -> Json: ...
+class QuoteView(QuotePreview): ...

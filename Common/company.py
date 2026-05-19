@@ -1,4 +1,4 @@
-from .bases_new import IntIdentifiable
+from .bases import IntIdentifiable
 from .codecs import PrimitiveCodec
 
 __all__ = ("Company",)

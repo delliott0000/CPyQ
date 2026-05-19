@@ -1,4 +1,4 @@
-from .bases_new import IntIdentifiable
+from .bases import IntIdentifiable
 from .codecs import ContainerCodec, PrimitiveCodec, SerialisableCodec
 from .company import Company
 from .permissions import Permission

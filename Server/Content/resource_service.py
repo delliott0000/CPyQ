@@ -15,7 +15,6 @@ from aiohttp.web import (
 from Common import (
     PermissionType,
     ResourceConflict,
-    ResourceJSONVersion,
     ResourceLocked,
     ResourceNotOwned,
     Session,
@@ -25,7 +24,7 @@ from Common import (
 
 from .base_service import BaseService
 from .decorators import BucketType, ratelimit, route, user_only, validate_access
-from .resources import QuoteResource
+from .resources import QuoteMetadataResource, QuotePreviewResource, QuoteViewResource
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Coroutine
@@ -60,13 +59,13 @@ class ResourceService(BaseService):
     def resource_map(self) -> dict[str, RLoader]:
         return {"quote": self.load_quote}  # noqa
 
-    async def load_quote(self, quote_id: int, /) -> QuoteResource:
-        quote = await self.server.db.get_quote(quote_id, cls=QuoteResource)
+    async def load_quote(self, quote_id: int, /) -> QuoteViewResource:
+        quote_json = await self.server.db.get_quote(quote_id)
 
-        if quote is None:
+        if quote_json is None:
             raise HTTPNotFound(reason="Quote does not exist")
 
-        return quote
+        return QuoteViewResource(quote_json)
 
     def convert_conflict(self, error: ResourceConflict, extra_data: Json, /) -> HTTPConflict:
         return self.attach_extra_data(HTTPConflict(reason=str(error).strip(".")), extra_data)
@@ -132,17 +131,11 @@ class ResourceService(BaseService):
         session = self.session_from_request(request)
         return resource, session
 
-    def ok_response(
-        self,
-        resource: Resource,
-        /,
-        *,
-        version: ResourceJSONVersion = ResourceJSONVersion.default,
-    ) -> Response:
+    def ok_response(self, resource: Resource, /) -> Response:
         return json_response(
             {
                 "message": "OK",
-                "resource": resource.json(version=version),
+                "resource": resource.json(),
             },
             status=200,
         )
@@ -164,7 +157,7 @@ class ResourceService(BaseService):
         except SessionBound as error:
             raise self.convert_conflict(error, {"session": session.json()})
 
-        return self.ok_response(resource)
+        return self.ok_response(resource.decompose(QuoteMetadataResource))
 
     @route("post", "/resource/{rtype}/{rid}/release")
     @ratelimit(limit=10, interval=60, bucket_type=BucketType.User)
@@ -181,7 +174,7 @@ class ResourceService(BaseService):
         except ResourceNotOwned as error:
             raise self.convert_conflict(error, {"session": session.json()})
 
-        return self.ok_response(resource)
+        return self.ok_response(resource.decompose(QuoteMetadataResource))
 
     @route("get", "/resource/{rtype}/{rid}/preview")
     @ratelimit(limit=10, interval=60, bucket_type=BucketType.User)
@@ -193,7 +186,7 @@ class ResourceService(BaseService):
         self.permission_check(session.user, resource, PermissionType.preview)
         # No acquisition check necessary
 
-        return self.ok_response(resource, version=ResourceJSONVersion.preview)
+        return self.ok_response(resource.decompose(QuotePreviewResource))
 
     @route("get", "/resource/{rtype}/{rid}/view")
     @ratelimit(limit=10, interval=60, bucket_type=BucketType.User)
@@ -205,4 +198,4 @@ class ResourceService(BaseService):
         self.permission_check(session.user, resource, PermissionType.view)
         self.acquisition_check(session, resource)
 
-        return self.ok_response(resource, version=ResourceJSONVersion.view)
+        return self.ok_response(resource.decompose(QuoteViewResource))

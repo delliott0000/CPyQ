@@ -6,7 +6,7 @@ from uuid import uuid4
 
 from aiohttp import WSMsgType
 
-from ..bases_new import StrIdentifiable
+from ..bases import StrIdentifiable
 from ..codecs import DatetimeCodec, EnumCodec, PrimitiveCodec, SerialisableCodec
 from ..utils import encode_datetime, protocol_error
 from .enums import CustomWSCloseCode, CustomWSMessageType, WSEventStatus

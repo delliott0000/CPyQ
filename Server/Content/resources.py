@@ -1,16 +1,17 @@
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Protocol, runtime_checkable
+from typing import TYPE_CHECKING
 
 from Common import (
-    ComparesIDFormattedABC,
-    ComparesIDFormattedMixin,
-    JSONSerialisableABC,
-    Quote,
+    IntIdentifiable,
+    QuoteMetadata,
+    QuotePreview,
+    QuoteView,
     ResourceLocked,
     ResourceNotOwned,
+    SerialisableCodec,
     SessionBound,
+    User,
     log,
     now,
 )
@@ -19,44 +20,34 @@ if TYPE_CHECKING:
     from datetime import datetime, timedelta
     from typing import Any
 
-    from Common import ResourceJSONVersion, SelfUser, Session
+    from Common import SelfUser, Session
 
     Json = dict[str, Any]
 
-__all__ = ("ResourceABC", "ResourceMixin", "Resource", "QuoteResource")
+__all__ = ("Resource", "QuoteMetadataResource", "QuotePreviewResource", "QuoteViewResource")
 
 
-class ResourceABC(ComparesIDFormattedABC, JSONSerialisableABC, ABC):
-    __slots__ = ()
+class Resource(IntIdentifiable):
+    codecs = {
+        "owner": SerialisableCodec(User),
+    }
 
-    @property
-    @abstractmethod
-    def id(self) -> int:
-        pass
+    owner: User
 
-    @property
-    @abstractmethod
-    def owner(self) -> SelfUser:
-        pass
+    # IMPORTANT: Add these into the __slots__ of each subclass!
+    _session: Session | None
+    _last_active: datetime
 
-    @abstractmethod
-    def json(self, *, version: ResourceJSONVersion = ...) -> Json:
-        pass
-
-
-class ResourceMixin(ComparesIDFormattedMixin):
-    __slots__ = ()
-
-    def __init__(self, *args: Any, **kwargs: Any):
-        super().__init__(*args, **kwargs)
+    def __init__(self, json: Json, /):
+        super().__init__(json)
         self._reset()
 
     def _reset(self) -> None:
         self._set_session(None)
-        self._last_active = now()  # noqa
+        self._last_active = now()
 
     def _set_session(self, session: Session | None, /):
-        self._session = session  # noqa
+        self._session = session
 
     @property
     def locked(self) -> bool:
@@ -97,32 +88,13 @@ class ResourceMixin(ComparesIDFormattedMixin):
             raise ResourceNotOwned(session, self.id)
 
 
-@runtime_checkable
-class Resource(Protocol):
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        raise TypeError("Resource can not be directly instantiated.")
-
-    def __init_subclass__(cls, **kwargs: Any):
-        raise TypeError("Inherit from (ResourceMixin, ResourceABC) instead.")
-
-    @property
-    def id(self) -> int: ...
-    @property
-    def formatted_id(self) -> str: ...
-    @property
-    def owner(self) -> SelfUser: ...
-    @property
-    def locked(self) -> bool: ...
-    @property
-    def current_user(self) -> SelfUser | None: ...
-    @property
-    def last_active(self) -> datetime: ...
-    def is_idle(self, grace: timedelta, /) -> bool: ...
-    def lock(self, session: Session, /) -> None: ...
-    def unlock(self, session: Session, /) -> None: ...
-    def ensure_acquired(self, session: Session, /) -> None: ...
-    def json(self, *, version: ResourceJSONVersion = ...) -> Json: ...
+class QuoteMetadataResource(Resource, QuoteMetadata):
+    __slots__ = ("_session", "_last_active")
 
 
-class QuoteResource(ResourceMixin, Quote, ResourceABC):
+class QuotePreviewResource(Resource, QuotePreview):
+    __slots__ = ("_session", "_last_active")
+
+
+class QuoteViewResource(Resource, QuoteView):
     __slots__ = ("_session", "_last_active")

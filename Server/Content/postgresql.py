@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from asyncpg import create_pool
 
-from Common import Quote, SelfUser, log
+from Common import log
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Coroutine, Iterable
@@ -18,7 +18,6 @@ if TYPE_CHECKING:
 
     Json = dict[str, Any]
     T = TypeVar("T")
-    QuoteT = TypeVar("QuoteT", bound=Quote)
 
 __all__ = ("PostgreSQLClient",)
 
@@ -113,7 +112,7 @@ class PostgreSQLClient:
         *,
         user_id: int | None = None,
         username: str | None = None,
-    ) -> SelfUser | None:
+    ) -> Json | None:
         if (user_id is None) == (username is None):
             raise ValueError("Either an ID or a username is required, but not both.")
 
@@ -137,7 +136,7 @@ class PostgreSQLClient:
         team_ids = team_assignments.get(json["id"], [])
         teams = await self.get_teams(*team_ids)
 
-        return SelfUser(json | {"teams": list(teams.values())})
+        return json | {"teams": list(teams.values())}
 
     async def get_teams(self, *team_ids: int) -> dict[int, Json]:
         if not team_ids:
@@ -215,13 +214,13 @@ class PostgreSQLClient:
 
         return assignments
 
-    async def get_quote(self, quote_id: int, /, *, cls: type[QuoteT] = Quote) -> QuoteT | None:
-        quote_record = await self.fetch_one("SELECT * FROM quotes WHERE id = $1", quote_id)
+    async def get_quote(self, quote_id: int, /) -> Json | None:
+        quote = await self.fetch_one("SELECT * FROM quotes WHERE id = $1", quote_id)
 
-        if quote_record is None:
+        if quote is None:
             return None
 
-        owner_id = quote_record["owner_id"]
+        owner_id = quote["owner_id"]
         owner = await self.get_user(user_id=owner_id)
 
-        return cls(quote_record, owner)
+        return quote | {"owner": owner}

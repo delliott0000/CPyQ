@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from enum import Enum
     from typing import Any
 
-    from .bases_new import Serialisable
+    from .bases import Serialisable
 
     Json = dict[str, Any]
     Primitive = str | int | float | bool

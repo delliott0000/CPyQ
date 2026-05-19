@@ -1,12 +1,19 @@
 from __future__ import annotations
 
 from asyncio import gather
-from secrets import token_urlsafe
 from typing import TYPE_CHECKING
 
 from aiohttp.web import HTTPBadRequest, HTTPUnauthorized, json_response
 
-from Common import CustomWSCloseCode, Session, Token, check_password, log, to_json
+from Common import (
+    CustomWSCloseCode,
+    SelfUser,
+    Session,
+    Token,
+    check_password,
+    log,
+    to_json,
+)
 
 from .base_service import BaseService
 from .decorators import BucketType, ratelimit, route, validate_access
@@ -100,17 +107,19 @@ class AuthService(BaseService):
         if not isinstance(username, str) or not isinstance(password, str):
             raise HTTPBadRequest(reason="Missing or invalid username/password")
 
-        user = await self.server.db.get_user(username=username)
+        user_json = await self.server.db.get_user(username=username)
 
-        hashed_password = DUMMY_HASH if user is None else user.hashed_password
+        hashed_password = DUMMY_HASH if user_json is None else user_json["hashed_password"]
         correct = await self.server.process_pool.submit_async(
             check_password,
             password,
             hashed_password,
         )
 
-        if user is None or not correct:
+        if user_json is None or not correct:
             raise HTTPUnauthorized(reason="Incorrect username/password")
+
+        user = SelfUser(user_json)
 
         tokens = self.server.user_to_tokens.setdefault(user, set())
         if len(tokens) >= self.server.config.max_tokens_per_user:
@@ -122,14 +131,14 @@ class AuthService(BaseService):
                 raise ValueError("Invalid session ID.")
 
         except (KeyError, ValueError):
-            session = Session(token_urlsafe(16), user)
+            session = Session.new(user)
             self.server.session_id_to_session[session.id] = session
             log(f"Session issued for {user}. (Session ID: {session.id})")
 
-        token = Token(
+        token = Token.new(
             session,
-            access_expires=self.server.config.access_time,
-            refresh_expires=self.server.config.refresh_time,
+            access_expires_in=self.server.config.access_time,
+            refresh_expires_in=self.server.config.refresh_time,
         )
         tokens.add(token)
         self.add_token_keys(token)
@@ -149,8 +158,8 @@ class AuthService(BaseService):
         token = self.server.key_to_token[refresh]
         self.pop_token_keys(token)
         token.renew(
-            access_expires=self.server.config.access_time,
-            refresh_expires=self.server.config.refresh_time,
+            access_expires_in=self.server.config.access_time,
+            refresh_expires_in=self.server.config.refresh_time,
         )
         self.add_token_keys(token)
         log(f"Token renewed for {token.session.user}. (Token ID: {token.id})")

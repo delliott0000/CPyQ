@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from .bases_new import IntIdentifiable
+from .bases import IntIdentifiable
 from .codecs import ContainerCodec, PrimitiveCodec, SerialisableCodec
 from .permissions import Permission, PermissionScope
 from .team import Team
