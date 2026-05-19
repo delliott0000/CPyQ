@@ -57,7 +57,7 @@ class ResourceService(BaseService):
 
     @property
     def resource_map(self) -> dict[str, RLoader]:
-        return {"quote": self.load_quote}  # noqa
+        return {"quote": self.load_quote}
 
     async def load_quote(self, quote_id: int, /) -> QuoteViewResource:
         quote_json = await self.server.db.get_quote(quote_id)
