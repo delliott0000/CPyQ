@@ -22,6 +22,7 @@ if TYPE_CHECKING:
 
     from Common import SelfUser, Session
 
+    ID = str | int
     Json = dict[str, Any]
     T = TypeVar("T")
 
@@ -35,6 +36,7 @@ __all__ = (
 
 
 class ResourceItem(Protocol):
+    id: ID
     owner: User
     metadata_type: type[...]
     preview_type: type[...]
