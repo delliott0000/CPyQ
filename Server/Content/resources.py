@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Protocol
 
 from Common import (
     IntIdentifiable,
@@ -24,7 +24,16 @@ if TYPE_CHECKING:
 
     Json = dict[str, Any]
 
-__all__ = ("Resource", "QuoteMetadataResource", "QuotePreviewResource", "QuoteViewResource")
+__all__ = (
+    "ResourceItem",
+    "Resource",
+    "QuoteMetadataResource",
+    "QuotePreviewResource",
+    "QuoteViewResource",
+)
+
+
+class ResourceItem(Protocol): ...
 
 
 class Resource(IntIdentifiable):
