@@ -18,4 +18,7 @@ class QuoteView(QuotePreview):
     codecs = {}
 
 
-class Quote(QuoteView): ...
+class Quote(QuoteView):
+    metadata_type = QuoteMetadata
+    preview_type = QuotePreview
+    view_type = QuoteView
