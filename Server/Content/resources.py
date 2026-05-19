@@ -18,11 +18,12 @@ from Common import (
 
 if TYPE_CHECKING:
     from datetime import datetime, timedelta
-    from typing import Any
+    from typing import Any, TypeVar
 
     from Common import SelfUser, Session
 
     Json = dict[str, Any]
+    T = TypeVar("T")
 
 __all__ = (
     "ResourceItem",
@@ -33,7 +34,14 @@ __all__ = (
 )
 
 
-class ResourceItem(Protocol): ...
+class ResourceItem(Protocol):
+    owner: User
+    metadata_type: type[...]
+    preview_type: type[...]
+    view_type: type[...]
+
+    def decompose(self, target: type[T], /) -> T: ...
+    def json(self) -> Json: ...
 
 
 class Resource(IntIdentifiable):
