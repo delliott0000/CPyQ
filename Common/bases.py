@@ -136,9 +136,13 @@ class IntIdentifiable(Identifiable):
     id: int
 
 
-class Formattable(Identifiable):
+class Formattable:
+    __slots__ = ()
+
     prefix: ClassVar[str] = ""
     padding: ClassVar[int] = 0
+
+    id: ID
 
     @property
     def formatted_id(self) -> str:
