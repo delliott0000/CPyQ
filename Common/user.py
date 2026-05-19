@@ -38,13 +38,11 @@ class User(IntIdentifiable):
 
 class SelfUser(User):
     codecs = {
-        "hashed_password": PrimitiveCodec(str, optional=True),
         "email": PrimitiveCodec(str, optional=True),
         "autopilot": PrimitiveCodec(bool),
         "admin": PrimitiveCodec(bool),
     }
 
-    hashed_password: str | None
     email: str | None
     autopilot: bool
     admin: bool
