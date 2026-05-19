@@ -1,14 +1,21 @@
 from .bases import Formattable, IntIdentifiable
 
-__all__ = ("QuoteMetadata", "QuotePreview", "QuoteView")
+__all__ = ("QuoteMetadata", "QuotePreview", "QuoteView", "Quote")
 
 
 class QuoteMetadata(Formattable, IntIdentifiable):
     prefix = "SQ"
     padding = 6
 
+    codecs = {}
 
-class QuotePreview(QuoteMetadata): ...
+
+class QuotePreview(QuoteMetadata):
+    codecs = {}
 
 
-class QuoteView(QuotePreview): ...
+class QuoteView(QuotePreview):
+    codecs = {}
+
+
+class Quote(QuoteView): ...

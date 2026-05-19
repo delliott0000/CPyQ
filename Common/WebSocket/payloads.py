@@ -61,11 +61,11 @@ class Handshake(NonEmptyPayload):
 
 
 class UserHandshake(Handshake):
-    pass
+    codecs = {}
 
 
 class AutopilotHandshake(Handshake):
-    pass
+    codecs = {}
 
 
 EMPTY_PAYLOAD = EmptyPayload({})
