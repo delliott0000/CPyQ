@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from datetime import datetime, timedelta
     from typing import Any, TypeVar
 
-    from Common import SelfUser, Session
+    from Common import SelfUser, Serialisable, Session
 
     ID = str | int
     Json = dict[str, Any]
@@ -38,9 +38,9 @@ __all__ = (
 class ResourceItem(Protocol):
     id: ID
     owner: User
-    metadata_type: type[...]
-    preview_type: type[...]
-    view_type: type[...]
+    metadata_type: type[Serialisable]
+    preview_type: type[Serialisable]
+    view_type: type[Serialisable]
 
     def decompose(self, target: type[T], /) -> T: ...
     def json(self) -> Json: ...
