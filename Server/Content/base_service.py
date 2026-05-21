@@ -153,6 +153,17 @@ class BaseService(ABC):
         method, endpoint = urlsafe_b64decode(encoded).decode().split(" ", 1)
         return method, endpoint
 
+    def attach_extra_data(self, exception: ExceptionT, data: Json, /) -> ExceptionT:
+        attr = "_extra_data"
+        existing_data = getattr(exception, attr, None)
+
+        if existing_data is None:
+            setattr(exception, attr, dict(data))
+        else:
+            existing_data.update(data)
+
+        return exception
+
     def register_routes(self) -> None:
         for func_name, func in getmembers(type(self), predicate=isfunction):
 
@@ -173,14 +184,3 @@ class BaseService(ABC):
                 log(
                     f"Registered listener: {method.upper()} {endpoint} -> {type(self).__name__}.{func_name}()"
                 )
-
-    def attach_extra_data(self, exception: ExceptionT, data: Json, /) -> ExceptionT:
-        attr = "_extra_data"
-        existing_data = getattr(exception, attr, None)
-
-        if existing_data is None:
-            setattr(exception, attr, dict(data))
-        else:
-            existing_data.update(data)
-
-        return exception
