@@ -7,7 +7,7 @@ from inspect import getmembers, isfunction
 from logging import ERROR, WARNING
 from typing import TYPE_CHECKING
 
-from aiohttp.web import HTTPBadRequest, HTTPUnauthorized
+from aiohttp.web import HTTPBadRequest, HTTPUnauthorized, json_response
 
 from Common import log
 
@@ -17,9 +17,9 @@ if TYPE_CHECKING:
     from asyncio import Task
     from typing import Any, Self, TypeVar
 
-    from aiohttp.web import Request
+    from aiohttp.web import Request, Response
 
-    from Common import SelfUser, Session, Token
+    from Common import SelfUser, Serialisable, Session, Token
 
     from .server import Server
 
@@ -163,6 +163,15 @@ class BaseService(ABC):
             existing_data.update(data)
 
         return exception
+
+    def ok_response(self, key: str, serialisable: Serialisable, /) -> Response:
+        return json_response(
+            {
+                "message": "OK",
+                key: serialisable.json(),
+            },
+            status=200,
+        )
 
     def register_routes(self) -> None:
         for func_name, func in getmembers(type(self), predicate=isfunction):

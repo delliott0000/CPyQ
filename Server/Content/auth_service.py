@@ -3,7 +3,7 @@ from __future__ import annotations
 from asyncio import gather
 from typing import TYPE_CHECKING
 
-from aiohttp.web import HTTPBadRequest, HTTPUnauthorized, json_response
+from aiohttp.web import HTTPBadRequest, HTTPUnauthorized
 
 from Common import (
     CustomWSCloseCode,
@@ -86,15 +86,6 @@ class AuthService(BaseService):
         self.server.key_to_token.pop(token.access, None)
         self.server.key_to_token.pop(token.refresh, None)
 
-    def ok_response(self, token: Token, /) -> Response:
-        return json_response(
-            {
-                "message": "OK",
-                "token": token.json(),
-            },
-            status=200,
-        )
-
     @route("post", "/auth/login")
     @ratelimit(limit=10, interval=60, bucket_type=BucketType.IP)
     @ratelimit(limit=1000, interval=60, bucket_type=BucketType.Route)
@@ -144,7 +135,7 @@ class AuthService(BaseService):
         self.add_token_keys(token)
         log(f"Token issued for {user}. (Token ID: {token.id})")
 
-        return self.ok_response(token)
+        return self.ok_response("token", token)
 
     @route("post", "/auth/refresh")
     @ratelimit(limit=10, interval=60, bucket_type=BucketType.IP)
@@ -164,7 +155,7 @@ class AuthService(BaseService):
         self.add_token_keys(token)
         log(f"Token renewed for {token.session.user}. (Token ID: {token.id})")
 
-        return self.ok_response(token)
+        return self.ok_response("token", token)
 
     @route("post", "/auth/logout")
     @ratelimit(limit=10, interval=60, bucket_type=BucketType.IP)
@@ -174,4 +165,4 @@ class AuthService(BaseService):
         token = self.token_from_request(request)
         token.kill()
         log(f"Token killed for {token.session.user}. (Token ID: {token.id})")
-        return self.ok_response(token)
+        return self.ok_response("token", token)

@@ -9,7 +9,6 @@ from aiohttp.web import (
     HTTPException,
     HTTPForbidden,
     HTTPNotFound,
-    json_response,
 )
 
 from Common import (
@@ -33,7 +32,7 @@ if TYPE_CHECKING:
 
     from aiohttp.web import Request, Response
 
-    from Common import SelfUser, Serialisable
+    from Common import SelfUser
 
     from .resource import ResourceItem
 
@@ -134,15 +133,6 @@ class ResourceService(BaseService):
         session = self.session_from_request(request)
         return resource, session
 
-    def ok_response(self, serialisable: Serialisable, /) -> Response:
-        return json_response(
-            {
-                "message": "OK",
-                "resource": serialisable.json(),
-            },
-            status=200,
-        )
-
     @route("post", "/resource/{rtype}/{rid}/acquire")
     @ratelimit(limit=10, interval=60, bucket_type=BucketType.User)
     @user_only
@@ -160,7 +150,7 @@ class ResourceService(BaseService):
         except SessionBound as error:
             raise self.convert_conflict(error, {"session": session.json()})
 
-        return self.ok_response(resource.metadata)
+        return self.ok_response("resource", resource.metadata)
 
     @route("post", "/resource/{rtype}/{rid}/release")
     @ratelimit(limit=10, interval=60, bucket_type=BucketType.User)
@@ -177,7 +167,7 @@ class ResourceService(BaseService):
         except ResourceNotOwned as error:
             raise self.convert_conflict(error, {"session": session.json()})
 
-        return self.ok_response(resource.metadata)
+        return self.ok_response("resource", resource.metadata)
 
     @route("get", "/resource/{rtype}/{rid}/preview")
     @ratelimit(limit=10, interval=60, bucket_type=BucketType.User)
@@ -189,7 +179,7 @@ class ResourceService(BaseService):
         self.permission_check(session.user, resource, PermissionType.preview)
         # No acquisition check necessary
 
-        return self.ok_response(resource.preview)
+        return self.ok_response("resource", resource.preview)
 
     @route("get", "/resource/{rtype}/{rid}/view")
     @ratelimit(limit=10, interval=60, bucket_type=BucketType.User)
@@ -201,4 +191,4 @@ class ResourceService(BaseService):
         self.permission_check(session.user, resource, PermissionType.view)
         self.acquisition_check(session, resource)
 
-        return self.ok_response(resource.view)
+        return self.ok_response("resource", resource.view)
