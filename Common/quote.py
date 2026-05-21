@@ -1,4 +1,6 @@
 from .bases import Formattable, IntIdentifiable
+from .codecs import SerialisableCodec
+from .user import User
 
 __all__ = ("QuoteMetadata", "QuotePreview", "QuoteView", "Quote")
 
@@ -7,7 +9,11 @@ class QuoteMetadata(Formattable, IntIdentifiable):
     prefix = "SQ"
     padding = 6
 
-    codecs = {}
+    codecs = {
+        "owner": SerialisableCodec(User),
+    }
+
+    owner: User
 
 
 class QuotePreview(QuoteMetadata):

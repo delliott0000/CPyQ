@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 
     from Common import LoggingContext, SelfUser, ServerConfig, Session, Token
 
-    from .resources import Resource
+    from .resource import Resource
 
 __all__ = ("Server",)
 

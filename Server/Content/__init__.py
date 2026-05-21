@@ -4,7 +4,7 @@ from .decorators import *
 from .manager import *
 from .middlewares import *
 from .postgresql import *
+from .resource import *
 from .resource_service import *
-from .resources import *
 from .server import *
 from .websocket_service import *

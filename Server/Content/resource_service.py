@@ -14,6 +14,7 @@ from aiohttp.web import (
 
 from Common import (
     PermissionType,
+    Quote,
     ResourceConflict,
     ResourceLocked,
     ResourceNotOwned,
@@ -24,7 +25,7 @@ from Common import (
 
 from .base_service import BaseService
 from .decorators import BucketType, ratelimit, route, user_only, validate_access
-from .resources import QuoteMetadataResource, QuotePreviewResource, QuoteViewResource
+from .resource import Resource
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Coroutine
@@ -32,12 +33,12 @@ if TYPE_CHECKING:
 
     from aiohttp.web import Request, Response
 
-    from Common import SelfUser
+    from Common import SelfUser, Serialisable
 
-    from .resources import Resource
+    from .resource import ResourceItem
 
     Json = dict[str, Any]
-    RLoader = Callable[[int], Coroutine[Any, Any, Resource]]
+    RLoader = Callable[[int], Coroutine[Any, Any, ResourceItem]]
 
 __all__ = ("ResourceService",)
 
@@ -59,13 +60,13 @@ class ResourceService(BaseService):
     def resource_map(self) -> dict[str, RLoader]:
         return {"quote": self.load_quote}
 
-    async def load_quote(self, quote_id: int, /) -> QuoteViewResource:
+    async def load_quote(self, quote_id: int, /) -> Quote:
         quote_json = await self.server.db.get_quote(quote_id)
 
         if quote_json is None:
             raise HTTPNotFound(reason="Quote does not exist")
 
-        return QuoteViewResource(quote_json)
+        return Quote(quote_json)
 
     def convert_conflict(self, error: ResourceConflict, extra_data: Json, /) -> HTTPConflict:
         return self.attach_extra_data(HTTPConflict(reason=str(error).strip(".")), extra_data)
@@ -116,9 +117,11 @@ class ResourceService(BaseService):
             )
 
         try:
-            resource = await loader(resource_id)
+            item = await loader(resource_id)
         except HTTPException as error:
             raise self.attach_extra_data(error, extra_data)
+
+        resource = Resource(item)
 
         cache[resource_id] = resource
 
@@ -131,11 +134,11 @@ class ResourceService(BaseService):
         session = self.session_from_request(request)
         return resource, session
 
-    def ok_response(self, resource: Resource, /) -> Response:
+    def ok_response(self, serialisable: Serialisable, /) -> Response:
         return json_response(
             {
                 "message": "OK",
-                "resource": resource.json(),
+                "resource": serialisable.json(),
             },
             status=200,
         )
@@ -157,7 +160,7 @@ class ResourceService(BaseService):
         except SessionBound as error:
             raise self.convert_conflict(error, {"session": session.json()})
 
-        return self.ok_response(resource.decompose(QuoteMetadataResource))
+        return self.ok_response(resource.metadata)
 
     @route("post", "/resource/{rtype}/{rid}/release")
     @ratelimit(limit=10, interval=60, bucket_type=BucketType.User)
@@ -174,7 +177,7 @@ class ResourceService(BaseService):
         except ResourceNotOwned as error:
             raise self.convert_conflict(error, {"session": session.json()})
 
-        return self.ok_response(resource.decompose(QuoteMetadataResource))
+        return self.ok_response(resource.metadata)
 
     @route("get", "/resource/{rtype}/{rid}/preview")
     @ratelimit(limit=10, interval=60, bucket_type=BucketType.User)
@@ -186,7 +189,7 @@ class ResourceService(BaseService):
         self.permission_check(session.user, resource, PermissionType.preview)
         # No acquisition check necessary
 
-        return self.ok_response(resource.decompose(QuotePreviewResource))
+        return self.ok_response(resource.preview)
 
     @route("get", "/resource/{rtype}/{rid}/view")
     @ratelimit(limit=10, interval=60, bucket_type=BucketType.User)
@@ -198,4 +201,4 @@ class ResourceService(BaseService):
         self.permission_check(session.user, resource, PermissionType.view)
         self.acquisition_check(session, resource)
 
-        return self.ok_response(resource.decompose(QuoteViewResource))
+        return self.ok_response(resource.view)
