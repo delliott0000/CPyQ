@@ -23,6 +23,5 @@
 \i :PATH/Tables/permissions_indexes.sql
 
 \i :PATH/Tables/tasks.sql
-\i :PATH/Tables/tasks_indexes.sql
 
 \i :PATH/Tables/quotes.sql
