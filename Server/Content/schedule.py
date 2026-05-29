@@ -8,12 +8,16 @@ if TYPE_CHECKING:
 __all__ = ("Autopilot", "AutopilotManager")
 
 
-class Autopilot: ...
+class Autopilot:
+    __slots__ = ("__token",)
+
+    def __init__(self, token: Token, /):
+        self.__token = token
 
 
 class AutopilotManager:
     def __init__(self): ...
 
-    async def autopilot_connect(self, token: Token, /) -> Autopilot: ...
+    async def autopilot_connect(self, token: Token, /) -> Autopilot | None: ...
 
-    async def autopilot_disconnect(self, token: Token, /) -> Autopilot: ...
+    async def autopilot_disconnect(self, token: Token, /) -> Autopilot | None: ...
