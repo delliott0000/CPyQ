@@ -16,8 +16,26 @@ class Autopilot:
 
 
 class AutopilotManager:
-    def __init__(self): ...
+    def __init__(self):
+        self.__autopilots: dict[Token, Autopilot] = {}
 
-    async def autopilot_connect(self, token: Token, /) -> Autopilot | None: ...
+    def autopilot_connect(self, token: Token, /) -> Autopilot | None:
+        if token in self.__autopilots:
+            return
 
-    async def autopilot_disconnect(self, token: Token, /) -> Autopilot | None: ...
+        autopilot = Autopilot(token)
+        self.__autopilots[token] = autopilot
+
+        ...
+
+        return autopilot
+
+    def autopilot_disconnect(self, token: Token, /) -> Autopilot | None:
+        if token not in self.__autopilots:
+            return
+
+        autopilot = self.__autopilots.pop(token)
+
+        ...
+
+        return autopilot
