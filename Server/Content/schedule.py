@@ -28,8 +28,7 @@ class AutopilotManager:
         if token in self.__autopilots:
             return
 
-        autopilot = Autopilot(token)
-        self.__autopilots[token] = autopilot
+        autopilot = self.__autopilots[token] = Autopilot(token)
 
         ...
 
