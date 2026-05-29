@@ -10,6 +10,7 @@ from .quote import *
 from .route import *
 from .session import *
 from .state import *
+from .task import *
 from .team import *
 from .token import *
 from .user import *
