@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from Common import log
+
 if TYPE_CHECKING:
     from Common import Token
 
@@ -13,6 +15,9 @@ class Autopilot:
 
     def __init__(self, token: Token, /):
         self.__token = token
+
+    def __str__(self):
+        return f"Autopilot {self.__token.session.user} (Token ID: {self.__token.id})"
 
 
 class AutopilotManager:
@@ -28,6 +33,8 @@ class AutopilotManager:
 
         ...
 
+        log(f"{autopilot} connected.")
+
         return autopilot
 
     def autopilot_disconnect(self, token: Token, /) -> Autopilot | None:
@@ -37,5 +44,7 @@ class AutopilotManager:
         autopilot = self.__autopilots.pop(token)
 
         ...
+
+        log(f"{autopilot} disconnected.")
 
         return autopilot
