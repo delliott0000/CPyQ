@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from Common import log
 
 if TYPE_CHECKING:
-    from Common import Token
+    from Common import Task, Token
 
 __all__ = ("Autopilot", "AutopilotManager")
 
@@ -18,6 +18,12 @@ class Autopilot:
 
     def __str__(self):
         return f"Autopilot {self.__token.session.user} (Token ID: {self.__token.id})"
+
+    @property
+    def connected(self) -> bool: ...
+
+    @property
+    def task(self) -> Task | None: ...
 
 
 class AutopilotManager:
