@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from Common import log
 
 if TYPE_CHECKING:
-    from Common import Task, Token
+    from Common import Task, Token, WSProxy
 
 __all__ = ("Autopilot", "AutopilotManager")
 
@@ -18,6 +18,9 @@ class Autopilot:
 
     def __str__(self):
         return f"Autopilot {self.__token.session.user} (Token ID: {self.__token.id})"
+
+    @property
+    def proxy(self) -> WSProxy: ...
 
     @property
     def connected(self) -> bool: ...
