@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from asyncio import Queue
 from typing import TYPE_CHECKING
 
 from Common import log
@@ -64,6 +65,8 @@ class Autopilot:
 class AutopilotManager:
     def __init__(self):
         self.__autopilots: dict[Token, Autopilot] = {}
+        self.__available: Queue[Autopilot] = Queue()
+        self.__tasks: Queue[Task] = Queue()
 
     def autopilot_connect(self, token: Token, /) -> Autopilot | None:
         if token in self.__autopilots:
