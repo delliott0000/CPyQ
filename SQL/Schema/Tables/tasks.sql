@@ -1,3 +1,5 @@
 CREATE TABLE IF NOT EXISTS tasks (
-    id INT PRIMARY KEY REFERENCES ids(id)
+    id INT PRIMARY KEY REFERENCES ids(id),
+    created_at TIMESTAMPTZ NOT NULL,
+    completed_at TIMESTAMPTZ
 );
