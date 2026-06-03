@@ -20,10 +20,21 @@ class Autopilot:
         return f"Autopilot {self.__token.session.user} (Token ID: {self.__token.id})"
 
     @property
-    def proxy(self) -> WSProxy: ...
+    def proxy(self) -> WSProxy:
+        token = self.__token
+        proxy = token.session.connections.get(token)
+
+        if proxy is None:
+            raise RuntimeError(f"{self} does not have a WebSocket proxy.")
+
+        return proxy
 
     @property
-    def connected(self) -> bool: ...
+    def connected(self) -> bool:
+        try:
+            return self.proxy.running
+        except RuntimeError:
+            return False
 
     @property
     def task(self) -> Task | None: ...
