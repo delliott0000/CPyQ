@@ -68,7 +68,7 @@ class AutopilotManager:
         self.__available: Queue[Autopilot] = Queue()
         self.__tasks: Queue[Task] = Queue()
 
-    def autopilot_connect(self, token: Token, /) -> Autopilot | None:
+    async def autopilot_connect(self, token: Token, /) -> Autopilot | None:
         if token in self.__autopilots:
             return
 
@@ -80,7 +80,7 @@ class AutopilotManager:
 
         return autopilot
 
-    def autopilot_disconnect(self, token: Token, /) -> Autopilot | None:
+    async def autopilot_disconnect(self, token: Token, /) -> Autopilot | None:
         if token not in self.__autopilots:
             return
 

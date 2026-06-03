@@ -70,7 +70,8 @@ class BaseWebSocketService(BaseService, ABC):
 
         return proxy, response
 
-    def cleanup_ws(self, token: Token, /) -> None:
+    # This needs to be a coroutine function because subclasses will extend it to await stuff
+    async def cleanup_ws(self, token: Token, /) -> None:
         proxy = token.session.connections.pop(token, None)
 
         if proxy is not None:
@@ -91,7 +92,7 @@ class BaseWebSocketService(BaseService, ABC):
                 ...
 
         finally:
-            self.cleanup_ws(token)
+            await self.cleanup_ws(token)
 
         return response
 
