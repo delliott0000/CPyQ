@@ -8,6 +8,8 @@ from Common import log
 if TYPE_CHECKING:
     from Common import Task, Token, WSProxy
 
+    from .server import Server
+
 __all__ = ("Autopilot", "AutopilotManager")
 
 
@@ -63,7 +65,8 @@ class Autopilot:
 
 
 class AutopilotManager:
-    def __init__(self):
+    def __init__(self, server: Server, /):
+        self.__server = server
         self.__autopilots: dict[Token, Autopilot] = {}
         self.__available: Queue[Autopilot] = Queue()
         self.__tasks: Queue[Task] = Queue()

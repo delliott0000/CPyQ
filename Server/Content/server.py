@@ -13,6 +13,7 @@ from .auth_service import AuthService
 from .middlewares import middlewares
 from .postgresql import PostgreSQLClient
 from .resource_service import ResourceService
+from .schedule import AutopilotManager
 from .websocket_service import AutopilotWebSocketService, UserWebSocketService
 
 if TYPE_CHECKING:
@@ -41,6 +42,8 @@ class Server:
         )
 
         self.db = PostgreSQLClient(config=config.postgres)
+
+        self.apm = AutopilotManager(self)
 
         self.app = Application(middlewares=middlewares)
         self.runner = AppRunner(self.app, access_log=None)
