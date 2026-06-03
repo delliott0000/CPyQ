@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING
 from Common import log
 
 if TYPE_CHECKING:
+    from typing import Self
+
     from Common import Task, Token, WSProxy
 
 __all__ = ("Autopilot", "AutopilotManager")
@@ -67,6 +69,17 @@ class AutopilotManager:
         self.__autopilots: dict[Token, Autopilot] = {}
         self.__available: Queue[Autopilot] = Queue()
         self.__tasks: Queue[Task] = Queue()
+
+    async def __aenter__(self) -> Self:
+        await self.start()
+        return self
+
+    async def __aexit__(self, *_) -> None:
+        await self.stop()
+
+    async def start(self) -> None: ...
+
+    async def stop(self) -> None: ...
 
     def autopilot_connect(self, token: Token, /) -> Autopilot | None:
         if token in self.__autopilots:
