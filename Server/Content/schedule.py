@@ -11,10 +11,11 @@ __all__ = ("Autopilot", "AutopilotManager")
 
 
 class Autopilot:
-    __slots__ = ("__token",)
+    __slots__ = ("__token", "__task")
 
     def __init__(self, token: Token, /):
         self.__token = token
+        self.__task = None
 
     def __str__(self):
         return f"Autopilot {self.__token.session.user} (Token ID: {self.__token.id})"
@@ -37,7 +38,8 @@ class Autopilot:
             return False
 
     @property
-    def task(self) -> Task | None: ...
+    def task(self) -> Task | None:
+        return self.__task
 
 
 class AutopilotManager:
