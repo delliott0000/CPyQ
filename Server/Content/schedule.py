@@ -45,6 +45,21 @@ class Autopilot:
     def busy(self) -> bool:
         return self.__task is not None
 
+    def set_task(self, task: Task, /) -> None:
+        if self.busy:
+            raise RuntimeError(f"{self} is busy.")
+
+        self.__task = task
+
+    def clear_task(self) -> Task:
+        if not self.busy:
+            raise RuntimeError(f"{self} is not busy.")
+
+        previous_task = self.__task
+        self.__task = None
+
+        return previous_task
+
 
 class AutopilotManager:
     def __init__(self):
