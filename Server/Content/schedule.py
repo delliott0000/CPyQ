@@ -41,6 +41,10 @@ class Autopilot:
     def task(self) -> Task | None:
         return self.__task
 
+    @property
+    def busy(self) -> bool:
+        return self.__task is not None
+
 
 class AutopilotManager:
     def __init__(self):
