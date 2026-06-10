@@ -6,9 +6,10 @@ from typing import TYPE_CHECKING
 from Common import log
 
 if TYPE_CHECKING:
-    from Common import Task, Token, WSProxy
+    from collections.abc import Coroutine
+    from typing import Any
 
-    from .server import Server
+    from Common import Task, Token, WSProxy
 
 __all__ = ("Autopilot", "AutopilotManager")
 
@@ -65,8 +66,7 @@ class Autopilot:
 
 
 class AutopilotManager:
-    def __init__(self, server: Server, /):
-        self.__server = server
+    def __init__(self):
         self.__autopilots: dict[Token, Autopilot] = {}
         self.__available: Queue[Autopilot] = Queue()
         self.__tasks: Queue[Task] = Queue()
@@ -77,7 +77,7 @@ class AutopilotManager:
 
         autopilot = self.__autopilots[token] = Autopilot(token)
 
-        ...
+        await self.autopilot_available(autopilot)
 
         log(f"{autopilot} connected.")
 
@@ -94,3 +94,6 @@ class AutopilotManager:
         log(f"{autopilot} disconnected.")
 
         return autopilot
+
+    def autopilot_available(self, autopilot: Autopilot, /) -> Coroutine[Any, Any, None]:
+        return self.__available.put(autopilot)

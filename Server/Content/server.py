@@ -43,7 +43,7 @@ class Server:
 
         self.db = PostgreSQLClient(config=config.postgres)
 
-        self.apm = AutopilotManager(self)
+        self.apm = AutopilotManager()
 
         self.app = Application(middlewares=middlewares)
         self.runner = AppRunner(self.app, access_log=None)
