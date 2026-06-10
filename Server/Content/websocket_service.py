@@ -122,16 +122,14 @@ class AutopilotWebSocketService(BaseWebSocketService):
     ) -> tuple[WSProxy, WebSocketResponse]:
         result = await super().prepare_ws(request, token)
 
-        self.server.apm.autopilot_connect(token)
+        await self.server.apm.autopilot_connect(token)
 
         return result
 
     async def cleanup_ws(self, token: Token, /) -> None:
-        result = await super().cleanup_ws(token)
+        await self.server.apm.autopilot_disconnect(token)
 
-        self.server.apm.autopilot_disconnect(token)
-
-        return result
+        return await super().cleanup_ws(token)
 
     @route("get", "/ws/autopilot")
     @ratelimit(limit=10, interval=60, bucket_type=BucketType.Token)
