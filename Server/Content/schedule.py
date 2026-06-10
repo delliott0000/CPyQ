@@ -76,7 +76,8 @@ class AutopilotManager:
     async def connect_autopilot(self, token: Token, /) -> None:
         autopilot = self.__autopilots[token] = Autopilot(token)
 
-        await self.queue_autopilot(autopilot)
+        if not autopilot.busy:
+            await self.queue_autopilot(autopilot)
 
         log(f"{autopilot} connected.")
 
