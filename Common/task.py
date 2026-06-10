@@ -21,5 +21,5 @@ class Task(IntIdentifiable):
     completed_at: datetime | None
 
     @property
-    def complete(self) -> bool:
-        return self.completed_at is not None
+    def pending(self) -> bool:
+        return self.completed_at is None
