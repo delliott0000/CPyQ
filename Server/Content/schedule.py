@@ -73,22 +73,14 @@ class AutopilotManager:
         self.__available: Queue[Autopilot] = Queue()
         self.__tasks: Queue[Task] = Queue()
 
-    async def autopilot_connect(self, token: Token, /) -> Autopilot | None:
-        if token in self.__autopilots:
-            return
-
+    async def connect_autopilot(self, token: Token, /) -> None:
         autopilot = self.__autopilots[token] = Autopilot(token)
 
         await self.queue_autopilot(autopilot)
 
         log(f"{autopilot} connected.")
 
-        return autopilot
-
-    async def autopilot_disconnect(self, token: Token, /) -> Autopilot | None:
-        if token not in self.__autopilots:
-            return
-
+    async def disconnect_autopilot(self, token: Token, /) -> None:
         autopilot = self.__autopilots.pop(token)
 
         if autopilot.busy:
@@ -96,7 +88,8 @@ class AutopilotManager:
 
         log(f"{autopilot} disconnected.")
 
-        return autopilot
+    def get_autopilot(self, token: Token, /) -> Autopilot:
+        return self.__autopilots[token]
 
     async def wait_for_autopilot(self) -> Autopilot:
         while True:
