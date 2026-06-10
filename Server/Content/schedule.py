@@ -11,6 +11,8 @@ if TYPE_CHECKING:
 
     from Common import Task, Token, WSProxy
 
+    CN = Coroutine[Any, Any, None]
+
 __all__ = ("Autopilot", "AutopilotManager")
 
 
@@ -89,11 +91,15 @@ class AutopilotManager:
 
         autopilot = self.__autopilots.pop(token)
 
-        ...
+        if autopilot.busy:
+            await self.queue_task(autopilot.task)
 
         log(f"{autopilot} disconnected.")
 
         return autopilot
 
-    def autopilot_available(self, autopilot: Autopilot, /) -> Coroutine[Any, Any, None]:
+    def autopilot_available(self, autopilot: Autopilot, /) -> CN:
         return self.__available.put(autopilot)
+
+    def queue_task(self, task: Task, /) -> CN:
+        return self.__tasks.put(task)
