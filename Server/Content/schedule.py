@@ -11,8 +11,6 @@ if TYPE_CHECKING:
 
     from Common import Task, Token, WSProxy
 
-    CN = Coroutine[Any, Any, None]
-
 __all__ = ("Autopilot", "AutopilotManager")
 
 
@@ -79,7 +77,7 @@ class AutopilotManager:
 
         autopilot = self.__autopilots[token] = Autopilot(token)
 
-        await self.autopilot_available(autopilot)
+        await self.queue_autopilot(autopilot)
 
         log(f"{autopilot} connected.")
 
@@ -98,8 +96,14 @@ class AutopilotManager:
 
         return autopilot
 
-    def autopilot_available(self, autopilot: Autopilot, /) -> CN:
+    def wait_for_autopilot(self) -> Coroutine[Any, Any, Autopilot]:
+        return self.__available.get()
+
+    def wait_for_task(self) -> Coroutine[Any, Any, Task]:
+        return self.__tasks.get()
+
+    def queue_autopilot(self, autopilot: Autopilot, /) -> Coroutine[Any, Any, None]:
         return self.__available.put(autopilot)
 
-    def queue_task(self, task: Task, /) -> CN:
+    def queue_task(self, task: Task, /) -> Coroutine[Any, Any, None]:
         return self.__tasks.put(task)
