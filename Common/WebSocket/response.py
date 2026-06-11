@@ -27,7 +27,7 @@ if TYPE_CHECKING:
 
     from aiohttp import WSMessage
 
-    from .enums import WSPeerScope
+    from .enums import WSPeerScope, WSPeerType
     from .messages import CustomWSMessage
     from .payloads import Handshake, Payload
 
@@ -130,6 +130,10 @@ class WSProxy:
     @property
     def server(self) -> bool:
         return self.__scope.role == WSPeerRole.Server
+
+    @property
+    def peer_type(self) -> WSPeerType:
+        return self.__scope.type
 
     @property
     def running(self) -> bool:
