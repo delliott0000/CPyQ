@@ -3,7 +3,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from ..bases import Serialisable
-from ..codecs import EnumCodec, PrimitiveCodec
+from ..codecs import EnumCodec, PrimitiveCodec, SerialisableCodec
+from ..task import Task
 from .enums import PayloadKind, WSPeerType
 
 if TYPE_CHECKING:
@@ -20,6 +21,8 @@ __all__ = (
     "Handshake",
     "UserHandshake",
     "AutopilotHandshake",
+    "TaskAssigned",
+    "TaskDone",
     "EMPTY_PAYLOAD",
     "payload_kind_to_cls",
     "payload_cls_to_kind",
@@ -68,12 +71,44 @@ class AutopilotHandshake(Handshake):
     codecs = {}
 
 
+class TaskAssigned(NonEmptyPayload):
+    codecs = {
+        "task": SerialisableCodec(Task),
+    }
+
+    task: Task
+
+    def valid_context(self, *, receiver: WSProxy) -> bool:
+        return (
+            not receiver.server
+            and receiver.handshake_done
+            and receiver.peer_type == WSPeerType.Autopilot
+        )
+
+
+class TaskDone(NonEmptyPayload):
+    codes = {
+        "task_id": PrimitiveCodec(int),
+    }
+
+    task_id: int
+
+    def valid_context(self, *, receiver: WSProxy) -> bool:
+        return (
+            receiver.server
+            and receiver.handshake_done
+            and receiver.peer_type == WSPeerType.Autopilot
+        )
+
+
 EMPTY_PAYLOAD = EmptyPayload({})
 
 
 _PAYLOAD_MAP: dict[PayloadKind, type[Payload]] = {
     PayloadKind.UserHandshake: UserHandshake,
     PayloadKind.AutopilotHandshake: AutopilotHandshake,
+    PayloadKind.TaskAssigned: TaskAssigned,
+    PayloadKind.TaskDone: TaskDone,
 }
 
 
