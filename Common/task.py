@@ -12,10 +12,18 @@ if TYPE_CHECKING:
 
     Json = dict[str, Any]
 
-__all__ = ("TaskSort", "Task", "parse_received_task", "build_task")
+__all__ = (
+    "TaskSort",
+    "Task",
+    "task_sort_to_cls",
+    "task_cls_to_sort",
+    "parse_received_task",
+    "build_task",
+)
 
 
-class TaskSort(StrEnum): ...
+class TaskSort(StrEnum):
+    pass
 
 
 class Task(IntIdentifiable):
@@ -30,6 +38,20 @@ class Task(IntIdentifiable):
     @property
     def pending(self) -> bool:
         return self.completed_at is None
+
+
+_TASK_MAP: dict[TaskSort, type[Task]] = {}
+
+
+def task_sort_to_cls(sort: TaskSort, /) -> type[Task]:
+    return _TASK_MAP[sort]
+
+
+_TASK_RMAP: dict[type[Task], TaskSort] = {v: k for k, v in _TASK_MAP.items()}
+
+
+def task_cls_to_sort(cls: type[Task], /) -> TaskSort:
+    return _TASK_RMAP[cls]
 
 
 def parse_received_task(json: Json, /) -> Task: ...
