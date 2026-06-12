@@ -7,8 +7,11 @@ from .codecs import DatetimeCodec
 
 if TYPE_CHECKING:
     from datetime import datetime
+    from typing import Any
 
-__all__ = ("Task",)
+    Json = dict[str, Any]
+
+__all__ = ("Task", "task_factory")
 
 
 class Task(IntIdentifiable):
@@ -23,3 +26,12 @@ class Task(IntIdentifiable):
     @property
     def pending(self) -> bool:
         return self.completed_at is None
+
+
+if TYPE_CHECKING:
+    from typing import TypeVar
+
+    TaskT = TypeVar("TaskT", bound=Task)
+
+
+def task_factory(cls: TaskT, json: Json, /) -> TaskT: ...
