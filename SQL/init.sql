@@ -7,6 +7,7 @@
 
 \i :PATH/Types/permission_scope_enum.sql
 \i :PATH/Types/permission_type_enum.sql
+\i :PATH/Types/task_sort_enum.sql
 
 -- Tables, Constraints & Indexes
 
