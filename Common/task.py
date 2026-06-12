@@ -56,7 +56,10 @@ def task_cls_to_sort(cls: type[Task], /) -> TaskSort:
     return _TASK_RMAP[cls]
 
 
-def parse_received_task(json: Json, /) -> Task: ...
+def parse_received_task(json: Json, /) -> Task:
+    sort = TaskSort(json["sort"])
+    cls = task_sort_to_cls(sort)
+    return cls(json)
 
 
 if TYPE_CHECKING:
@@ -65,4 +68,10 @@ if TYPE_CHECKING:
     TaskT = TypeVar("TaskT", bound=Task)
 
 
-def build_task(cls: TaskT, json: Json, /) -> TaskT: ...
+def build_task(cls: type[TaskT], json: Json, /) -> TaskT:
+    if "sort" in json:
+        raise ValueError('The supplied JSON contains a "sort" field.')
+
+    sort = task_cls_to_sort(cls)
+    real_json = {**json, "sort": sort.value}
+    return cls(real_json)
