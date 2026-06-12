@@ -4,7 +4,7 @@ from enum import StrEnum
 from typing import TYPE_CHECKING
 
 from .bases import IntIdentifiable
-from .codecs import DatetimeCodec
+from .codecs import DatetimeCodec, EnumCodec
 
 if TYPE_CHECKING:
     from datetime import datetime
@@ -28,10 +28,12 @@ class TaskSort(StrEnum):
 
 class Task(IntIdentifiable):
     codecs = {
+        "sort": EnumCodec(TaskSort),
         "created_at": DatetimeCodec(),
         "completed_at": DatetimeCodec(optional=True),
     }
 
+    sort: TaskSort
     created_at: datetime
     completed_at: datetime | None
 
