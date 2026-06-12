@@ -6,7 +6,15 @@ from typing import TYPE_CHECKING
 
 from aiohttp.web import HTTPConflict, WebSocketResponse
 
-from Common import WSPeerRole, WSPeerScope, WSPeerType, WSProxy, build_payload, log
+from Common import (
+    TaskAssigned,
+    WSPeerRole,
+    WSPeerScope,
+    WSPeerType,
+    WSProxy,
+    build_payload,
+    log,
+)
 
 from .base_service import BaseService
 from .decorators import (
@@ -115,7 +123,16 @@ class AutopilotWebSocketService(BaseWebSocketService):
     PEER_TYPE = WSPeerType.Autopilot
 
     async def task_coro(self) -> None:
-        pass
+        autopilot = await self.server.apm.wait_for_autopilot()
+        task = await self.server.apm.wait_for_task()
+
+        json = {
+            "task": task.json(),
+        }
+        payload = build_payload(TaskAssigned, json)
+        await autopilot.proxy.send_payload(payload)
+
+        autopilot.set_task(task)
 
     async def prepare_ws(
         self, request: Request, token: Token, /
