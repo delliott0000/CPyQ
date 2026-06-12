@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
     Json = dict[str, Any]
 
-__all__ = ("Task", "task_factory")
+__all__ = ("Task", "parse_received_task", "task_factory")
 
 
 class Task(IntIdentifiable):
@@ -32,6 +32,9 @@ if TYPE_CHECKING:
     from typing import TypeVar
 
     TaskT = TypeVar("TaskT", bound=Task)
+
+
+def parse_received_task(json: Json, /) -> Task: ...
 
 
 def task_factory(cls: TaskT, json: Json, /) -> TaskT: ...
