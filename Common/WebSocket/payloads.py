@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from ..bases import Serialisable
 from ..codecs import EnumCodec, PrimitiveCodec, SerialisableCodec
-from ..task import Task
+from ..task import Task, parse_received_task
 from .enums import PayloadKind, WSPeerType
 
 if TYPE_CHECKING:
@@ -73,7 +73,7 @@ class AutopilotHandshake(Handshake):
 
 class TaskAssigned(NonEmptyPayload):
     codecs = {
-        "task": SerialisableCodec(Task),
+        "task": SerialisableCodec(parse_received_task),
     }
 
     task: Task
