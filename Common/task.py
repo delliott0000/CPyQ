@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from enum import StrEnum
 from typing import TYPE_CHECKING
 
 from .bases import IntIdentifiable
@@ -11,7 +12,10 @@ if TYPE_CHECKING:
 
     Json = dict[str, Any]
 
-__all__ = ("Task", "parse_received_task", "build_task")
+__all__ = ("TaskSort", "Task", "parse_received_task", "build_task")
+
+
+class TaskSort(StrEnum): ...
 
 
 class Task(IntIdentifiable):
