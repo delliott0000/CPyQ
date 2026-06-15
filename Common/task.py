@@ -4,7 +4,8 @@ from enum import StrEnum
 from typing import TYPE_CHECKING
 
 from .bases import IntIdentifiable
-from .codecs import DatetimeCodec, EnumCodec
+from .codecs import DatetimeCodec, EnumCodec, SerialisableCodec
+from .quote import Quote
 
 if TYPE_CHECKING:
     from datetime import datetime
@@ -15,6 +16,7 @@ if TYPE_CHECKING:
 __all__ = (
     "TaskSort",
     "Task",
+    "GenerateQuotation",
     "task_sort_to_cls",
     "task_cls_to_sort",
     "parse_received_task",
@@ -23,7 +25,7 @@ __all__ = (
 
 
 class TaskSort(StrEnum):
-    pass
+    GenerateQuotation = "generate_quotation"
 
 
 class Task(IntIdentifiable):
@@ -42,7 +44,17 @@ class Task(IntIdentifiable):
         return self.completed_at is None
 
 
-_TASK_MAP: dict[TaskSort, type[Task]] = {}
+class GenerateQuotation(Task):
+    codecs = {
+        "quote": SerialisableCodec(Quote),
+    }
+
+    quote: Quote
+
+
+_TASK_MAP: dict[TaskSort, type[Task]] = {
+    TaskSort.GenerateQuotation: GenerateQuotation,
+}
 
 
 def task_sort_to_cls(sort: TaskSort, /) -> type[Task]:
