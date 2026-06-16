@@ -3,8 +3,8 @@ from __future__ import annotations
 from enum import StrEnum
 from typing import TYPE_CHECKING
 
-from .bases import IntIdentifiable
-from .codecs import DatetimeCodec, EnumCodec
+from ..bases import IntIdentifiable
+from ..codecs import DatetimeCodec, EnumCodec
 
 if TYPE_CHECKING:
     from datetime import datetime
