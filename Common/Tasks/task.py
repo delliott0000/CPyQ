@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from enum import StrEnum
 from typing import TYPE_CHECKING
 
 from ..bases import IntIdentifiable
 from ..codecs import DatetimeCodec, EnumCodec
+from .enums import TaskSort
 
 if TYPE_CHECKING:
     from datetime import datetime
@@ -13,17 +13,12 @@ if TYPE_CHECKING:
     Json = dict[str, Any]
 
 __all__ = (
-    "TaskSort",
     "Task",
     "task_sort_to_cls",
     "task_cls_to_sort",
     "parse_received_task",
     "build_task",
 )
-
-
-class TaskSort(StrEnum):
-    pass
 
 
 class Task(IntIdentifiable):
