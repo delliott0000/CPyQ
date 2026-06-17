@@ -126,13 +126,14 @@ class AutopilotWebSocketService(BaseWebSocketService):
         autopilot = await self.server.apm.wait_for_autopilot()
         task = await self.server.apm.wait_for_task()
 
+        autopilot.set_task(task)
+
         json = {
             "task": task.json(),
         }
         payload = build_payload(TaskAssigned, json)
-        await autopilot.proxy.send_payload(payload)
 
-        autopilot.set_task(task)
+        await autopilot.proxy.send_payload(payload)
 
     async def prepare_ws(
         self, request: Request, token: Token, /
