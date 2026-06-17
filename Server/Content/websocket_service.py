@@ -136,6 +136,7 @@ class AutopilotWebSocketService(BaseWebSocketService):
 
         try:
             await autopilot.proxy.send_payload(payload)
+
         except ClientConnectionResetError:
             # The connection dropped whilst the message was being sent
             # AutopilotManager's disconnect hook will re-queue the task
