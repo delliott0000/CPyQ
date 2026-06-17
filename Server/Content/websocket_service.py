@@ -4,6 +4,7 @@ from abc import ABC
 from dataclasses import asdict
 from typing import TYPE_CHECKING
 
+from aiohttp import ClientConnectionResetError
 from aiohttp.web import HTTPConflict, WebSocketResponse
 
 from Common import (
@@ -133,7 +134,15 @@ class AutopilotWebSocketService(BaseWebSocketService):
         }
         payload = build_payload(TaskAssigned, json)
 
-        await autopilot.proxy.send_payload(payload)
+        try:
+            await autopilot.proxy.send_payload(payload)
+        except ClientConnectionResetError:
+            # The connection dropped whilst the message was being sent
+            # AutopilotManager's disconnect hook will re-queue the task
+            log(
+                f"{autopilot} disconnected during the assignment of task {task.id}. "
+                f"The task will be re-queued."
+            )
 
     async def prepare_ws(
         self, request: Request, token: Token, /
