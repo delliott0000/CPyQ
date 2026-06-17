@@ -3,10 +3,15 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    ...
+    from collections.abc import Callable
 
-__all__ = ()
+    from .enums import TaskSort
+
+__all__ = ("register_sort",)
 
 
-_TASK_MAP: dict[..., ...] = {}
-_TASK_RMAP: dict[..., ...] = {}
+_TASK_MAP: dict[TaskSort, ...] = {}
+_TASK_RMAP: dict[..., TaskSort] = {}
+
+
+def register_sort(sort: TaskSort, /) -> Callable[[...], ...]: ...
