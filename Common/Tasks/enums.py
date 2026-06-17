@@ -4,4 +4,4 @@ __all__ = ("TaskSort",)
 
 
 class TaskSort(StrEnum):
-    pass
+    ExportQuote = "export_quote"
