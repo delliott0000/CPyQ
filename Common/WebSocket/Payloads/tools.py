@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from .payload import EMPTY_PAYLOAD
+
 if TYPE_CHECKING:
     from collections.abc import Callable
     from typing import Any, TypeVar
@@ -44,7 +46,20 @@ def payload_cls_to_kind(cls: type[Payload], /) -> PayloadKind:
     return _PAYLOAD_RMAP[cls]
 
 
-def parse_received_payload(json: Json, /) -> Payload: ...
+def parse_received_payload(json: Json, /) -> Payload:
+    if json == {}:
+        return EMPTY_PAYLOAD
+
+    else:
+        kind = PayloadKind(json["kind"])
+        cls = payload_kind_to_cls(kind)
+        return cls(json)
 
 
-def build_payload(cls: type[PayloadT], json: Json, /) -> PayloadT: ...
+def build_payload(cls: type[PayloadT], json: Json, /) -> PayloadT:
+    if "kind" in json:
+        raise ValueError('The supplied JSON contains a "kind" field.')
+
+    kind = payload_cls_to_kind(cls)
+    real_json = {**json, "kind": kind.value}
+    return cls(real_json)
