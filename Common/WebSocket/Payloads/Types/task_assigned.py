@@ -7,7 +7,7 @@ from ....Tasks import parse_received_task
 from ...enums import WSPeerType
 from ..enums import PayloadKind
 from ..payload import NonEmptyPayload
-from ..tools import register_kind
+from ..tools import register_payload_kind
 
 if TYPE_CHECKING:
     from ....Tasks import Task
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 __all__ = ("TaskAssigned",)
 
 
-@register_kind(PayloadKind.TaskAssigned)
+@register_payload_kind(PayloadKind.TaskAssigned)
 class TaskAssigned(NonEmptyPayload):
     codecs = {
         "task": SerialisableCodec(parse_received_task),

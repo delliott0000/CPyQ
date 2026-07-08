@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     PayloadT = TypeVar("PayloadT", bound=Payload)
 
 __all__ = (
-    "register_kind",
+    "register_payload_kind",
     "payload_kind_to_cls",
     "payload_cls_to_kind",
     "parse_received_payload",
@@ -27,7 +27,7 @@ _PAYLOAD_MAP: dict[PayloadKind, type[Payload]] = {}
 _PAYLOAD_RMAP: dict[type[Payload], PayloadKind] = {}
 
 
-def register_kind(kind: PayloadKind, /) -> Callable[[type[PayloadT]], type[PayloadT]]:
+def register_payload_kind(kind: PayloadKind, /) -> Callable[[type[PayloadT]], type[PayloadT]]:
 
     def wrapper(cls: type[PayloadT], /) -> type[PayloadT]:
         _PAYLOAD_MAP[kind] = cls

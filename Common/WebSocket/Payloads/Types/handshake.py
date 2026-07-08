@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from ....codecs import PrimitiveCodec
 from ..enums import PayloadKind
 from ..payload import NonEmptyPayload
-from ..tools import register_kind
+from ..tools import register_payload_kind
 
 if TYPE_CHECKING:
     from ...response import WSProxy
@@ -24,11 +24,11 @@ class Handshake(NonEmptyPayload):
         )
 
 
-@register_kind(PayloadKind.UserHandshake)
+@register_payload_kind(PayloadKind.UserHandshake)
 class UserHandshake(Handshake):
     codecs = {}
 
 
-@register_kind(PayloadKind.AutopilotHandshake)
+@register_payload_kind(PayloadKind.AutopilotHandshake)
 class AutopilotHandshake(Handshake):
     codecs = {}

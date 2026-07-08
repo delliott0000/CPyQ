@@ -6,7 +6,7 @@ from ....codecs import PrimitiveCodec
 from ...enums import WSPeerType
 from ..enums import PayloadKind
 from ..payload import NonEmptyPayload
-from ..tools import register_kind
+from ..tools import register_payload_kind
 
 if TYPE_CHECKING:
     from ...response import WSProxy
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 __all__ = ("TaskDone",)
 
 
-@register_kind(PayloadKind.TaskDone)
+@register_payload_kind(PayloadKind.TaskDone)
 class TaskDone(NonEmptyPayload):
     codes = {
         "task_id": PrimitiveCodec(int),

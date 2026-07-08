@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     TaskT = TypeVar("TaskT", bound=Task)
 
 __all__ = (
-    "register_sort",
+    "register_task_sort",
     "task_sort_to_cls",
     "task_cls_to_sort",
     "parse_received_task",
@@ -26,7 +26,7 @@ _TASK_MAP: dict[TaskSort, type[Task]] = {}
 _TASK_RMAP: dict[type[Task], TaskSort] = {}
 
 
-def register_sort(sort: TaskSort, /) -> Callable[[type[TaskT]], type[TaskT]]:
+def register_task_sort(sort: TaskSort, /) -> Callable[[type[TaskT]], type[TaskT]]:
 
     def wrapper(cls: type[TaskT], /) -> type[TaskT]:
         _TASK_MAP[sort] = cls
