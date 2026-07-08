@@ -3,8 +3,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from ....codecs import PrimitiveCodec
-from ..payload import NonEmptyPayload
 from ..enums import PayloadKind
+from ..payload import NonEmptyPayload
 from ..tools import register_kind
 
 if TYPE_CHECKING:
