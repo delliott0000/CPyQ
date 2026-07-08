@@ -15,10 +15,10 @@ from aiohttp import WSCloseCode
 
 from ..errors import RatelimitException, WSException
 from ..utils import check_ratelimit, log, make_future, now, protocol_error
-from .enums import CustomWSCloseCode, WSPeerRole
 from .handshake import HandshakeContext
 from .messages import WSAck, WSEvent, parse_received_message
 from .Payloads import peer_type_to_handshake_cls
+from .subprotocol import CustomWSCloseCode, WSPeerRole
 
 if TYPE_CHECKING:
     from asyncio import Future, Task
@@ -27,9 +27,9 @@ if TYPE_CHECKING:
 
     from aiohttp import WSMessage
 
-    from .enums import WSPeerScope, WSPeerType
     from .messages import CustomWSMessage
     from .Payloads import Handshake, Payload
+    from .subprotocol import WSPeerScope, WSPeerType
 
     Json = dict[str, Any]
     CN = Coroutine[Any, Any, None]

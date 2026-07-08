@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from ....codecs import SerialisableCodec
 from ....Tasks import parse_received_task
-from ...enums import WSPeerType
+from ...subprotocol import WSPeerType
 from ..enums import PayloadKind
 from ..payload import NonEmptyPayload
 from ..tools import register_payload_kind

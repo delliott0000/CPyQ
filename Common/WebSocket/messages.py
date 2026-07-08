@@ -9,8 +9,8 @@ from aiohttp import WSMsgType
 from ..bases import StrIdentifiable
 from ..codecs import DatetimeCodec, EnumCodec, PrimitiveCodec, SerialisableCodec
 from ..utils import encode_datetime, protocol_error
-from .enums import CustomWSCloseCode, CustomWSMessageType, WSEventStatus
 from .Payloads import parse_received_payload
+from .subprotocol import CustomWSCloseCode, CustomWSMessageType, WSEventStatus
 
 if TYPE_CHECKING:
     from datetime import datetime

@@ -49,7 +49,6 @@ class WSPeerType(Enum):
     Autopilot = 1
 
 
-# Not an enumeration, but defining this here is convenient
 @dataclass(kw_only=True, frozen=True, slots=True)
 class WSPeerScope:
     role: WSPeerRole

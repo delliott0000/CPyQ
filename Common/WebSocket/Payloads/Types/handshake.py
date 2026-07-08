@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from ....codecs import PrimitiveCodec
-from ...enums import WSPeerType
+from ...subprotocol import WSPeerType
 from ..enums import PayloadKind
 from ..payload import NonEmptyPayload
 from ..tools import register_payload_kind, register_peer_handshake

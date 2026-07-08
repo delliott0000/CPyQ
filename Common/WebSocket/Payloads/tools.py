@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable
     from typing import Any, TypeVar
 
-    from ..enums import WSPeerType
+    from ..subprotocol import WSPeerType
     from .payload import Payload
     from .Types import Handshake
 

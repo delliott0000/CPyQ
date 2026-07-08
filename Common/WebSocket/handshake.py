@@ -4,15 +4,15 @@ from typing import TYPE_CHECKING
 
 from ..errors import WSException
 from ..utils import make_future
-from .enums import HandshakePhase
+from .subprotocol import HandshakePhase
 
 if TYPE_CHECKING:
     from asyncio import Future
 
     from aiohttp import WSCloseCode
 
-    from .enums import CustomWSCloseCode
     from .messages import WSEvent
+    from .subprotocol import CustomWSCloseCode
 
     CloseCode = WSCloseCode | CustomWSCloseCode
 
