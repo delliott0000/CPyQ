@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 from ....codecs import SerialisableCodec
 from ....Tasks import parse_received_task
 from ...enums import WSPeerType
+from ..enums import PayloadKind
 from ..payload import NonEmptyPayload
 from ..tools import register_kind
 
@@ -15,7 +16,7 @@ if TYPE_CHECKING:
 __all__ = ("TaskAssigned",)
 
 
-@register_kind(...)
+@register_kind(PayloadKind.TaskAssigned)
 class TaskAssigned(NonEmptyPayload):
     codecs = {
         "task": SerialisableCodec(parse_received_task),
