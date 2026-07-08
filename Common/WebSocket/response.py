@@ -15,7 +15,7 @@ from aiohttp import WSCloseCode
 
 from ..errors import RatelimitException, WSException
 from ..utils import check_ratelimit, log, make_future, now, protocol_error
-from .handshake import HandshakeContext
+from .handshake_ctx import HandshakeContext
 from .messages import WSAck, WSEvent, parse_received_message
 from .Payloads import peer_type_to_handshake_cls
 from .subprotocol import CustomWSCloseCode, WSPeerRole
