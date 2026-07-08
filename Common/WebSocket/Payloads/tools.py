@@ -4,17 +4,20 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from collections.abc import Callable
-    from typing import TypeVar
+    from typing import Any, TypeVar
 
     from .enums import PayloadKind
     from .payload import Payload
 
+    Json = dict[str, Any]
     PayloadT = TypeVar("PayloadT", bound=Payload)
 
 __all__ = (
     "register_kind",
     "payload_kind_to_cls",
     "payload_cls_to_kind",
+    "parse_received_payload",
+    "build_payload",
 )
 
 
@@ -39,3 +42,9 @@ def payload_kind_to_cls(kind: PayloadKind, /) -> type[Payload]:
 
 def payload_cls_to_kind(cls: type[Payload], /) -> PayloadKind:
     return _PAYLOAD_RMAP[cls]
+
+
+def parse_received_payload(json: Json, /) -> Payload: ...
+
+
+def build_payload(cls: type[PayloadT], json: Json, /) -> PayloadT: ...
