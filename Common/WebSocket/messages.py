@@ -10,7 +10,7 @@ from ..bases import StrIdentifiable
 from ..codecs import DatetimeCodec, EnumCodec, PrimitiveCodec, SerialisableCodec
 from ..utils import encode_datetime, protocol_error
 from .enums import CustomWSCloseCode, CustomWSMessageType, WSEventStatus
-from .payloads import parse_received_payload
+from .Payloads import parse_received_payload
 
 if TYPE_CHECKING:
     from datetime import datetime
@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
     from aiohttp import WSMessage
 
-    from .payloads import Payload
+    from .Payloads import Payload
 
 __all__ = ("CustomWSMessage", "WSEvent", "WSAck", "make_id", "parse_received_message")
 

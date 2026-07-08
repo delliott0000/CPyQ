@@ -18,7 +18,7 @@ from ..utils import check_ratelimit, log, make_future, now, protocol_error
 from .enums import CustomWSCloseCode, WSPeerRole
 from .handshake import HandshakeContext
 from .messages import WSAck, WSEvent, parse_received_message
-from .payloads import peer_type_to_handshake_cls
+from .Payloads import peer_type_to_handshake_cls
 
 if TYPE_CHECKING:
     from asyncio import Future, Task
@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 
     from .enums import WSPeerScope, WSPeerType
     from .messages import CustomWSMessage
-    from .payloads import Handshake, Payload
+    from .Payloads import Handshake, Payload
 
     Json = dict[str, Any]
     CN = Coroutine[Any, Any, None]
