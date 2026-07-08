@@ -21,6 +21,7 @@ __all__ = (
     "register_payload_kind",
     "payload_kind_to_cls",
     "payload_cls_to_kind",
+    "register_peer_handshake",
     "peer_type_to_handshake_cls",
     "parse_received_payload",
     "build_payload",
@@ -51,6 +52,18 @@ def payload_cls_to_kind(cls: type[Payload], /) -> PayloadKind:
 
 
 _HANDSHAKE_MAP: dict[WSPeerType, type[Handshake]] = {}
+
+
+def register_peer_handshake(
+    peer_type: WSPeerType, /
+) -> Callable[[type[HandshakeT]], type[HandshakeT]]:
+
+    def wrapper(cls: type[HandshakeT], /) -> type[HandshakeT]:
+        _HANDSHAKE_MAP[peer_type] = cls
+
+        return cls
+
+    return wrapper
 
 
 def peer_type_to_handshake_cls(peer_type: WSPeerType, /) -> type[Handshake]:
