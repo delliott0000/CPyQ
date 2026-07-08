@@ -2,17 +2,19 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from .enums import PayloadKind
 from .payload import EMPTY_PAYLOAD
 
 if TYPE_CHECKING:
     from collections.abc import Callable
     from typing import Any, TypeVar
 
-    from .enums import PayloadKind
     from .payload import Payload
+    from .Types import Handshake
 
     Json = dict[str, Any]
     PayloadT = TypeVar("PayloadT", bound=Payload)
+    HandshakeT = TypeVar("HandshakeT", bound=Handshake)
 
 __all__ = (
     "register_payload_kind",
