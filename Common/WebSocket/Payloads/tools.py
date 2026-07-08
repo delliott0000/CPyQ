@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable
     from typing import Any, TypeVar
 
+    from ..enums import WSPeerType
     from .payload import Payload
     from .Types import Handshake
 
@@ -20,6 +21,7 @@ __all__ = (
     "register_payload_kind",
     "payload_kind_to_cls",
     "payload_cls_to_kind",
+    "peer_type_to_handshake_cls",
     "parse_received_payload",
     "build_payload",
 )
@@ -46,6 +48,13 @@ def payload_kind_to_cls(kind: PayloadKind, /) -> type[Payload]:
 
 def payload_cls_to_kind(cls: type[Payload], /) -> PayloadKind:
     return _PAYLOAD_RMAP[cls]
+
+
+_HANDSHAKE_MAP: dict[WSPeerType, type[Handshake]] = {}
+
+
+def peer_type_to_handshake_cls(peer_type: WSPeerType, /) -> type[Handshake]:
+    return _HANDSHAKE_MAP[peer_type]
 
 
 def parse_received_payload(json: Json, /) -> Payload:
