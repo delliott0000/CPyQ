@@ -7,4 +7,5 @@ from .resource import *
 from .resource_service import *
 from .schedule import *
 from .server import *
+from .task_io import *
 from .websocket_service import *
