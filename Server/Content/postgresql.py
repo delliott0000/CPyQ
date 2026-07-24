@@ -107,27 +107,8 @@ class PostgreSQLClient:
     async def execute(self, query: str, /, *args: Any) -> str:
         return await self.make_call(lambda connection: connection.execute(query, *args))
 
-    async def get_user(
-        self,
-        *,
-        user_id: int | None = None,
-        username: str | None = None,
-    ) -> Json | None:
-        if (user_id is None) == (username is None):
-            raise ValueError("Either an ID or a username is required, but not both.")
-
-        # fmt: off
-        if user_id is not None:
-            json = await self.fetch_one(
-                "SELECT * FROM users WHERE id = $1",
-                user_id
-            )
-        else:
-            json = await self.fetch_one(
-                "SELECT * FROM users WHERE username = $1",
-                username
-            )
-        # fmt: on
+    async def get_user(self, username: str, /) -> Json | None:
+        json = await self.fetch_one("SELECT * FROM users WHERE username = $1", username)
 
         if json is None:
             return None
@@ -246,6 +227,8 @@ class PostgreSQLClient:
             return None
 
         owner_id = quote["owner_id"]
-        owner = await self.get_user(user_id=owner_id)
+
+        json_list = await self.get_users(owner_id)
+        owner = json_list[owner_id]
 
         return quote | {"owner": owner}

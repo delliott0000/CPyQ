@@ -98,7 +98,7 @@ class AuthService(BaseService):
         if not isinstance(username, str) or not isinstance(password, str):
             raise HTTPBadRequest(reason="Missing or invalid username/password")
 
-        user_json = await self.server.db.get_user(username=username)
+        user_json = await self.server.db.get_user(username)
 
         hashed_password = DUMMY_HASH if user_json is None else user_json["hashed_password"]
         correct = await self.server.process_pool.submit_async(
