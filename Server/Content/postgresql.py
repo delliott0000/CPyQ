@@ -246,3 +246,27 @@ class PostgreSQLClient:
         owner = json_list[owner_id]
 
         return quote | {"owner": owner}
+
+    async def get_quotes(self, *quote_ids: int) -> dict[int, Json]:
+        if not quote_ids:
+            return {}
+
+        quote_ids = self.deduplicate(quote_ids)
+
+        json_list = await self.fetch_all("SELECT * FROM quotes WHERE id = ANY($1)", quote_ids)
+
+        owner_ids = (json["owner_id"] for json in json_list)
+
+        owners = await self.get_users(*owner_ids)
+
+        quotes = {}
+
+        for json in json_list:
+            quote_id = json["id"]
+            owner = owners[json["owner_id"]]
+            quote = json | {"owner": owner}
+            quotes[quote_id] = quote
+
+        self.validate_ids(quote_ids, quotes.keys(), context="quote")
+
+        return quotes
