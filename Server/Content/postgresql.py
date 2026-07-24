@@ -138,6 +138,20 @@ class PostgreSQLClient:
 
         return json | {"teams": list(teams.values())}
 
+    async def get_users(self, *user_ids: int) -> dict[int, Json]:
+        if not user_ids:
+            return {}
+
+        json_list = await self.fetch_all("SELECT * FROM users WHERE id = ANY($1)", user_ids)
+
+        users = {json["id"]: json for json in json_list}
+
+        ...
+
+        self.validate_ids(user_ids, users.keys(), context="user")
+
+        return users
+
     async def get_teams(self, *team_ids: int) -> dict[int, Json]:
         if not team_ids:
             return {}
@@ -160,6 +174,7 @@ class PostgreSQLClient:
             perms = permissions[team_id]
 
             team = json | {"company": company} | {"permissions": perms}
+            team.pop("company_id")
             teams[team_id] = team
 
         self.validate_ids(team_ids, teams.keys(), context="team")
