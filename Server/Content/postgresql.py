@@ -145,10 +145,20 @@ class PostgreSQLClient:
         json_list = await self.fetch_all("SELECT * FROM users WHERE id = ANY($1)", user_ids)
 
         users = {json["id"]: json for json in json_list}
+        user_keys = users.keys()
 
-        ...
+        assignments = await self.get_assignments(*user_keys)
 
-        self.validate_ids(user_ids, users.keys(), context="user")
+        team_ids = (team_id for assignment in assignments.values() for team_id in assignment)
+
+        teams = await self.get_teams(*team_ids)
+
+        for user_id in user_keys:
+            user_assignments = assignments[user_id]
+            user_teams = list(teams[user_assignment] for user_assignment in user_assignments)
+            users[user_id]["teams"] = user_teams
+
+        self.validate_ids(user_ids, user_keys, context="user")
 
         return users
 
