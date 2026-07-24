@@ -38,6 +38,10 @@ class PostgreSQLClient:
     def is_open(self) -> bool:
         return self.__connection_pool is not None and not self.__connection_pool.is_closing()
 
+    @staticmethod
+    def deduplicate(ids: tuple[int, ...]) -> tuple[int, ...]:
+        return tuple(set(ids))
+
     def validate_ids(
         self,
         passed_ids: Iterable[int],
@@ -123,6 +127,8 @@ class PostgreSQLClient:
         if not user_ids:
             return {}
 
+        user_ids = self.deduplicate(user_ids)
+
         json_list = await self.fetch_all("SELECT * FROM users WHERE id = ANY($1)", user_ids)
 
         users = {json["id"]: json for json in json_list}
@@ -135,8 +141,8 @@ class PostgreSQLClient:
         teams = await self.get_teams(*team_ids)
 
         for user_id in user_keys:
-            user_assignments = assignments[user_id]
-            user_teams = list(teams[user_assignment] for user_assignment in user_assignments)
+            team_ids = assignments[user_id]
+            user_teams = list(teams[team_id] for team_id in team_ids)
             users[user_id]["teams"] = user_teams
 
         self.validate_ids(user_ids, user_keys, context="user")
@@ -146,6 +152,8 @@ class PostgreSQLClient:
     async def get_teams(self, *team_ids: int) -> dict[int, Json]:
         if not team_ids:
             return {}
+
+        team_ids = self.deduplicate(team_ids)
 
         json_list = await self.fetch_all("SELECT * FROM teams WHERE id = ANY($1)", team_ids)
 
@@ -175,6 +183,8 @@ class PostgreSQLClient:
         if not company_ids:
             return {}
 
+        company_ids = self.deduplicate(company_ids)
+
         json_list = await self.fetch_all(
             "SELECT * FROM companies WHERE id = ANY($1)", company_ids
         )
@@ -188,6 +198,8 @@ class PostgreSQLClient:
     async def get_permissions(self, *team_ids: int) -> dict[int, list[Json]]:
         if not team_ids:
             return {}
+
+        team_ids = self.deduplicate(team_ids)
 
         json_list = await self.fetch_all(
             "SELECT * FROM permissions WHERE team_id = ANY($1)", team_ids
@@ -204,9 +216,12 @@ class PostgreSQLClient:
         if not ids:
             return {}
 
-        key_map = {False: "user_id", True: "team_id"}
-        key = key_map[inverse]
-        val = key_map[not inverse]
+        ids = self.deduplicate(ids)
+
+        if inverse:
+            key, val = "team_id", "user_id"
+        else:
+            key, val = "user_id", "team_id"
 
         json_list = await self.fetch_all(
             f"SELECT * FROM assignments WHERE {key} = ANY($1)", ids
