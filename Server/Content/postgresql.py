@@ -165,7 +165,6 @@ class PostgreSQLClient:
             perms = permissions[team_id]
 
             team = json | {"company": company} | {"permissions": perms}
-            team.pop("company_id")
             teams[team_id] = team
 
         self.validate_ids(team_ids, teams.keys(), context="team")
